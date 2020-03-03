@@ -14,7 +14,10 @@ namespace Client
     {
         private static async Task Main()
         {
-            await ClientCredentialsGrant.TokenAsync();
+            // Módok
+
+            // await ClientCredentialsGrant.TokenAsync();
+            await PasswordGrant.TokenAsync(); // Ezáltal meg lehet különböztetni, hogy az alkalmazás direktben kommunikál-e az API-val vagy egy User hívta-e az API-kat (A teszt usereknél ez nincs nem valódi IdentityUser-ek)
         }
     }
 }
