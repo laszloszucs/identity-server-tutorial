@@ -13,7 +13,7 @@ namespace Client.Modes
             // discover endpoints from metadata
             var client = new HttpClient();
 
-            var disco = await client.GetDiscoveryDocumentAsync("http://localhost:5000"); // A végpontokat feltérképezi a .well-known alapján
+            var disco = await client.GetDiscoveryDocumentAsync("https://localhost:44300"); // A végpontokat feltérképezi a .well-known alapján
             if (disco.IsError)
             {
                 Console.WriteLine(disco.Error);
@@ -43,7 +43,7 @@ namespace Client.Modes
             var apiClient = new HttpClient();
             apiClient.SetBearerToken(tokenResponse.AccessToken);
 
-            var response = await apiClient.GetAsync("http://localhost:5001/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
+            var response = await apiClient.GetAsync("https://localhost:44301/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine(response.StatusCode);

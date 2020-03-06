@@ -18,7 +18,7 @@ namespace IdentityServer
         public void ConfigureServices(IServiceCollection services)
         {
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources()) // TODO http://localhost:5000/.well-known/openid-configuration
+                .AddInMemoryIdentityResources(Config.GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
                 .AddInMemoryApiResources(Config.GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
                 .AddInMemoryClients(Config.GetClients()) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddTestUsers(Config.GetUsers()); // Test Userek az Identity Server bejelentkezés teszteléséhez (password grant, user related services support, profile service support) // TODO

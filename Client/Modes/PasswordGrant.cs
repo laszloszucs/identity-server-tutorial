@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ namespace Client.Modes
         {
             var client = new HttpClient(new LoggingHandler(new HttpClientHandler()));
 
-            var disco = await client.GetDiscoveryDocumentAsync("http://localhost:5000");
+            var disco = await client.GetDiscoveryDocumentAsync("https://localhost:44300");
             if (disco.IsError)
             {
                 //Console.WriteLine(disco.Error);
@@ -45,7 +45,7 @@ namespace Client.Modes
             var apiClient = new HttpClient(new LoggingHandler(new HttpClientHandler()));
             apiClient.SetBearerToken(tokenResponse.AccessToken);
 
-            var response = await apiClient.GetAsync("http://localhost:5001/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
+            var response = await apiClient.GetAsync("https://localhost:44301/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
             if (!response.IsSuccessStatusCode)
             {
                 //Console.WriteLine(response.StatusCode);
