@@ -18,8 +18,8 @@ namespace Api
 
             /*
              AddAuthentication:
-                 Autentikációs service-t hozzáadja a DI-hez és beállítja a default sémát "Bearer"-re.
-                 Továbbá beállít egy Middleware-t, hogy az Autentikáció automatikusan megtörténjen minden API híváskor
+                 Autentikï¿½ciï¿½s service-t hozzï¿½adja a DI-hez ï¿½s beï¿½llï¿½tja a default sï¿½mï¿½t "Bearer"-re.
+                 Tovï¿½bbï¿½ beï¿½llï¿½t egy Middleware-t, hogy az Autentikï¿½ciï¿½ automatikusan megtï¿½rtï¿½njen minden API hï¿½vï¿½skor
             */
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
@@ -29,6 +29,13 @@ namespace Api
 
                     options.Audience = "api1";
                 });
+                //.AddIdentityServerAuthentication(options =>
+                //{
+                //    options.Authority = "https://localhost:5000";
+                //    options.RequireHttpsMetadata = false;
+
+                //    options.ApiName = "api1";
+                //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +50,7 @@ namespace Api
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

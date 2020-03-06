@@ -1,4 +1,4 @@
-﻿using IdentityServer4.Models;
+using IdentityServer4.Models;
 using System.Collections.Generic;
 using IdentityServer4.Test;
 
@@ -39,7 +39,7 @@ namespace IdentityServer
                     ClientId = "client",
 
                     // no interactive user, use the clientid/secret for authentication
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    AllowedGrantTypes = GrantTypes.ClientCredentials, // Client Authentikaction (Az saját alkalmazásunk kommunikál)
 
                     // secret for authentication
                     ClientSecrets =
@@ -55,7 +55,7 @@ namespace IdentityServer
                 new Client
                 {
                     ClientId = "ro.client",
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, // jelszavas hozzáférés a Resource tulajdonosnak
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, // jelszavas hozzáférés a Resource tulajdonosnak (felhasználónév + jelszó)
 
                     ClientSecrets =
                     {
