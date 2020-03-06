@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{55D1C789-B472-4BEF-BC1C-4F5129DE60FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JavaScriptClient", "JavaScriptClient\JavaScriptClient.csproj", "{8834B771-6170-44F6-A5BE-3E00C390BECF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{55D1C789-B472-4BEF-BC1C-4F5129DE60FC}.Release|x64.Build.0 = Release|Any CPU
 		{55D1C789-B472-4BEF-BC1C-4F5129DE60FC}.Release|x86.ActiveCfg = Release|Any CPU
 		{55D1C789-B472-4BEF-BC1C-4F5129DE60FC}.Release|x86.Build.0 = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|x64.Build.0 = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Debug|x86.Build.0 = Debug|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|x64.ActiveCfg = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|x64.Build.0 = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|x86.ActiveCfg = Release|Any CPU
+		{8834B771-6170-44F6-A5BE-3E00C390BECF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

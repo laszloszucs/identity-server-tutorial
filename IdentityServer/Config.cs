@@ -61,6 +61,7 @@ namespace IdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
+                    AllowedCorsOrigins = { "https://localhost:44302" },
                     AllowedScopes = { "api1" }
                 }
             };
