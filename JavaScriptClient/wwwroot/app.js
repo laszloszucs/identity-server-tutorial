@@ -21,7 +21,7 @@ document.getElementById("api").addEventListener("click", api, false);
 //    client_id: "js",
 //    redirect_uri: "https://localhost:44302/callback.html",
 //    response_type: "code",
-//    scope:"openid profile api1",
+//    scope:"openid profile schwarzenegger_api",
 //    post_logout_redirect_uri: "https://localhost:44302/index.html",
 //};
 
@@ -44,7 +44,7 @@ function login() {
     var openIdConfig = getOpenIdConfiguration();
     // var code = getAuthCode(openIdConfig.authorization_endpoint);
     // var jwkInfos = getJwksInfos(openIdConfig.jwks_uri);
-    tokenObj = getToken(openIdConfig.token_endpoint, "alice", "password");
+    tokenObj = getToken(openIdConfig.token_endpoint, "admin", "tempP@ss123");
 }
 
 function getOpenIdConfiguration() {
@@ -75,13 +75,7 @@ function getToken(tokenEndpoint, userName, password) {
     xhr.open("POST", tokenEndpoint, false);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.send(
-        `grant_type=password&
-        username=${userName}&
-        password=${password}&
-        scope=api1&
-        client_id=ro.client&
-        client_secret=secret`);
+    xhr.send(`grant_type=password&username=${userName}&password=${password}&client_id=schwarzenegger_spa&scope=schwarzenegger_api`);
     var jwkInfos = JSON.parse(xhr.responseText);
     log(xhr.status, jwkInfos);
     return jwkInfos;
@@ -92,13 +86,7 @@ function getAuthCode(tokenEndpoint, userName, password) {
     xhr.open("POST", tokenEndpoint, false);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.send(
-        `grant_type=password&
-        username=${userName}&
-        password=${password}&
-        scope=api1&
-        client_id=ro.client&
-        client_secret=secret`);
+    xhr.send(`grant_type=password&username=${userName}&password=${password}&client_id=schwarzenegger_spa&scope=schwarzenegger_api`);
     var jwkInfos = JSON.parse(xhr.responseText);
     log(xhr.status, jwkInfos);
     return jwkInfos;

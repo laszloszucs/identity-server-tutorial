@@ -25,7 +25,7 @@ namespace Client.Modes
 
                 UserName = "alice",
                 Password = "password",
-                Scope = "api1"
+                Scope = "schwarzenegger_api"
             });
 
             if (tokenResponse.IsError)

@@ -8,7 +8,7 @@ namespace Client
     ///     Futtatni kell az IdentityServer projectet és az Api projectet is a teszteléshez.
     ///     Ezután ezt a projectet kell futtatni (Client)
     ///     Az Api visszaadja az Access Token-hez tartozó Claim objektumokat, amiben benne lesz
-    ///     a scope api1 is, ami az Identity Serveren lett felkonfigurálva
+    ///     a scope schwarzenegger_api is, ami az Identity Serveren lett felkonfigurálva
     /// </summary>
     public class Program
     {

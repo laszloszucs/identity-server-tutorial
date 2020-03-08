@@ -29,7 +29,7 @@ namespace Client.Modes
                 ClientId = "client",
                 ClientSecret = "secret" // <--Tudjuk a secret-et. Kérhetünk access token-t az alkalmazásból
                 //,
-                //Scope = "api1" // Ha szerenénk külön megadhatjuk milyen scope-ot szeretnénk (opcionális) scopes másnéven recources
+                //Scope = "schwarzenegger_api" // Ha szerenénk külön megadhatjuk milyen scope-ot szeretnénk (opcionális) scopes másnéven recources
             });
 
             if (tokenResponse.IsError)

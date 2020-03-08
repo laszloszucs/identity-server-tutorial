@@ -85,12 +85,16 @@ namespace Schwarzenegger
                     .AddDeveloperSigningCredential(); // developer signing key generálás, nem kell verziókezelni, mindig létrejön magától, hogyha nincs
             else
                 throw new Exception("need to configure key material");
-
-            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            
+            services.AddAuthentication(o =>
+                {
+                    o.DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                    o.DefaultAuthenticateScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                })
                 .AddIdentityServerAuthentication(options =>
                 {
                     options.Authority =
-                        $"https://{Configuration["ApplicationHost"]}:{Configuration["ApplicationHttpsPort"]}"; // new Uri("", UriKind.Relative).ToString();
+                        $"https://{Configuration["ApplicationHost"]}:{Configuration["ApplicationHttpsPort"]}";
                     options.SupportedTokens = SupportedTokens.Jwt;
                     options.RequireHttpsMetadata = false; // Note: Set to true in production
                     options.ApiName = IdentityConfigConstants.ApiName;
@@ -114,16 +118,16 @@ namespace Schwarzenegger
                     policy => policy.Requirements.Add(new AssignRolesAuthorizationRequirement()));
             });
 
-            //services.AddCors(options =>
-            //{
-            //    // this defines a CORS policy called "default"
-            //    options.AddPolicy("default", policy =>
-            //    {
-            //        policy.WithOrigins("https://localhost:44301")
-            //            .AllowAnyHeader()
-            //            .AllowAnyMethod();
-            //    });
-            //});
+            services.AddCors(options =>
+            {
+                // this defines a CORS policy called "default"
+                options.AddPolicy("default", policy =>
+                {
+                    policy.WithOrigins("https://localhost:44301")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -184,7 +188,7 @@ namespace Schwarzenegger
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            //app.UseCors("default");
+            app.UseCors("default");
 
             app.UseIdentityServer();
 

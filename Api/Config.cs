@@ -66,7 +66,7 @@ namespace Schwarzenegger
                 //    },
 
                 //    // scopes that client has access to
-                //    AllowedScopes = {"api1"} // scopes másnéven recources
+                //    AllowedScopes = {"schwarzenegger_api"} // scopes másnéven recources
                 //},
 
                 //// resource owner password grant client
@@ -80,7 +80,7 @@ namespace Schwarzenegger
                 //        new Secret("secret".Sha256())
                 //    },
                 //    AllowedCorsOrigins = { "https://localhost:44301" },
-                //    AllowedScopes = { "api1" }
+                //    AllowedScopes = { "schwarzenegger_api" }
                 //},
 
                 new Client
@@ -102,10 +102,15 @@ namespace Schwarzenegger
                     },
                     AllowOfflineAccess = true, // For refresh token.
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    RefreshTokenUsage = TokenUsage.OneTimeOnly
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
                     //AccessTokenLifetime = 900, // Lifetime of access token in seconds.
                     //AbsoluteRefreshTokenLifetime = 7200,
-                    //SlidingRefreshTokenLifetime = 900,
+                    //SlidingRefreshTokenLifetime = 900,+
+                    //ClientSecrets =
+                    //{
+                    //    new Secret("secret".Sha256())
+                    //},
+                    AllowedCorsOrigins = { "https://localhost:44301" }
                 },
 
                 new Client
