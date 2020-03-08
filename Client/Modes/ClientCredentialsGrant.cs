@@ -43,7 +43,7 @@ namespace Client.Modes
             var apiClient = new HttpClient();
             apiClient.SetBearerToken(tokenResponse.AccessToken);
 
-            var response = await apiClient.GetAsync("https://localhost:44301/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
+            var response = await apiClient.GetAsync("https://localhost:44300/api/identity"); // Most, hogy van már Access Token-ünk ellenőrizzük, hogy hozzáférünk-e az API-hoz
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine(response.StatusCode);

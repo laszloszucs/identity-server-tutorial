@@ -42,14 +42,9 @@ function login() {
     //mgr.createSigninRequest().signinRedirect(); <--- Redirect with code flow
 
     var openIdConfig = getOpenIdConfiguration();
-    var jwkInfos = getJwksInfos(openIdConfig.jwks_uri);
-    tokenObj = getToken(openIdConfig.token_endpoint,
-        "grant_type=password&" +
-        "username=alice&" +
-        "password=password&" +
-        "scope=api1&" +
-        "client_id=ro.client&" +
-        "client_secret=secret");
+    // var code = getAuthCode(openIdConfig.authorization_endpoint);
+    // var jwkInfos = getJwksInfos(openIdConfig.jwks_uri);
+    tokenObj = getToken(openIdConfig.token_endpoint, "alice", "password");
 }
 
 function getOpenIdConfiguration()
@@ -76,19 +71,42 @@ function getJwksInfos(jwksUri) {
     return jwkInfos;
 }
 
-function getToken(tokenEndpoint, params) {
+function getToken(tokenEndpoint, userName, password) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", tokenEndpoint, false);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.send(params);
+    xhr.send(
+        `grant_type=password&
+        username=${userName}&
+        password=${password}&
+        scope=api1&
+        client_id=ro.client&
+        client_secret=secret`);
+    var jwkInfos = JSON.parse(xhr.responseText);
+    log(xhr.status, jwkInfos);
+    return jwkInfos;
+}
+
+function getAuthCode(tokenEndpoint, userName, password) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", tokenEndpoint, false);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.send(
+        `grant_type=password&
+        username=${userName}&
+        password=${password}&
+        scope=api1&
+        client_id=ro.client&
+        client_secret=secret`);
     var jwkInfos = JSON.parse(xhr.responseText);
     log(xhr.status, jwkInfos);
     return jwkInfos;
 }
 
 function api() {
-    var url = "https://localhost:44301/api/identity";
+    var url = "https://localhost:44300/api/identity";
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url);
