@@ -18,20 +18,22 @@ namespace Schwarzenegger
                 new IdentityResources.Profile(),
                 new IdentityResources.Phone(),
                 new IdentityResources.Email(),
-                new IdentityResource(ScopeConstants.Roles, new List<string> { JwtClaimTypes.Role })
+                new IdentityResource(ScopeConstants.Roles, new List<string> {JwtClaimTypes.Role})
             };
         }
 
         /// <summary>
-        /// Ez mondja meg milyen API-kat érhetnek el
+        ///     Ez mondja meg milyen API-kat érhetnek el
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<ApiResource> GetApis()
         {
             return new[]
             {
-                new ApiResource(IdentityConfigConstants.ApiName) {
-                    UserClaims = {
+                new ApiResource(IdentityConfigConstants.ApiName)
+                {
+                    UserClaims =
+                    {
                         JwtClaimTypes.Name,
                         JwtClaimTypes.Email,
                         JwtClaimTypes.PhoneNumber,
@@ -43,7 +45,7 @@ namespace Schwarzenegger
         }
 
         /// <summary>
-        /// Ez mondja meg milyen alkalmazások csatlakozhatnak és azok melyik API-kat érhetik el
+        ///     Ez mondja meg milyen alkalmazások csatlakozhatnak és azok melyik API-kat érhetik el
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<Client> GetClients()
@@ -86,9 +88,11 @@ namespace Schwarzenegger
                     ClientId = SchwarzeneggerAppClientId,
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, // Resource Owner Password Credential grant.
                     AllowAccessTokensViaBrowser = true,
-                    RequireClientSecret = false, // This client does not need a secret to request tokens from the token endpoint.
-                    
-                    AllowedScopes = {
+                    RequireClientSecret =
+                        false, // This client does not need a secret to request tokens from the token endpoint.
+
+                    AllowedScopes =
+                    {
                         IdentityServerConstants.StandardScopes.OpenId, // For UserInfo endpoint.
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Phone,
@@ -98,7 +102,7 @@ namespace Schwarzenegger
                     },
                     AllowOfflineAccess = true, // For refresh token.
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly
                     //AccessTokenLifetime = 900, // Lifetime of access token in seconds.
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,
@@ -112,7 +116,8 @@ namespace Schwarzenegger
                     AllowAccessTokensViaBrowser = true,
                     RequireClientSecret = false,
                     //AllowedCorsOrigins = { "https://localhost:44300" },
-                    AllowedScopes = {
+                    AllowedScopes =
+                    {
                         IdentityConfigConstants.ApiName
                     }
                 }

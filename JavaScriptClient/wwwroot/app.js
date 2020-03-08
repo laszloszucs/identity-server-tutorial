@@ -1,15 +1,15 @@
 function log() {
-    document.getElementById('results').innerText = '';
+    document.getElementById("results").innerText = "";
 
-    Array.prototype.forEach.call(arguments, function (msg) {
-        if (msg instanceof Error) {
-            msg = "Error: " + msg.message;
-        }
-        else if (typeof msg !== 'string') {
-            msg = JSON.stringify(msg, null, 2);
-        }
-        document.getElementById('results').innerHTML += msg + '\r\n';
-    });
+    Array.prototype.forEach.call(arguments,
+        function(msg) {
+            if (msg instanceof Error) {
+                msg = "Error: " + msg.message;
+            } else if (typeof msg !== "string") {
+                msg = JSON.stringify(msg, null, 2);
+            }
+            document.getElementById("results").innerHTML += msg + "\r\n";
+        });
 }
 
 document.getElementById("login").addEventListener("click", login, false);
@@ -47,8 +47,7 @@ function login() {
     tokenObj = getToken(openIdConfig.token_endpoint, "alice", "password");
 }
 
-function getOpenIdConfiguration()
-{
+function getOpenIdConfiguration() {
     var url = "https://localhost:44300/.well-known/openid-configuration";
 
     var xhr = new XMLHttpRequest();
@@ -110,9 +109,9 @@ function api() {
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url);
-    xhr.onload = function () {
+    xhr.onload = function() {
         log(xhr.status, JSON.parse(xhr.responseText));
-    }
+    };
     xhr.setRequestHeader("Authorization", "Bearer " + tokenObj.access_token);
     xhr.send();
 }

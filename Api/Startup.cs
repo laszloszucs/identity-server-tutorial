@@ -43,7 +43,8 @@ namespace Schwarzenegger
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration["ConnectionStrings:SchwarzeneggerConnection"], b => b.MigrationsAssembly("Schwarzenegger")));
+                options.UseNpgsql(Configuration["ConnectionStrings:SchwarzeneggerConnection"],
+                    b => b.MigrationsAssembly("Schwarzenegger")));
 
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -71,25 +72,25 @@ namespace Schwarzenegger
             var builder = services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
                 .AddInMemoryPersistedGrants()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
-                .AddInMemoryApiResources(Config.GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
+                .AddInMemoryIdentityResources(Config
+                    .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
+                .AddInMemoryApiResources(Config
+                    .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
                 .AddInMemoryClients(Config.GetClients()) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<ProfileService>();
 
             if (Environment.IsDevelopment())
-            {
-                builder.AddDeveloperSigningCredential(); // developer signing key generálás, nem kell verziókezelni, mindig létrejön magától, hogyha nincs
-            }
+                builder
+                    .AddDeveloperSigningCredential(); // developer signing key generálás, nem kell verziókezelni, mindig létrejön magától, hogyha nincs
             else
-            {
                 throw new Exception("need to configure key material");
-            }
-            
+
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
-                    options.Authority = $"https://{Configuration["ApplicationHost"]}:{Configuration["ApplicationHttpsPort"]}"; // new Uri("", UriKind.Relative).ToString();
+                    options.Authority =
+                        $"https://{Configuration["ApplicationHost"]}:{Configuration["ApplicationHttpsPort"]}"; // new Uri("", UriKind.Relative).ToString();
                     options.SupportedTokens = SupportedTokens.Jwt;
                     options.RequireHttpsMetadata = false; // Note: Set to true in production
                     options.ApiName = IdentityConfigConstants.ApiName;
@@ -97,14 +98,20 @@ namespace Schwarzenegger
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Policies.ViewAllUsersPolicy, policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewUsers));
-                options.AddPolicy(Policies.ManageAllUsersPolicy, policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageUsers));
+                options.AddPolicy(Policies.ViewAllUsersPolicy,
+                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewUsers));
+                options.AddPolicy(Policies.ManageAllUsersPolicy,
+                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageUsers));
 
-                options.AddPolicy(Policies.ViewAllRolesPolicy, policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles));
-                options.AddPolicy(Policies.ViewRoleByRoleNamePolicy, policy => policy.Requirements.Add(new ViewRoleAuthorizationRequirement()));
-                options.AddPolicy(Policies.ManageAllRolesPolicy, policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageRoles));
+                options.AddPolicy(Policies.ViewAllRolesPolicy,
+                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles));
+                options.AddPolicy(Policies.ViewRoleByRoleNamePolicy,
+                    policy => policy.Requirements.Add(new ViewRoleAuthorizationRequirement()));
+                options.AddPolicy(Policies.ManageAllRolesPolicy,
+                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageRoles));
 
-                options.AddPolicy(Policies.AssignAllowedRolesPolicy, policy => policy.Requirements.Add(new AssignRolesAuthorizationRequirement()));
+                options.AddPolicy(Policies.AssignAllowedRolesPolicy,
+                    policy => policy.Requirements.Add(new AssignRolesAuthorizationRequirement()));
             });
 
             //services.AddCors(options =>
@@ -120,7 +127,7 @@ namespace Schwarzenegger
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = IdentityConfigConstants.ApiFriendlyName, Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = IdentityConfigConstants.ApiFriendlyName, Version = "v1"});
                 c.OperationFilter<AuthorizeCheckOperationFilter>();
                 c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
@@ -130,9 +137,9 @@ namespace Schwarzenegger
                         Password = new OpenApiOAuthFlow
                         {
                             TokenUrl = new Uri("/connect/token", UriKind.Relative),
-                            Scopes = new Dictionary<string, string>()
+                            Scopes = new Dictionary<string, string>
                             {
-                                { IdentityConfigConstants.ApiName, IdentityConfigConstants.ApiFriendlyName }
+                                {IdentityConfigConstants.ApiName, IdentityConfigConstants.ApiFriendlyName}
                             }
                         }
                     }
@@ -193,10 +200,7 @@ namespace Schwarzenegger
                 c.OAuthClientSecret("no_password"); //Leaving it blank doesn't work
             });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

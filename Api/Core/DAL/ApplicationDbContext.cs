@@ -11,7 +11,6 @@ namespace Schwarzenegger.Core.DAL
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public string CurrentUserId { get; set; }
         //public DbSet<Customer> Customers { get; set; }
         //public DbSet<ProductCategory> ProductCategories { get; set; }
         //public DbSet<Product> Products { get; set; }
@@ -19,9 +18,11 @@ namespace Schwarzenegger.Core.DAL
         //public DbSet<OrderDetail> OrderDetails { get; set; }
 
 
-
         public ApplicationDbContext(DbContextOptions options) : base(options)
-        { }
+        {
+        }
+
+        public string CurrentUserId { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -29,11 +30,15 @@ namespace Schwarzenegger.Core.DAL
             base.OnModelCreating(builder);
             //const string priceDecimalType = "decimal(18,2)";
 
-            builder.Entity<ApplicationUser>().HasMany(u => u.Claims).WithOne().HasForeignKey(c => c.UserId).IsRequired().OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<ApplicationUser>().HasMany(u => u.Roles).WithOne().HasForeignKey(r => r.UserId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ApplicationUser>().HasMany(u => u.Claims).WithOne().HasForeignKey(c => c.UserId).IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ApplicationUser>().HasMany(u => u.Roles).WithOne().HasForeignKey(r => r.UserId).IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ApplicationRole>().HasMany(r => r.Claims).WithOne().HasForeignKey(c => c.RoleId).IsRequired().OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<ApplicationRole>().HasMany(r => r.Users).WithOne().HasForeignKey(r => r.RoleId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ApplicationRole>().HasMany(r => r.Claims).WithOne().HasForeignKey(c => c.RoleId).IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<ApplicationRole>().HasMany(r => r.Users).WithOne().HasForeignKey(r => r.RoleId).IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             //builder.Entity<Customer>().Property(c => c.Name).IsRequired().HasMaxLength(100);
             //builder.Entity<Customer>().HasIndex(c => c.Name);
@@ -65,8 +70,6 @@ namespace Schwarzenegger.Core.DAL
         }
 
 
-
-
         public override int SaveChanges()
         {
             UpdateAuditEntities();
@@ -81,14 +84,15 @@ namespace Schwarzenegger.Core.DAL
         }
 
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             UpdateAuditEntities();
             return base.SaveChangesAsync(cancellationToken);
         }
 
 
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+            CancellationToken cancellationToken = default)
         {
             UpdateAuditEntities();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -98,13 +102,14 @@ namespace Schwarzenegger.Core.DAL
         private void UpdateAuditEntities()
         {
             var modifiedEntries = ChangeTracker.Entries()
-                .Where(x => x.Entity is IAuditableEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
+                .Where(x => x.Entity is IAuditableEntity &&
+                            (x.State == EntityState.Added || x.State == EntityState.Modified));
 
 
             foreach (var entry in modifiedEntries)
             {
-                var entity = (IAuditableEntity)entry.Entity;
-                DateTime now = DateTime.UtcNow;
+                var entity = (IAuditableEntity) entry.Entity;
+                var now = DateTime.UtcNow;
 
                 if (entry.State == EntityState.Added)
                 {

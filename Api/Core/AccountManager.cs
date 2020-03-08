@@ -16,8 +16,8 @@ namespace Schwarzenegger.Core
     public class AccountManager : IAccountManager
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
 
         public AccountManager(
@@ -30,10 +30,7 @@ namespace Schwarzenegger.Core
             _context.CurrentUserId = httpAccessor.HttpContext?.User.FindFirst(ClaimConstants.Subject)?.Value?.Trim();
             _userManager = userManager;
             _roleManager = roleManager;
-
         }
-
-
 
 
         public async Task<ApplicationUser> GetUserByIdAsync(string userId)
@@ -99,12 +96,14 @@ namespace Schwarzenegger.Core
                 .ToArrayAsync();
 
             return users
-                .Select(u => (u, roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray()))
+                .Select(u => (u,
+                    roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray()))
                 .ToList();
         }
 
 
-        public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(ApplicationUser user, IEnumerable<string> roles, string password)
+        public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(ApplicationUser user,
+            IEnumerable<string> roles, string password)
         {
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
@@ -115,7 +114,7 @@ namespace Schwarzenegger.Core
 
             try
             {
-                result = await this._userManager.AddToRolesAsync(user, roles.Distinct());
+                result = await _userManager.AddToRolesAsync(user, roles.Distinct());
             }
             catch
             {
@@ -139,7 +138,8 @@ namespace Schwarzenegger.Core
         }
 
 
-        public async Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user, IEnumerable<string> roles)
+        public async Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user,
+            IEnumerable<string> roles)
         {
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -172,9 +172,10 @@ namespace Schwarzenegger.Core
         }
 
 
-        public async Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(ApplicationUser user, string newPassword)
+        public async Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(ApplicationUser user,
+            string newPassword)
         {
-            string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             var result = await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
             if (!result.Succeeded)
@@ -183,7 +184,8 @@ namespace Schwarzenegger.Core
             return (true, new string[] { });
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(ApplicationUser user, string currentPassword, string newPassword)
+        public async Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(ApplicationUser user,
+            string currentPassword, string newPassword)
         {
             var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
             if (!result.Succeeded)
@@ -210,7 +212,6 @@ namespace Schwarzenegger.Core
         public async Task<bool> TestCanDeleteUserAsync(string userId)
 #pragma warning restore 1998
         {
-
             throw new NotImplementedException();
 
             //if (await _context.Orders.Where(o => o.CashierId == userId).AnyAsync())
@@ -238,10 +239,6 @@ namespace Schwarzenegger.Core
             var result = await _userManager.DeleteAsync(user);
             return (result.Succeeded, result.Errors.Select(e => e.Description).ToArray());
         }
-
-
-
-
 
 
         public async Task<ApplicationRole> GetRoleByIdAsync(string roleId)
@@ -287,14 +284,15 @@ namespace Schwarzenegger.Core
         }
 
 
-        public async Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(ApplicationRole role, IEnumerable<string> claims)
+        public async Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(ApplicationRole role,
+            IEnumerable<string> claims)
         {
             if (claims == null)
                 claims = new string[] { };
 
-            string[] invalidClaims = claims.Where(c => ApplicationPermissions.GetPermissionByValue(c) == null).ToArray();
+            var invalidClaims = claims.Where(c => ApplicationPermissions.GetPermissionByValue(c) == null).ToArray();
             if (invalidClaims.Any())
-                return (false, new[] { "The following claim types are invalid: " + string.Join(", ", invalidClaims) });
+                return (false, new[] {"The following claim types are invalid: " + string.Join(", ", invalidClaims)});
 
 
             var result = await _roleManager.CreateAsync(role);
@@ -304,9 +302,10 @@ namespace Schwarzenegger.Core
 
             role = await _roleManager.FindByNameAsync(role.Name);
 
-            foreach (string claim in claims.Distinct())
+            foreach (var claim in claims.Distinct())
             {
-                result = await this._roleManager.AddClaimAsync(role, new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
+                result = await _roleManager.AddClaimAsync(role,
+                    new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
 
                 if (!result.Succeeded)
                 {
@@ -318,13 +317,15 @@ namespace Schwarzenegger.Core
             return (true, new string[] { });
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(ApplicationRole role, IEnumerable<string> claims)
+        public async Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(ApplicationRole role,
+            IEnumerable<string> claims)
         {
             if (claims != null)
             {
-                string[] invalidClaims = claims.Where(c => ApplicationPermissions.GetPermissionByValue(c) == null).ToArray();
+                var invalidClaims = claims.Where(c => ApplicationPermissions.GetPermissionByValue(c) == null).ToArray();
                 if (invalidClaims.Any())
-                    return (false, new[] { "The following claim types are invalid: " + string.Join(", ", invalidClaims) });
+                    return (false,
+                        new[] {"The following claim types are invalid: " + string.Join(", ", invalidClaims)});
             }
 
 
@@ -335,31 +336,30 @@ namespace Schwarzenegger.Core
 
             if (claims != null)
             {
-                var roleClaims = (await _roleManager.GetClaimsAsync(role)).Where(c => c.Type == ClaimConstants.Permission);
+                var roleClaims =
+                    (await _roleManager.GetClaimsAsync(role)).Where(c => c.Type == ClaimConstants.Permission);
                 var roleClaimValues = roleClaims.Select(c => c.Value).ToArray();
 
                 var claimsToRemove = roleClaimValues.Except(claims).ToArray();
                 var claimsToAdd = claims.Except(roleClaimValues).Distinct().ToArray();
 
                 if (claimsToRemove.Any())
-                {
-                    foreach (string claim in claimsToRemove)
+                    foreach (var claim in claimsToRemove)
                     {
-                        result = await _roleManager.RemoveClaimAsync(role, roleClaims.Where(c => c.Value == claim).FirstOrDefault());
+                        result = await _roleManager.RemoveClaimAsync(role,
+                            roleClaims.Where(c => c.Value == claim).FirstOrDefault());
                         if (!result.Succeeded)
                             return (false, result.Errors.Select(e => e.Description).ToArray());
                     }
-                }
 
                 if (claimsToAdd.Any())
-                {
-                    foreach (string claim in claimsToAdd)
+                    foreach (var claim in claimsToAdd)
                     {
-                        result = await _roleManager.AddClaimAsync(role, new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
+                        result = await _roleManager.AddClaimAsync(role,
+                            new Claim(ClaimConstants.Permission, ApplicationPermissions.GetPermissionByValue(claim)));
                         if (!result.Succeeded)
                             return (false, result.Errors.Select(e => e.Description).ToArray());
                     }
-                }
             }
 
             return (true, new string[] { });

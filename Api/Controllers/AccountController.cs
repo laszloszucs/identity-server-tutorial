@@ -20,14 +20,15 @@ namespace Schwarzenegger.Controllers
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly IMapper _mapper;
+        private const string GetUserByIdActionName = "GetUserById";
+        private const string GetRoleByIdActionName = "GetRoleById";
         private readonly IAccountManager _accountManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<AccountController> _logger;
-        private const string GetUserByIdActionName = "GetUserById";
-        private const string GetRoleByIdActionName = "GetRoleById";
+        private readonly IMapper _mapper;
 
-        public AccountController(IMapper mapper, IAccountManager accountManager, IAuthorizationService authorizationService,
+        public AccountController(IMapper mapper, IAccountManager accountManager,
+            IAuthorizationService authorizationService,
             ILogger<AccountController> logger)
         {
             _mapper = mapper;
@@ -41,7 +42,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(UserViewModel))]
         public async Task<IActionResult> GetCurrentUser()
         {
-            return await GetUserById(Utilities.GetUserId(this.User));
+            return await GetUserById(Utilities.GetUserId(User));
         }
 
 
@@ -51,16 +52,15 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetUserById(string id)
         {
-            if (!(await _authorizationService.AuthorizeAsync(this.User, id, AccountManagementOperations.Read)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Read)).Succeeded)
                 return new ChallengeResult();
 
 
-            UserViewModel userVM = await GetUserViewModelHelper(id);
+            var userVM = await GetUserViewModelHelper(id);
 
             if (userVM != null)
                 return Ok(userVM);
-            else
-                return NotFound(id);
+            return NotFound(id);
         }
 
 
@@ -70,9 +70,10 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
-            ApplicationUser appUser = await _accountManager.GetUserByUserNameAsync(userName);
+            var appUser = await _accountManager.GetUserByUserNameAsync(userName);
 
-            if (!(await _authorizationService.AuthorizeAsync(this.User, appUser?.Id ?? "", AccountManagementOperations.Read)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, appUser?.Id ?? "", AccountManagementOperations.Read))
+                .Succeeded)
                 return new ChallengeResult();
 
             if (appUser == null)
@@ -98,7 +99,7 @@ namespace Schwarzenegger.Controllers
         {
             var usersAndRoles = await _accountManager.GetUsersAndRolesAsync(pageNumber, pageSize);
 
-            List<UserViewModel> usersVM = new List<UserViewModel>();
+            var usersVM = new List<UserViewModel>();
 
             foreach (var item in usersAndRoles)
             {
@@ -118,7 +119,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
         {
-            return await UpdateUser(Utilities.GetUserId(this.User), user);
+            return await UpdateUser(Utilities.GetUserId(User), user);
         }
 
 
@@ -129,11 +130,13 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserEditViewModel user)
         {
-            ApplicationUser appUser = await _accountManager.GetUserByIdAsync(id);
-            string[] currentRoles = appUser != null ? (await _accountManager.GetUserRolesAsync(appUser)).ToArray() : null;
+            var appUser = await _accountManager.GetUserByIdAsync(id);
+            var currentRoles = appUser != null ? (await _accountManager.GetUserRolesAsync(appUser)).ToArray() : null;
 
-            var manageUsersPolicy = _authorizationService.AuthorizeAsync(this.User, id, AccountManagementOperations.Update);
-            var assignRolePolicy = _authorizationService.AuthorizeAsync(this.User, (user.Roles, currentRoles), Policies.AssignAllowedRolesPolicy);
+            var manageUsersPolicy = _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Update);
+            var assignRolePolicy =
+                _authorizationService.AuthorizeAsync(User, (user.Roles, currentRoles),
+                    Policies.AssignAllowedRolesPolicy);
 
 
             if ((await Task.WhenAll(manageUsersPolicy, assignRolePolicy)).Any(r => !r.Succeeded))
@@ -151,10 +154,10 @@ namespace Schwarzenegger.Controllers
                 if (appUser == null)
                     return NotFound(id);
 
-                bool isPasswordChanged = !string.IsNullOrWhiteSpace(user.NewPassword);
-                bool isUserNameChanged = !appUser.UserName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase);
+                var isPasswordChanged = !string.IsNullOrWhiteSpace(user.NewPassword);
+                var isUserNameChanged = !appUser.UserName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase);
 
-                if (Utilities.GetUserId(this.User) == id)
+                if (Utilities.GetUserId(User) == id)
                 {
                     if (string.IsNullOrWhiteSpace(user.CurrentPassword))
                     {
@@ -173,7 +176,7 @@ namespace Schwarzenegger.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    _mapper.Map<UserEditViewModel, ApplicationUser>(user, appUser);
+                    _mapper.Map(user, appUser);
 
                     var result = await _accountManager.UpdateUserAsync(appUser, user.Roles);
                     if (result.Succeeded)
@@ -181,7 +184,8 @@ namespace Schwarzenegger.Controllers
                         if (isPasswordChanged)
                         {
                             if (!string.IsNullOrWhiteSpace(user.CurrentPassword))
-                                result = await _accountManager.UpdatePasswordAsync(appUser, user.CurrentPassword, user.NewPassword);
+                                result = await _accountManager.UpdatePasswordAsync(appUser, user.CurrentPassword,
+                                    user.NewPassword);
                             else
                                 result = await _accountManager.ResetPasswordAsync(appUser, user.NewPassword);
                         }
@@ -203,7 +207,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] JsonPatchDocument<UserPatchViewModel> patch)
         {
-            return await UpdateUser(Utilities.GetUserId(this.User), patch);
+            return await UpdateUser(Utilities.GetUserId(User), patch);
         }
 
 
@@ -214,7 +218,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] JsonPatchDocument<UserPatchViewModel> patch)
         {
-            if (!(await _authorizationService.AuthorizeAsync(this.User, id, AccountManagementOperations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Update)).Succeeded)
                 return new ChallengeResult();
 
 
@@ -224,18 +228,18 @@ namespace Schwarzenegger.Controllers
                     return BadRequest($"{nameof(patch)} cannot be null");
 
 
-                ApplicationUser appUser = await _accountManager.GetUserByIdAsync(id);
+                var appUser = await _accountManager.GetUserByIdAsync(id);
 
                 if (appUser == null)
                     return NotFound(id);
 
 
-                UserPatchViewModel userPVM = _mapper.Map<UserPatchViewModel>(appUser);
-                patch.ApplyTo(userPVM, (e) => AddError(e.ErrorMessage));
+                var userPVM = _mapper.Map<UserPatchViewModel>(appUser);
+                patch.ApplyTo(userPVM, e => AddError(e.ErrorMessage));
 
                 if (ModelState.IsValid)
                 {
-                    _mapper.Map<UserPatchViewModel, ApplicationUser>(userPVM, appUser);
+                    _mapper.Map(userPVM, appUser);
 
                     var result = await _accountManager.UpdateUserAsync(appUser);
                     if (result.Succeeded)
@@ -257,7 +261,8 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> Register([FromBody] UserEditViewModel user)
         {
-            if (!(await _authorizationService.AuthorizeAsync(this.User, (user.Roles, new string[] { }), Policies.AssignAllowedRolesPolicy)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
+                Policies.AssignAllowedRolesPolicy)).Succeeded)
                 return new ChallengeResult();
 
 
@@ -267,13 +272,13 @@ namespace Schwarzenegger.Controllers
                     return BadRequest($"{nameof(user)} cannot be null");
 
 
-                ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
+                var appUser = _mapper.Map<ApplicationUser>(user);
 
                 var result = await _accountManager.CreateUserAsync(appUser, user.Roles, user.NewPassword);
                 if (result.Succeeded)
                 {
-                    UserViewModel userVM = await GetUserViewModelHelper(appUser.Id);
-                    return CreatedAtAction(GetUserByIdActionName, new { id = userVM.Id }, userVM);
+                    var userVM = await GetUserViewModelHelper(appUser.Id);
+                    return CreatedAtAction(GetUserByIdActionName, new {id = userVM.Id}, userVM);
                 }
 
                 AddError(result.Errors);
@@ -290,11 +295,11 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            if (!(await _authorizationService.AuthorizeAsync(this.User, id, AccountManagementOperations.Delete)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Delete)).Succeeded)
                 return new ChallengeResult();
 
 
-            ApplicationUser appUser = await _accountManager.GetUserByIdAsync(id);
+            var appUser = await _accountManager.GetUserByIdAsync(id);
 
             if (appUser == null)
                 return NotFound(id);
@@ -303,11 +308,12 @@ namespace Schwarzenegger.Controllers
                 return BadRequest("User cannot be deleted. Delete all orders associated with this user and try again");
 
 
-            UserViewModel userVM = await GetUserViewModelHelper(appUser.Id);
+            var userVM = await GetUserViewModelHelper(appUser.Id);
 
             var result = await _accountManager.DeleteUserAsync(appUser);
             if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst deleting user: " + string.Join(", ", result.Errors));
+                throw new Exception("The following errors occurred whilst deleting user: " +
+                                    string.Join(", ", result.Errors));
 
 
             return Ok(userVM);
@@ -320,7 +326,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> UnblockUser(string id)
         {
-            ApplicationUser appUser = await _accountManager.GetUserByIdAsync(id);
+            var appUser = await _accountManager.GetUserByIdAsync(id);
 
             if (appUser == null)
                 return NotFound(id);
@@ -328,7 +334,8 @@ namespace Schwarzenegger.Controllers
             appUser.LockoutEnd = null;
             var result = await _accountManager.UpdateUserAsync(appUser);
             if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst unblocking user: " + string.Join(", ", result.Errors));
+                throw new Exception("The following errors occurred whilst unblocking user: " +
+                                    string.Join(", ", result.Errors));
 
 
             return NoContent();
@@ -339,8 +346,8 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         public async Task<IActionResult> UserPreferences()
         {
-            var userId = Utilities.GetUserId(this.User);
-            ApplicationUser appUser = await _accountManager.GetUserByIdAsync(userId);
+            var userId = Utilities.GetUserId(User);
+            var appUser = await _accountManager.GetUserByIdAsync(userId);
 
             return Ok(appUser.Configuration);
         }
@@ -350,20 +357,18 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> UserPreferences([FromBody] string data)
         {
-            var userId = Utilities.GetUserId(this.User);
-            ApplicationUser appUser = await _accountManager.GetUserByIdAsync(userId);
+            var userId = Utilities.GetUserId(User);
+            var appUser = await _accountManager.GetUserByIdAsync(userId);
 
             appUser.Configuration = data;
 
             var result = await _accountManager.UpdateUserAsync(appUser);
             if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst updating User Configurations: " + string.Join(", ", result.Errors));
+                throw new Exception("The following errors occurred whilst updating User Configurations: " +
+                                    string.Join(", ", result.Errors));
 
             return NoContent();
         }
-
-
-
 
 
         [HttpGet("roles/{id}", Name = GetRoleByIdActionName)]
@@ -374,7 +379,8 @@ namespace Schwarzenegger.Controllers
         {
             var appRole = await _accountManager.GetRoleByIdAsync(id);
 
-            if (!(await _authorizationService.AuthorizeAsync(this.User, appRole?.Name ?? "", Policies.ViewRoleByRoleNamePolicy)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, appRole?.Name ?? "",
+                Policies.ViewRoleByRoleNamePolicy)).Succeeded)
                 return new ChallengeResult();
 
             if (appRole == null)
@@ -390,11 +396,11 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetRoleByName(string name)
         {
-            if (!(await _authorizationService.AuthorizeAsync(this.User, name, Policies.ViewRoleByRoleNamePolicy)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, name, Policies.ViewRoleByRoleNamePolicy)).Succeeded)
                 return new ChallengeResult();
 
 
-            RoleViewModel roleVM = await GetRoleViewModelHelper(name);
+            var roleVM = await GetRoleViewModelHelper(name);
 
             if (roleVM == null)
                 return NotFound(name);
@@ -438,21 +444,20 @@ namespace Schwarzenegger.Controllers
                     return BadRequest("Conflicting role id in parameter and model data");
 
 
-
-                ApplicationRole appRole = await _accountManager.GetRoleByIdAsync(id);
+                var appRole = await _accountManager.GetRoleByIdAsync(id);
 
                 if (appRole == null)
                     return NotFound(id);
 
 
-                _mapper.Map<RoleViewModel, ApplicationRole>(role, appRole);
+                _mapper.Map(role, appRole);
 
-                var result = await _accountManager.UpdateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
+                var result =
+                    await _accountManager.UpdateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
                 if (result.Succeeded)
                     return NoContent();
 
                 AddError(result.Errors);
-
             }
 
             return BadRequest(ModelState);
@@ -471,13 +476,14 @@ namespace Schwarzenegger.Controllers
                     return BadRequest($"{nameof(role)} cannot be null");
 
 
-                ApplicationRole appRole = _mapper.Map<ApplicationRole>(role);
+                var appRole = _mapper.Map<ApplicationRole>(role);
 
-                var result = await _accountManager.CreateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
+                var result =
+                    await _accountManager.CreateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
                 if (result.Succeeded)
                 {
-                    RoleViewModel roleVM = await GetRoleViewModelHelper(appRole.Name);
-                    return CreatedAtAction(GetRoleByIdActionName, new { id = roleVM.Id }, roleVM);
+                    var roleVM = await GetRoleViewModelHelper(appRole.Name);
+                    return CreatedAtAction(GetRoleByIdActionName, new {id = roleVM.Id}, roleVM);
                 }
 
                 AddError(result.Errors);
@@ -494,7 +500,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteRole(string id)
         {
-            ApplicationRole appRole = await _accountManager.GetRoleByIdAsync(id);
+            var appRole = await _accountManager.GetRoleByIdAsync(id);
 
             if (appRole == null)
                 return NotFound(id);
@@ -503,11 +509,12 @@ namespace Schwarzenegger.Controllers
                 return BadRequest("Role cannot be deleted. Remove all users from this role and try again");
 
 
-            RoleViewModel roleVM = await GetRoleViewModelHelper(appRole.Name);
+            var roleVM = await GetRoleViewModelHelper(appRole.Name);
 
             var result = await _accountManager.DeleteRoleAsync(appRole);
             if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst deleting role: " + string.Join(", ", result.Errors));
+                throw new Exception("The following errors occurred whilst deleting role: " +
+                                    string.Join(", ", result.Errors));
 
 
             return Ok(roleVM);
@@ -521,7 +528,6 @@ namespace Schwarzenegger.Controllers
         {
             return Ok(_mapper.Map<List<PermissionViewModel>>(ApplicationPermissions.AllPermissions));
         }
-
 
 
         private async Task<UserViewModel> GetUserViewModelHelper(string userId)
@@ -550,16 +556,12 @@ namespace Schwarzenegger.Controllers
 
         private void AddError(IEnumerable<string> errors, string key = "")
         {
-            foreach (var error in errors)
-            {
-                AddError(error, key);
-            }
+            foreach (var error in errors) AddError(error, key);
         }
 
         private void AddError(string error, string key = "")
         {
             ModelState.AddModelError(key, error);
         }
-
     }
 }

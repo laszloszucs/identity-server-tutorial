@@ -2,7 +2,7 @@
 
 namespace Schwarzenegger.Core.Models.Interfaces
 {
-    interface IAuditableEntity
+    internal interface IAuditableEntity
     {
         string CreatedBy { get; set; }
         string UpdatedBy { get; set; }

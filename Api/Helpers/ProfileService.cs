@@ -12,10 +12,11 @@ namespace Schwarzenegger.Helpers
 {
     public class ProfileService : IProfileService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsFactory;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory)
+        public ProfileService(UserManager<ApplicationUser> userManager,
+            IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory)
         {
             _userManager = userManager;
             _claimsFactory = claimsFactory;
@@ -41,13 +42,13 @@ namespace Schwarzenegger.Helpers
 
             context.IssuedClaims = claims;
         }
-        
+
         public async Task IsActiveAsync(IsActiveContext context)
         {
             var sub = context.Subject.GetSubjectId();
             var user = await _userManager.FindByIdAsync(sub);
 
-            context.IsActive = (user != null) && user.IsEnabled;
+            context.IsActive = user != null && user.IsEnabled;
         }
     }
 }

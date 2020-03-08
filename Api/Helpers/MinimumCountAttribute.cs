@@ -9,17 +9,17 @@ namespace Schwarzenegger.Helpers
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class MinimumCountAttribute : ValidationAttribute
     {
-        private readonly int _minCount;
-        private readonly bool _allowEmptyStringValues;
-        private readonly bool _required;
         private const string _defaultError = "'{0}' must have at least {1} item.";
+        private readonly bool _allowEmptyStringValues;
+        private readonly int _minCount;
+        private readonly bool _required;
 
         public MinimumCountAttribute() : this(1)
         {
-
         }
 
-        public MinimumCountAttribute(int minCount, bool required = true, bool allowEmptyStringValues = false) : base(_defaultError)
+        public MinimumCountAttribute(int minCount, bool required = true, bool allowEmptyStringValues = false) : base(
+            _defaultError)
         {
             _minCount = minCount;
             _required = required;
@@ -48,7 +48,7 @@ namespace Schwarzenegger.Helpers
 
         public override string FormatErrorMessage(string name)
         {
-            return String.Format(this.ErrorMessageString, name, _minCount);
+            return string.Format(ErrorMessageString, name, _minCount);
         }
     }
 }

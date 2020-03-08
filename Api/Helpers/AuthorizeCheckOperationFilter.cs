@@ -20,18 +20,18 @@ namespace Schwarzenegger.Helpers
 
             if (hasAuthorize)
             {
-                operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
+                operation.Responses.Add("401", new OpenApiResponse {Description = "Unauthorized"});
 
                 var oAuthScheme = new OpenApiSecurityScheme
                 {
-                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+                    Reference = new OpenApiReference {Type = ReferenceType.SecurityScheme, Id = "oauth2"}
                 };
 
                 operation.Security = new List<OpenApiSecurityRequirement>
                 {
                     new OpenApiSecurityRequirement
                     {
-                        [oAuthScheme] = new [] { IdentityConfigConstants.ApiName}
+                        [oAuthScheme] = new[] {IdentityConfigConstants.ApiName}
                     }
                 };
             }

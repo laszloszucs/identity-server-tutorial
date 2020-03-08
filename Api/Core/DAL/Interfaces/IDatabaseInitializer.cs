@@ -7,5 +7,4 @@ namespace Schwarzenegger.Core.DAL.Interfaces
         Task InitializeAsync();
         Task SeedAsync();
     }
-
 }

@@ -11,7 +11,7 @@ namespace Schwarzenegger.Mappers
         public AutoMapperProfile()
         {
             CreateMap<ApplicationUser, UserViewModel>()
-                   .ForMember(d => d.Roles, map => map.Ignore());
+                .ForMember(d => d.Roles, map => map.Ignore());
             CreateMap<UserViewModel, ApplicationUser>()
                 .ForMember(d => d.Roles, map => map.Ignore())
                 .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));
@@ -41,7 +41,7 @@ namespace Schwarzenegger.Mappers
                 .ReverseMap();
 
             CreateMap<IdentityRoleClaim<string>, PermissionViewModel>()
-                .ConvertUsing(s => (PermissionViewModel)ApplicationPermissions.GetPermissionByValue(s.ClaimValue));
+                .ConvertUsing(s => (PermissionViewModel) ApplicationPermissions.GetPermissionByValue(s.ClaimValue));
 
             //CreateMap<Customer, CustomerViewModel>()
             //    .ReverseMap();

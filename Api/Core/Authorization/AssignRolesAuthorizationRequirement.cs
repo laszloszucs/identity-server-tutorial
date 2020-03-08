@@ -7,14 +7,14 @@ namespace Schwarzenegger.Core.Authorization
 {
     public class AssignRolesAuthorizationRequirement : IAuthorizationRequirement
     {
-
     }
 
 
-
-    public class AssignRolesAuthorizationHandler : AuthorizationHandler<AssignRolesAuthorizationRequirement, (string[] newRoles, string[] currentRoles)>
+    public class AssignRolesAuthorizationHandler : AuthorizationHandler<AssignRolesAuthorizationRequirement, (string[]
+        newRoles, string[] currentRoles)>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AssignRolesAuthorizationRequirement requirement, (string[] newRoles, string[] currentRoles) roles)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            AssignRolesAuthorizationRequirement requirement, (string[] newRoles, string[] currentRoles) roles)
         {
             if (!GetIsRolesChanged(roles.newRoles, roles.currentRoles))
             {
@@ -22,10 +22,12 @@ namespace Schwarzenegger.Core.Authorization
             }
             else if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.AssignRoles))
             {
-                if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles)) // If user has ViewRoles permission, then he can assign any roles
+                if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles)
+                ) // If user has ViewRoles permission, then he can assign any roles
                     context.Succeed(requirement);
 
-                else if (GetIsUserInAllAddedRoles(context.User, roles.newRoles, roles.currentRoles)) // Else user can only assign roles they're part of
+                else if (GetIsUserInAllAddedRoles(context.User, roles.newRoles, roles.currentRoles)
+                ) // Else user can only assign roles they're part of
                     context.Succeed(requirement);
             }
 
@@ -43,8 +45,8 @@ namespace Schwarzenegger.Core.Authorization
                 currentRoles = new string[] { };
 
 
-            bool roleAdded = newRoles.Except(currentRoles).Any();
-            bool roleRemoved = currentRoles.Except(newRoles).Any();
+            var roleAdded = newRoles.Except(currentRoles).Any();
+            var roleRemoved = currentRoles.Except(newRoles).Any();
 
             return roleAdded || roleRemoved;
         }

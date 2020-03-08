@@ -4,7 +4,7 @@
     {
         public SmtpConfig SmtpConfig { get; set; }
     }
-    
+
     public class SmtpConfig
     {
         public string Host { get; set; }

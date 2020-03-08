@@ -21,8 +21,9 @@ namespace Schwarzenegger
             host.Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>().ConfigureLogging((hostingContext, logging) =>
@@ -35,6 +36,7 @@ namespace Schwarzenegger
                         logging.AddFile(hostingContext.Configuration.GetSection("Logging"));
                     });
                 });
+        }
 
         private static void CreateDbIfNotExists(IHost host)
         {

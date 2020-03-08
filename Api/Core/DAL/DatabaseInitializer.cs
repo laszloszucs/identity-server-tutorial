@@ -11,11 +11,12 @@ namespace Schwarzenegger.Core.DAL
 {
     public class DatabaseInitializer : IDatabaseInitializer
     {
-        private readonly ApplicationDbContext _context;
         private readonly IAccountManager _accountManager;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
 
-        public DatabaseInitializer(ApplicationDbContext context, IAccountManager accountManager, ILogger<DatabaseInitializer> logger)
+        public DatabaseInitializer(ApplicationDbContext context, IAccountManager accountManager,
+            ILogger<DatabaseInitializer> logger)
         {
             _accountManager = accountManager;
             _context = context;
@@ -39,12 +40,15 @@ namespace Schwarzenegger.Core.DAL
                 const string adminRoleName = "administrator";
                 const string userRoleName = "user";
 
-                await EnsureRoleAsync(adminRoleName, "Default administrator", ApplicationPermissions.GetAllPermissionValues());
+                await EnsureRoleAsync(adminRoleName, "Default administrator",
+                    ApplicationPermissions.GetAllPermissionValues());
                 await EnsureRoleAsync(userRoleName, "Default user", new string[] { });
 
-                await CreateUserAsync("admin", "tempP@ss123", "Inbuilt Administrator", "admin@ebenmonney.com", "+1 (123) 000-0000", new string[] { adminRoleName });
-                await CreateUserAsync("user", "tempP@ss123", "Inbuilt Standard User", "user@ebenmonney.com", "+1 (123) 000-0001", new string[] { userRoleName });
-                
+                await CreateUserAsync("admin", "tempP@ss123", "Inbuilt Administrator", "admin@ebenmonney.com",
+                    "+1 (123) 000-0000", new[] {adminRoleName});
+                await CreateUserAsync("user", "tempP@ss123", "Inbuilt Standard User", "user@ebenmonney.com",
+                    "+1 (123) 000-0001", new[] {userRoleName});
+
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Inbuilt account generation completed");
@@ -53,20 +57,22 @@ namespace Schwarzenegger.Core.DAL
 
         private async Task EnsureRoleAsync(string roleName, string description, string[] claims)
         {
-            if ((await _accountManager.GetRoleByNameAsync(roleName)) == null)
+            if (await _accountManager.GetRoleByNameAsync(roleName) == null)
             {
-                ApplicationRole applicationRole = new ApplicationRole(roleName, description);
+                var applicationRole = new ApplicationRole(roleName, description);
 
-                var result = await this._accountManager.CreateRoleAsync(applicationRole, claims);
+                var result = await _accountManager.CreateRoleAsync(applicationRole, claims);
 
                 if (!result.Succeeded)
-                    throw new Exception($"Seeding \"{description}\" role failed. Errors: {string.Join(Environment.NewLine, result.Errors)}");
+                    throw new Exception(
+                        $"Seeding \"{description}\" role failed. Errors: {string.Join(Environment.NewLine, result.Errors)}");
             }
         }
 
-        private async Task<ApplicationUser> CreateUserAsync(string userName, string password, string fullName, string email, string phoneNumber, string[] roles)
+        private async Task<ApplicationUser> CreateUserAsync(string userName, string password, string fullName,
+            string email, string phoneNumber, string[] roles)
         {
-            ApplicationUser applicationUser = new ApplicationUser
+            var applicationUser = new ApplicationUser
             {
                 UserName = userName,
                 FullName = fullName,
@@ -79,7 +85,8 @@ namespace Schwarzenegger.Core.DAL
             var result = await _accountManager.CreateUserAsync(applicationUser, roles, password);
 
             if (!result.Succeeded)
-                throw new Exception($"Seeding \"{userName}\" user failed. Errors: {string.Join(Environment.NewLine, result.Errors)}");
+                throw new Exception(
+                    $"Seeding \"{userName}\" user failed. Errors: {string.Join(Environment.NewLine, result.Errors)}");
 
 
             return applicationUser;

@@ -6,22 +6,30 @@ namespace Schwarzenegger.Core.Authorization
 {
     public static class ApplicationPermissions
     {
-        public static ReadOnlyCollection<ApplicationPermission> AllPermissions;
-
-
         public const string UsersPermissionGroupName = "User Permissions";
-        public static ApplicationPermission ViewUsers = new ApplicationPermission("View Users", "users.view", UsersPermissionGroupName, "Permission to view other users account details");
-        public static ApplicationPermission ManageUsers = new ApplicationPermission("Manage Users", "users.manage", UsersPermissionGroupName, "Permission to create, delete and modify other users account details");
 
         public const string RolesPermissionGroupName = "Role Permissions";
-        public static ApplicationPermission ViewRoles = new ApplicationPermission("View Roles", "roles.view", RolesPermissionGroupName, "Permission to view available roles");
-        public static ApplicationPermission ManageRoles = new ApplicationPermission("Manage Roles", "roles.manage", RolesPermissionGroupName, "Permission to create, delete and modify roles");
-        public static ApplicationPermission AssignRoles = new ApplicationPermission("Assign Roles", "roles.assign", RolesPermissionGroupName, "Permission to assign roles to users");
+        public static ReadOnlyCollection<ApplicationPermission> AllPermissions;
+
+        public static ApplicationPermission ViewUsers = new ApplicationPermission("View Users", "users.view",
+            UsersPermissionGroupName, "Permission to view other users account details");
+
+        public static ApplicationPermission ManageUsers = new ApplicationPermission("Manage Users", "users.manage",
+            UsersPermissionGroupName, "Permission to create, delete and modify other users account details");
+
+        public static ApplicationPermission ViewRoles = new ApplicationPermission("View Roles", "roles.view",
+            RolesPermissionGroupName, "Permission to view available roles");
+
+        public static ApplicationPermission ManageRoles = new ApplicationPermission("Manage Roles", "roles.manage",
+            RolesPermissionGroupName, "Permission to create, delete and modify roles");
+
+        public static ApplicationPermission AssignRoles = new ApplicationPermission("Assign Roles", "roles.assign",
+            RolesPermissionGroupName, "Permission to assign roles to users");
 
 
         static ApplicationPermissions()
         {
-            List<ApplicationPermission> allPermissions = new List<ApplicationPermission>()
+            var allPermissions = new List<ApplicationPermission>
             {
                 ViewUsers,
                 ManageUsers,
@@ -51,16 +59,16 @@ namespace Schwarzenegger.Core.Authorization
 
         public static string[] GetAdministrativePermissionValues()
         {
-            return new string[] { ManageUsers, ManageRoles, AssignRoles };
+            return new string[] {ManageUsers, ManageRoles, AssignRoles};
         }
     }
-
 
 
     public class ApplicationPermission
     {
         public ApplicationPermission()
-        { }
+        {
+        }
 
         public ApplicationPermission(string name, string value, string groupName, string description = null)
         {
@@ -69,7 +77,6 @@ namespace Schwarzenegger.Core.Authorization
             GroupName = groupName;
             Description = description;
         }
-
 
 
         public string Name { get; set; }

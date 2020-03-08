@@ -8,7 +8,10 @@ namespace Schwarzenegger.Core.Interfaces
     {
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<(bool Succeeded, string[] Errors)> CreateRoleAsync(ApplicationRole role, IEnumerable<string> claims);
-        Task<(bool Succeeded, string[] Errors)> CreateUserAsync(ApplicationUser user, IEnumerable<string> roles, string password);
+
+        Task<(bool Succeeded, string[] Errors)> CreateUserAsync(ApplicationUser user, IEnumerable<string> roles,
+            string password);
+
         Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(ApplicationRole role);
         Task<(bool Succeeded, string[] Errors)> DeleteRoleAsync(string roleName);
         Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(ApplicationUser user);
@@ -26,7 +29,10 @@ namespace Schwarzenegger.Core.Interfaces
         Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(ApplicationUser user, string newPassword);
         Task<bool> TestCanDeleteRoleAsync(string roleId);
         Task<bool> TestCanDeleteUserAsync(string userId);
-        Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(ApplicationUser user, string currentPassword, string newPassword);
+
+        Task<(bool Succeeded, string[] Errors)> UpdatePasswordAsync(ApplicationUser user, string currentPassword,
+            string newPassword);
+
         Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(ApplicationRole role, IEnumerable<string> claims);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user, IEnumerable<string> roles);
