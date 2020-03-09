@@ -52,37 +52,6 @@ namespace Schwarzenegger
         {
             return new[]
             {
-                //new Client
-                //{
-                //    ClientId = "client",
-
-                //    // no interactive user, use the clientid/secret for authentication
-                //    AllowedGrantTypes = GrantTypes.ClientCredentials, // Client Authentikaction (Az saját alkalmazásunk kommunikál)
-
-                //    // secret for authentication
-                //    ClientSecrets =
-                //    {
-                //        new Secret("secret".Sha256())
-                //    },
-
-                //    // scopes that client has access to
-                //    AllowedScopes = {"schwarzenegger_api"} // scopes másnéven recources
-                //},
-
-                //// resource owner password grant client
-                //new Client
-                //{
-                //    ClientId = "ro.client",
-                //    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, // jelszavas hozzáférés a Resource tulajdonosnak (felhasználónév + jelszó)
-
-                //    ClientSecrets =
-                //    {
-                //        new Secret("secret".Sha256())
-                //    },
-                //    AllowedCorsOrigins = { "https://localhost:44301" },
-                //    AllowedScopes = { "schwarzenegger_api" }
-                //},
-
                 new Client
                 {
                     ClientId = SchwarzeneggerAppClientId,

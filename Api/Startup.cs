@@ -158,8 +158,6 @@ namespace Schwarzenegger
             //// Business Services // TODO Implement
             //services.AddScoped<IEmailSender, EmailSender>();
 
-            // Repositories
-            //services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
             services.AddScoped<IAccountManager, AccountManager>();
 
             // Auth Handlers

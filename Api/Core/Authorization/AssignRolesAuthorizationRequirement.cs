@@ -8,7 +8,7 @@ namespace Schwarzenegger.Core.Authorization
     public class AssignRolesAuthorizationRequirement : IAuthorizationRequirement
     {
     }
-
+    
 
     public class AssignRolesAuthorizationHandler : AuthorizationHandler<AssignRolesAuthorizationRequirement, (string[]
         newRoles, string[] currentRoles)>

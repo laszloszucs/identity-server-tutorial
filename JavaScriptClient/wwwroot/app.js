@@ -16,31 +16,9 @@ document.getElementById("login").addEventListener("click", login, false);
 document.getElementById("api").addEventListener("click", api, false);
 //document.getElementById("logout").addEventListener("click", logout, false);
 
-//var config = {
-//    authority: "https://localhost:44300",
-//    client_id: "js",
-//    redirect_uri: "https://localhost:44302/callback.html",
-//    response_type: "code",
-//    scope:"openid profile schwarzenegger_api",
-//    post_logout_redirect_uri: "https://localhost:44302/index.html",
-//};
-
-//var mgr = new Oidc.UserManager(config);
-
-//mgr.getUser().then(function (user) {
-//    if (user) {
-//        log("User logged in", user.profile);
-//    }
-//    else {
-//        log("User not logged in");
-//    }
-//});
-
 var tokenObj = null;
 
 function login() {
-    //mgr.createSigninRequest().signinRedirect(); <--- Redirect with code flow
-
     var openIdConfig = getOpenIdConfiguration();
     // var code = getAuthCode(openIdConfig.authorization_endpoint);
     // var jwkInfos = getJwksInfos(openIdConfig.jwks_uri);

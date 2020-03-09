@@ -10,6 +10,7 @@ namespace JavaScriptClient
         {
         }
 
+        // ReSharper disable once UnusedMember.Global
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDefaultFiles();

@@ -15,7 +15,6 @@ using Schwarzenegger.ViewModels;
 
 namespace Schwarzenegger.Controllers
 {
-    // [Authorize(AuthenticationSchemes = IdentityServerAuthenticationDefaults.AuthenticationScheme)]
     [Authorize]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase

@@ -11,7 +11,7 @@ namespace Schwarzenegger.Core.Authorization
         {
             OperationName = operationName;
         }
-
+        
 
         public string OperationName { get; }
     }

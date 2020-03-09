@@ -66,10 +66,6 @@ namespace Schwarzenegger.Core.Authorization
 
     public class ApplicationPermission
     {
-        public ApplicationPermission()
-        {
-        }
-
         public ApplicationPermission(string name, string value, string groupName, string description = null)
         {
             Name = name;
