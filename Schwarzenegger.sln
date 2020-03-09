@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schwarzenegger", "Api\Schwarzenegger.csproj", "{BFBF16C8-84B5-4E10-A8BC-AC08B6B49980}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schwarzenegger", "Schwarzenegger\Schwarzenegger.csproj", "{BFBF16C8-84B5-4E10-A8BC-AC08B6B49980}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JavaScriptClient", "JavaScriptClient\JavaScriptClient.csproj", "{8834B771-6170-44F6-A5BE-3E00C390BECF}"
 EndProject
