@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "serve": "cd client-app && npm run serve",
+    "build": "cd client-app && npm run build",
+    "watch": "cd client-app && npm run watch"
+  }
+}

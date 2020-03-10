@@ -22,3 +22,8 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+src/**/*.map
+src/**/*.js
+tests/**/*.map
+tests/**/*.js
