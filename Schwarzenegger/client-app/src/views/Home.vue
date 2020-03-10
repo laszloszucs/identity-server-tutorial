@@ -1,18 +1,29 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <div>Login</div>
+    <div v-for="(item, index) in values" :key="index">
+      <p>{{ item }}</p>
+    </div>
+    <button @click="callApi">Call API</button>
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
 
-export default {
-  name: "Home",
-  components: {
-    HelloWorld
+@Component
+export default class Hello extends Vue {
+  private values: string[] = ["no data yet"];
+
+  async callApi() {
+    try {
+      const response =
+        await axios.get("https://localhost:44300/api/identity");
+      this.values = response.data;
+    } catch (err) {
+      this.values = [err];
+    }
   }
-};
+}
 </script>

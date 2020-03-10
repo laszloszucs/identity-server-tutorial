@@ -90,6 +90,8 @@ namespace Schwarzenegger
                 {
                     o.DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
                     o.DefaultAuthenticateScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                    o.DefaultForbidScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                    o.DefaultChallengeScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
                 })
                 .AddIdentityServerAuthentication(options =>
                 {
