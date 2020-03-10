@@ -341,3 +341,5 @@ healthchecksdb
 
 **/[Ll]og/*
 **/[Ll]ogs/*
+
+tempkey.rsa
