@@ -4,8 +4,8 @@ import Vue from "vue";
 import { AUTH_LOGOUT } from "../actions/auth";
 
 export interface UserState {
-    status: string,    
-    profile: any // TODO ne any legyen
+  status: string;
+  profile: any; // TODO ne any legyen
 }
 
 const state: UserState = { status: "", profile: {} };
@@ -16,17 +16,17 @@ const getters = {
 };
 
 const actions = {
-  [USER_REQUEST]: (commitDispatch: any) => {
-    const { commit, dispatch } = commitDispatch;
-    commit(USER_REQUEST);
-    api.identity()
+  [USER_REQUEST]: (context: any) => {
+    context.commit(USER_REQUEST);
+    api
+      .identity()
       .then((resp: any) => {
-        commit(USER_SUCCESS, resp);
+        context.commit(USER_SUCCESS, resp);
       })
       .catch(() => {
-        commit(USER_ERROR);
+        context.commit(USER_ERROR);
         // if resp is unauthorized, logout, to
-        dispatch(AUTH_LOGOUT);
+        context.dispatch(AUTH_LOGOUT);
       });
   }
 };
