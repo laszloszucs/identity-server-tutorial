@@ -1,6 +1,8 @@
 <template>
   <div class="container">
-    <img src="..\..\src\assets\schwarzenegger.png">
+    <div class="image-container">
+      <img src="..\..\..\src\assets\schwarzenegger.png" />
+    </div>
     <form @submit.prevent="login">
       <DxForm id="form" :form-data="user" label-location="top">
         <DxSimpleItem data-field="username">
@@ -16,30 +18,18 @@
       </DxForm>
     </form>
   </div>
-  
-
-  <!-- <form class="login" @submit.prevent="login">
-    <h1>Sign in</h1>
-    <label>User name</label>
-    <input required v-model="username" type="text" placeholder="Snoopy" />
-    <label>Password</label>
-    <input
-      required
-      v-model="password"
-      type="password"
-      placeholder="Password"
-    />
-    <hr />
-    <button type="submit">Login</button>
-  </form> -->
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { AUTH_REQUEST } from "../store/actions/auth";
+import { AUTH_REQUEST } from "../../store/actions/auth";
 // import { DxForm } from 'devextreme-vue';
-import DxForm, { DxButtonItem, DxSimpleItem, DxRequiredRule } from "devextreme-vue/form";
-import { User } from "../models/UserModel";
+import DxForm, {
+  DxButtonItem,
+  DxSimpleItem,
+  DxRequiredRule
+} from "devextreme-vue/form";
+import { User } from "../../models/UserModel";
 
 @Component({
   components: {
@@ -66,14 +56,14 @@ export default class Login extends Vue {
   };
 
   async login() {
-    await this.$store.dispatch(AUTH_REQUEST, this.user).then(() => {
-      debugger;
-      this.$router.push("/");
-    }).catch((err: any) => {
-      debugger;
-      console.log(err);
-    });
-    debugger;
+    await this.$store
+      .dispatch(AUTH_REQUEST, this.user)
+      .then(() => {
+        this.$router.push("/");
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
   }
 }
 </script>
@@ -83,5 +73,8 @@ export default class Login extends Vue {
   padding: 200px;
   width: 40%;
   margin: auto;
+}
+.image-container {
+  text-align: center;
 }
 </style>

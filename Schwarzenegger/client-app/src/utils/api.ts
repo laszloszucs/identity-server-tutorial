@@ -27,7 +27,6 @@ async function getToken(user: any) {
 }
 
 async function login(user: any) {
-  debugger;
   openIdConfig = (await getOpenIdConfiguration()).data;
   return (await getToken(user)).data;
 }

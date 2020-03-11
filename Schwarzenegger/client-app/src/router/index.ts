@@ -1,8 +1,8 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
-import Account from "../components/Account.vue";
-import Login from "../components/Login.vue";
+import Home from "./views/Home.vue";
+import Account from "./views/Account.vue";
+import Login from "./views/Login.vue";
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -54,7 +54,10 @@ router.beforeEach(async (to, from, next) => {
       next("/login");
       return;
     }
-  } else if (to.matched.some(record => record.name === "Login")) {
+  } else if (
+    to.matched.some(record => record.name === "Login") &&
+    store.getters.isAuthenticated
+  ) {
     next("/");
     return;
   }

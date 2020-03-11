@@ -27,7 +27,8 @@ import store from "./store";
 export default class App extends Vue {
   private tabs = [
     { text: "Home", path: "/" },
-    { text: "About", path: "/about" }
+    { text: "About", path: "/about" },
+    { text: "Account", path: "/account" }
   ];
 
   get isAuthenticated() {

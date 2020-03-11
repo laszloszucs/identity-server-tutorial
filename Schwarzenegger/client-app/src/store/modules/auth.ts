@@ -30,13 +30,11 @@ const actions = {
       api
         .login(user)
         .then((resp: any) => {
-          debugger;
           localStorage.setItem("access_token", resp.access_token);
           context.commit(AUTH_SUCCESS, resp.access_token);
           resolve(resp);
         })
         .catch((err: Error) => {
-          debugger;
           context.commit(AUTH_ERROR, err);
           localStorage.removeItem("access_token");
           reject(err);

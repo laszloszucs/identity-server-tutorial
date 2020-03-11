@@ -11,7 +11,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
-import { USER_REQUEST } from "../store/actions/user";
+import { USER_REQUEST } from "../../store/actions/user";
 
 @Component
 export default class Hello extends Vue {
