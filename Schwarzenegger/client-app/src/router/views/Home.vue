@@ -9,10 +9,10 @@
       :data-source="values"
       :show-borders="true"
     >
-      <DxGroupPanel :visible="true"/>
-      <DxGrouping :auto-expand-all="autoExpandAll"/>
+      <DxGroupPanel :visible="true" />
+      <DxGrouping :auto-expand-all="true" />
       <DxPaging />
-      <DxSearchPanel :visible="true"/>
+      <DxSearchPanel :visible="true" />
     </DxDataGrid>
   </div>
 </template>
@@ -27,7 +27,7 @@ import {
   DxGroupPanel,
   DxSearchPanel,
   DxPaging
-} from 'devextreme-vue/data-grid';
+} from "devextreme-vue/data-grid";
 
 @Component({
   components: {

@@ -16,21 +16,21 @@ import { mapState } from "vuex";
 import store from "../../store";
 
 @Component({
-  computed: mapState({ profile: (state: any) => {
-      return state.user.profile; 
-    }})
+  computed: mapState({
+    profile: (state: any) => {
+      return state.user.profile;
+    }
+  })
 })
 export default class Account extends Vue {
-    mounted() {
-      debugger;
-
-    }
-    get asd() {
-      debugger;
-      return store;
+  mounted() {
+    debugger;
+  }
+  get asd() {
+    debugger;
+    return store;
   }
 }
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

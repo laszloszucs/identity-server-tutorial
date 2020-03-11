@@ -17,6 +17,7 @@ namespace Schwarzenegger.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
+    // [ApiExplorerSettings(IgnoreApi = true)]
     public class AccountController : ControllerBase
     {
         private const string GetUserByIdActionName = "GetUserById";

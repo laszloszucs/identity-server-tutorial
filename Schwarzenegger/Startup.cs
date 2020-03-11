@@ -72,11 +72,11 @@ namespace Schwarzenegger
             var builder = services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
                 .AddInMemoryPersistedGrants()
-                .AddInMemoryIdentityResources(Config
+                .AddInMemoryIdentityResources(IdentityServerConfig
                     .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
-                .AddInMemoryApiResources(Config
+                .AddInMemoryApiResources(IdentityServerConfig
                     .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
-                .AddInMemoryClients(Config.GetClients()) // és a Client-ek, melyek a megbízható alkalmazások
+                .AddInMemoryClients(IdentityServerConfig.GetClients()) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<ProfileService>();
 

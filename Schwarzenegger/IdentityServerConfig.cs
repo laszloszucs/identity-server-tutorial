@@ -6,7 +6,7 @@ using Schwarzenegger.Core;
 
 namespace Schwarzenegger
 {
-    public static class Config
+    public static class IdentityServerConfig
     {
         public const string SchwarzeneggerAppClientId = "schwarzenegger_spa";
 
