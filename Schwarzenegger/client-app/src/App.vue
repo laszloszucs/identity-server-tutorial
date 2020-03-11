@@ -67,4 +67,8 @@ export default class App extends Vue {
   gap: 20px;
   padding: 20px 20px 20px 20px;
 }
+
+main {
+  text-align: center;
+}
 </style>
