@@ -1,5 +1,5 @@
 import { USER_REQUEST, USER_ERROR, USER_SUCCESS } from "../actions/user";
-import api from "../../utils/api";
+import api from "../../utils/oauth-service";
 import Vue from "vue";
 import { AUTH_LOGOUT } from "../actions/auth";
 

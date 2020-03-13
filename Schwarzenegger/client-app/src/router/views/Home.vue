@@ -1,8 +1,5 @@
 <template>
   <div class="home">
-    <!-- <div v-for="(item, index) in values" :key="index">
-      <p>{{ item }}</p>
-    </div> -->
     <button @click="callApi">Call API</button>
     <DxDataGrid
       :allow-column-reordering="true"

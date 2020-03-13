@@ -29,7 +29,7 @@ import DxForm, {
   DxSimpleItem,
   DxRequiredRule
 } from "devextreme-vue/form";
-import { User } from "../../models/UserModel";
+import { LoginUser } from "@/models/LoginUser";
 
 @Component({
   components: {
@@ -40,7 +40,7 @@ import { User } from "../../models/UserModel";
   }
 })
 export default class Login extends Vue {
-  private user: User = {
+  private user: LoginUser = {
     username: "admin",
     password: "tempP@ss123"
   };

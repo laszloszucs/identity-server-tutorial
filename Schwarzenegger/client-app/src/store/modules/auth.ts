@@ -4,39 +4,43 @@ import {
   AUTH_SUCCESS,
   AUTH_LOGOUT
 } from "../actions/auth";
-import api from "../../utils/api";
+import OAuthService from "../../utils/oauth-service";
+import { User } from "@/models/User";
+import DBkeys from "@/models/DBkeys";
+import { localStore } from "@/helpers/local-store-manager";
+import { LoginResponse } from "@/models/login-response.model";
+import { processLoginResponse, logout } from "@/services/auth-service";
 
 export interface AuthState {
-  accessToken: string | null;
+  user?: User;
   status: string;
   hasLoadedOnce: boolean;
 }
 
 const state: AuthState = {
-  accessToken: localStorage.getItem("access_token"),
+  user: localStore.getDataObject(DBkeys.CURRENT_USER),
   status: "",
   hasLoadedOnce: false
 };
 
 const getters = {
-  isAuthenticated: (state: AuthState) => !!state.accessToken,
+  isAuthenticated: () => !!localStore.getData(DBkeys.ACCESS_TOKEN),
   authStatus: (state: AuthState) => state.status
 };
 
 const actions = {
-  [AUTH_REQUEST]: (context: any, user: any) => {
+  [AUTH_REQUEST]: (context: any, user: any, rememberMe?: boolean) => {
     return new Promise((resolve, reject) => {
       context.commit(AUTH_REQUEST);
-      api
-        .login(user)
-        .then((resp: any) => {
-          localStorage.setItem("access_token", resp.access_token);
-          context.commit(AUTH_SUCCESS, resp.access_token);
-          resolve(resp);
+      OAuthService.login(user)
+        .then((response: LoginResponse) => {
+          processLoginResponse(response, rememberMe);
+          context.commit(AUTH_SUCCESS, user);
+          resolve(user);
         })
         .catch((err: Error) => {
           context.commit(AUTH_ERROR, err);
-          localStorage.removeItem("access_token");
+          logout();
           reject(err);
         });
     });
@@ -44,7 +48,7 @@ const actions = {
   [AUTH_LOGOUT]: (context: any) => {
     return new Promise(resolve => {
       context.commit(AUTH_LOGOUT);
-      localStorage.removeItem("access_token");
+      logout();
       resolve();
     });
   }
@@ -54,9 +58,9 @@ const mutations = {
   [AUTH_REQUEST]: (state: AuthState) => {
     state.status = "loading";
   },
-  [AUTH_SUCCESS]: (state: AuthState, accessToken: string) => {
+  [AUTH_SUCCESS]: (state: AuthState, user: User) => {
     state.status = "success";
-    state.accessToken = accessToken;
+    state.user = user;
     state.hasLoadedOnce = true;
   },
   [AUTH_ERROR]: (state: AuthState) => {
@@ -64,7 +68,7 @@ const mutations = {
     state.hasLoadedOnce = true;
   },
   [AUTH_LOGOUT]: (state: AuthState) => {
-    state.accessToken = "";
+    state.user = null;
   }
 };
 
