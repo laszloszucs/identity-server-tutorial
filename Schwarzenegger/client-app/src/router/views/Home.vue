@@ -17,7 +17,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
-import { USER_REQUEST } from "../../store/actions/user";
 import {
   DxDataGrid,
   DxGrouping,
@@ -40,14 +39,6 @@ export default class Hello extends Vue {
 
   async callApi() {
     try {
-      this.$store
-        .dispatch(USER_REQUEST)
-        .then(data => {
-          this.values = data;
-        })
-        .catch((err: Error) => {
-          this.values = [err.message];
-        });
       const response = await axios.get("https://localhost:44300/api/identity");
       this.values = response.data;
     } catch (err) {

@@ -22,8 +22,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { AUTH_REQUEST } from "../../store/actions/auth";
-// import { DxForm } from 'devextreme-vue';
+import { LoginWithPassword } from "../../store/actions/auth-actions";
 import DxForm, {
   DxButtonItem,
   DxSimpleItem,
@@ -57,7 +56,7 @@ export default class Login extends Vue {
 
   async login() {
     await this.$store
-      .dispatch(AUTH_REQUEST, this.user)
+      .dispatch(LoginWithPassword, this.user)
       .then(() => {
         this.$router.push("/");
       })

@@ -1,53 +1,105 @@
 import {
-  AUTH_REQUEST,
-  AUTH_ERROR,
-  AUTH_SUCCESS,
-  AUTH_LOGOUT
-} from "../actions/auth";
+  LoginWithPassword,
+  LoginError,
+  LoginSuccess,
+  Logout,
+  RefreshLogin,
+} from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
 import { User } from "@/models/User";
 import DBkeys from "@/models/DBkeys";
-import { localStore } from "@/helpers/local-store-manager";
-import { LoginResponse } from "@/models/login-response.model";
-import { processLoginResponse, logout } from "@/services/auth-service";
+import localStore from "@/helpers/local-store-manager";
+import { LoginResponse, AccessToken } from "@/models/login-response.model";
+import { PermissionValues } from '@/models/PermissionValues';
+import JwtHelper from '@/helpers/jwt-helper';
 
 export interface AuthState {
   user?: User;
-  status: string;
+  loginStatus: LoginStatus;
   hasLoadedOnce: boolean;
+  loginUrl?: string;
+  homeUrl?: string;
+  loginRedirectUrl?: string;
+  logoutRedirectUrl?: string;
 }
 
 const state: AuthState = {
   user: localStore.getDataObject(DBkeys.CURRENT_USER),
-  status: "",
-  hasLoadedOnce: false
+  loginStatus: LoginStatus.Init,
+  hasLoadedOnce: false,
+  loginUrl: "/login", // config
+  homeUrl: "/", // config
 };
 
 const getters = {
-  isAuthenticated: () => !!localStore.getData(DBkeys.ACCESS_TOKEN),
-  authStatus: (state: AuthState) => state.status
+  // isAuthenticated: () => !!localStore.getData(DBkeys.ACCESS_TOKEN),
+  authStatus: (state: AuthState) => state.loginStatus,
+  currentUser: (): User => {
+    return localStore.getDataObject<User>(DBkeys.CURRENT_USER);
+  },
+  userPermissions: (): PermissionValues[] => {
+    return localStore.getDataObject<PermissionValues[]>(DBkeys.USER_PERMISSIONS) || [];
+  },
+  accessToken: (): string => {
+    return localStore.getData(DBkeys.ACCESS_TOKEN);
+  },
+  accessTokenExpiryDate: (): Date => {
+    return localStore.getDataObject<Date>(DBkeys.TOKEN_EXPIRES_IN, true);
+  },
+  refreshToken: (): string => {
+    return localStore.getData(DBkeys.REFRESH_TOKEN);
+  },
+  isSessionExpired: (): boolean => {
+    if (this.accessTokenExpiryDate == null) {
+      return true;
+    }
+
+    return this.accessTokenExpiryDate.valueOf() <= new Date().valueOf();
+  },
+  isLoggedIn: (): boolean => {
+    return this.currentUser != null;
+  },
+  rememberMe: (): boolean => {
+    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME) == true;
+  }
 };
 
 const actions = {
-  [AUTH_REQUEST]: (context: any, user: any, rememberMe?: boolean) => {
+  [LoginWithPassword]: (context: any, user: any, rememberMe?: boolean) => {
     return new Promise((resolve, reject) => {
-      context.commit(AUTH_REQUEST);
-      OAuthService.login(user)
+      context.commit(LoginWithPassword);
+      OAuthService.loginWithPassword(user)
         .then((response: LoginResponse) => {
-          processLoginResponse(response, rememberMe);
-          context.commit(AUTH_SUCCESS, user);
+          var user = processLoginResponse(response, rememberMe);
+          context.commit(LoginSuccess, user);
           resolve(user);
         })
         .catch((err: Error) => {
-          context.commit(AUTH_ERROR, err);
+          context.commit(LoginError, err);
           logout();
           reject(err);
         });
     });
   },
-  [AUTH_LOGOUT]: (context: any) => {
+  [RefreshLogin]: (context: any, rememberMe?: boolean) => { // Ez akkor kell leginkább amikor változtatunk a user-en?! 
+    return new Promise((resolve, reject) => {
+      context.commit(RefreshLogin);
+      OAuthService.refreshLogin(localStore.getData(DBkeys.REFRESH_TOKEN))
+        .then((response: LoginResponse) => {
+          var user = processLoginResponse(response, rememberMe);
+          context.commit(LoginSuccess, user);
+          resolve(user);
+        })
+        .catch((err: Error) => {
+          context.commit(LoginError, err);
+          logout();
+          reject(err);
+        });
+    });
+  },
+  [Logout]: (context: any) => {
     return new Promise(resolve => {
-      context.commit(AUTH_LOGOUT);
+      context.commit(Logout);
       logout();
       resolve();
     });
@@ -55,22 +107,112 @@ const actions = {
 };
 
 const mutations = {
-  [AUTH_REQUEST]: (state: AuthState) => {
-    state.status = "loading";
+  [LoginWithPassword]: (state: AuthState) => {
+    state.loginStatus = LoginStatus.Loading;
   },
-  [AUTH_SUCCESS]: (state: AuthState, user: User) => {
-    state.status = "success";
+  [RefreshLogin]: (state: AuthState) => {
+    state.loginStatus = LoginStatus.Loading;
+  },
+  [LoginSuccess]: (state: AuthState, user: User) => {
+    state.loginStatus = LoginStatus.Success;
     state.user = user;
     state.hasLoadedOnce = true;
   },
-  [AUTH_ERROR]: (state: AuthState) => {
-    state.status = "error";
+  [LoginError]: (state: AuthState) => {
+    state.loginStatus = LoginStatus.Error;
     state.hasLoadedOnce = true;
   },
-  [AUTH_LOGOUT]: (state: AuthState) => {
+  [Logout]: (state: AuthState) => {
     state.user = null;
   }
 };
+
+function saveUserDetails(
+  user: User,
+  permissions: PermissionValues[],
+  accessToken: string,
+  refreshToken: string,
+  expiresIn: Date,
+  rememberMe: boolean
+) {
+  if (rememberMe) {
+    localStore.savePermanentData(accessToken, DBkeys.ACCESS_TOKEN);
+    localStore.savePermanentData(refreshToken, DBkeys.REFRESH_TOKEN);
+    localStore.savePermanentData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
+    localStore.savePermanentData(permissions, DBkeys.USER_PERMISSIONS);
+    localStore.savePermanentData(user, DBkeys.CURRENT_USER);
+  } else {
+    localStore.saveSyncedSessionData(accessToken, DBkeys.ACCESS_TOKEN);
+    localStore.saveSyncedSessionData(refreshToken, DBkeys.REFRESH_TOKEN);
+    localStore.saveSyncedSessionData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
+    localStore.saveSyncedSessionData(
+      permissions,
+      DBkeys.USER_PERMISSIONS
+    );
+    localStore.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+  }
+
+  localStore.savePermanentData(rememberMe, DBkeys.REMEMBER_ME);
+}
+
+function logout(): void {
+  localStore.deleteData(DBkeys.ACCESS_TOKEN);
+  localStore.deleteData(DBkeys.REFRESH_TOKEN);
+  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
+  localStore.deleteData(DBkeys.USER_PERMISSIONS);
+  localStore.deleteData(DBkeys.CURRENT_USER);
+}
+
+function processLoginResponse(
+  response: LoginResponse,
+  rememberMe?: boolean
+) {
+  const accessToken = response.access_token;
+
+  if (accessToken == null) {
+    throw new Error("accessToken cannot be null");
+  }
+
+  rememberMe = rememberMe || this.rememberMe;
+
+  const refreshToken = response.refresh_token || this.refreshToken;
+  const expiresIn = response.expires_in;
+  const tokenExpiryDate = new Date();
+  tokenExpiryDate.setSeconds(tokenExpiryDate.getSeconds() + expiresIn);
+  const accessTokenExpiry = tokenExpiryDate;
+  const jwtHelper = new JwtHelper();
+  const decodedAccessToken = jwtHelper.decodeToken(accessToken) as AccessToken;
+
+  const permissions: PermissionValues[] = Array.isArray(
+    decodedAccessToken.permission
+  )
+    ? decodedAccessToken.permission
+    : [decodedAccessToken.permission];
+
+  const user = new User(
+    decodedAccessToken.sub,
+    decodedAccessToken.name,
+    decodedAccessToken.fullname,
+    decodedAccessToken.email,
+    decodedAccessToken.jobtitle,
+    decodedAccessToken.phone_number,
+    Array.isArray(decodedAccessToken.role)
+      ? decodedAccessToken.role
+      : [decodedAccessToken.role]
+  );
+  user.isEnabled = true;
+
+  saveUserDetails(
+    user,
+    permissions,
+    accessToken,
+    refreshToken,
+    accessTokenExpiry,
+    rememberMe
+  );
+
+  return user;
+}      
 
 export default {
   state,

@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div v-if="isAuthenticated" class="navbar">
+    <div v-if="isLoggedIn" class="navbar">
       <DxTabs :items="tabs" :onItemClick="route" height="10px"> </DxTabs>
       <DxButton @click="logout($event)" text="Logout" type="danger" />
     </div>
@@ -14,7 +14,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
-import { AUTH_LOGOUT } from "../src/store/actions/auth";
+import { Logout } from "../src/store/actions/auth-actions";
 import store from "./store";
 
 @Component({
@@ -31,8 +31,8 @@ export default class App extends Vue {
     { text: "Account", path: "/account" }
   ];
 
-  get isAuthenticated() {
-    return store.getters.isAuthenticated;
+  get isLoggedIn() {
+    return store.getters.isLoggedIn;
   }
 
   route(e: any) {
@@ -42,7 +42,7 @@ export default class App extends Vue {
   }
 
   logout() {
-    this.$store.dispatch(AUTH_LOGOUT).then(() => {
+    this.$store.dispatch(Logout).then(() => {
       this.$router.push("/login");
     });
   }
