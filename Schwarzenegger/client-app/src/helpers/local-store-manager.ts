@@ -1,6 +1,9 @@
 import { Utilities } from "./utilities";
 
+// TODO lehetséges, hogy Singleton osztályra lesz szükség a syncKeys miatt!
+
 class LocalStoreManager {
+  private static instance: LocalStoreManager;
   private static syncListenerInitialised = false;
 
   public static readonly DBKEY_USER_DATA = "user_data";
@@ -18,6 +21,15 @@ class LocalStoreManager {
     "removeFromSessionStorage",
     "clearAllSessionsStorage"
   ];
+
+  constructor() {
+    if (LocalStoreManager.instance) {
+      return LocalStoreManager.instance;
+    }
+    LocalStoreManager.instance = this;
+
+    return this;
+  }
 
   public initialiseStorageSyncListener() {
     if (LocalStoreManager.syncListenerInitialised == true) {
@@ -365,6 +377,6 @@ class LocalStoreManager {
   //   }
 }
 
-const localStore = new LocalStoreManager();
+const instance = new LocalStoreManager();
 
-export default localStore;
+export default instance;

@@ -7,7 +7,8 @@ export class User {
     email?: string,
     jobTitle?: string,
     phoneNumber?: string,
-    roles?: string[]
+    roles?: string[],
+    isAdmin?: boolean
   ) {
     this.id = id;
     this.userName = userName;
@@ -16,6 +17,7 @@ export class User {
     this.jobTitle = jobTitle;
     this.phoneNumber = phoneNumber;
     this.roles = roles;
+    this.isAdmin = isAdmin;
   }
 
   get friendlyName(): string {
@@ -37,4 +39,5 @@ export class User {
   public isEnabled: boolean;
   public isLockedOut: boolean;
   public roles: string[];
+  public isAdmin: boolean;
 }

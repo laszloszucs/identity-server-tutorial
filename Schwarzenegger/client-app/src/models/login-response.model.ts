@@ -1,4 +1,4 @@
-import { PermissionValues } from "./PermissionValues";
+import { PermissionValues } from "./permission.model";
 
 export interface LoginResponse {
   access_token: string;

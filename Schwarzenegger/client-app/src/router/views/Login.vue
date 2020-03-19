@@ -28,7 +28,8 @@ import DxForm, {
   DxSimpleItem,
   DxRequiredRule
 } from "devextreme-vue/form";
-import { LoginUser } from "@/models/LoginUser";
+import { LoginUser } from "@/models/login-user.model";
+import notify from "devextreme/ui/notify";
 
 @Component({
   components: {
@@ -55,13 +56,23 @@ export default class Login extends Vue {
   };
 
   async login() {
-    await this.$store
+    this.$store
       .dispatch(LoginWithPassword, this.user)
       .then(() => {
         this.$router.push("/");
       })
-      .catch((err: any) => {
-        console.log(err);
+      .catch(error => {
+        let errorMessage = null;
+        if(error.isAxiosError) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.response.data.error_description;
+        }
+        notify(
+          this.$t("error." + errorMessage),
+          "error",
+          4000
+        );
       });
   }
 }

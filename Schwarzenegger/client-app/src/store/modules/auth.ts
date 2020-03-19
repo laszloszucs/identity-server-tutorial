@@ -3,129 +3,17 @@ import {
   LoginError,
   LoginSuccess,
   Logout,
-  RefreshLogin,
+  RefreshLogin
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
-import { User } from "@/models/User";
-import DBkeys from "@/models/DBkeys";
+import { User } from "@/models/user.model";
+import DBkeys from "@/models/db-keys.model";
 import localStore from "@/helpers/local-store-manager";
 import { LoginResponse, AccessToken } from "@/models/login-response.model";
-import { PermissionValues } from '@/models/PermissionValues';
-import JwtHelper from '@/helpers/jwt-helper';
-
-export interface AuthState {
-  user?: User;
-  loginStatus: LoginStatus;
-  hasLoadedOnce: boolean;
-  loginUrl?: string;
-  homeUrl?: string;
-  loginRedirectUrl?: string;
-  logoutRedirectUrl?: string;
-}
-
-const state: AuthState = {
-  user: localStore.getDataObject(DBkeys.CURRENT_USER),
-  loginStatus: LoginStatus.Init,
-  hasLoadedOnce: false,
-  loginUrl: "/login", // config
-  homeUrl: "/", // config
-};
-
-const getters = {
-  // isAuthenticated: () => !!localStore.getData(DBkeys.ACCESS_TOKEN),
-  authStatus: (state: AuthState) => state.loginStatus,
-  currentUser: (): User => {
-    return localStore.getDataObject<User>(DBkeys.CURRENT_USER);
-  },
-  userPermissions: (): PermissionValues[] => {
-    return localStore.getDataObject<PermissionValues[]>(DBkeys.USER_PERMISSIONS) || [];
-  },
-  accessToken: (): string => {
-    return localStore.getData(DBkeys.ACCESS_TOKEN);
-  },
-  accessTokenExpiryDate: (): Date => {
-    return localStore.getDataObject<Date>(DBkeys.TOKEN_EXPIRES_IN, true);
-  },
-  refreshToken: (): string => {
-    return localStore.getData(DBkeys.REFRESH_TOKEN);
-  },
-  isSessionExpired: (): boolean => {
-    if (this.accessTokenExpiryDate == null) {
-      return true;
-    }
-
-    return this.accessTokenExpiryDate.valueOf() <= new Date().valueOf();
-  },
-  isLoggedIn: (): boolean => {
-    return this.currentUser != null;
-  },
-  rememberMe: (): boolean => {
-    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME) == true;
-  }
-};
-
-const actions = {
-  [LoginWithPassword]: (context: any, user: any, rememberMe?: boolean) => {
-    return new Promise((resolve, reject) => {
-      context.commit(LoginWithPassword);
-      OAuthService.loginWithPassword(user)
-        .then((response: LoginResponse) => {
-          var user = processLoginResponse(response, rememberMe);
-          context.commit(LoginSuccess, user);
-          resolve(user);
-        })
-        .catch((err: Error) => {
-          context.commit(LoginError, err);
-          logout();
-          reject(err);
-        });
-    });
-  },
-  [RefreshLogin]: (context: any, rememberMe?: boolean) => { // Ez akkor kell leginkább amikor változtatunk a user-en?! 
-    return new Promise((resolve, reject) => {
-      context.commit(RefreshLogin);
-      OAuthService.refreshLogin(localStore.getData(DBkeys.REFRESH_TOKEN))
-        .then((response: LoginResponse) => {
-          var user = processLoginResponse(response, rememberMe);
-          context.commit(LoginSuccess, user);
-          resolve(user);
-        })
-        .catch((err: Error) => {
-          context.commit(LoginError, err);
-          logout();
-          reject(err);
-        });
-    });
-  },
-  [Logout]: (context: any) => {
-    return new Promise(resolve => {
-      context.commit(Logout);
-      logout();
-      resolve();
-    });
-  }
-};
-
-const mutations = {
-  [LoginWithPassword]: (state: AuthState) => {
-    state.loginStatus = LoginStatus.Loading;
-  },
-  [RefreshLogin]: (state: AuthState) => {
-    state.loginStatus = LoginStatus.Loading;
-  },
-  [LoginSuccess]: (state: AuthState, user: User) => {
-    state.loginStatus = LoginStatus.Success;
-    state.user = user;
-    state.hasLoadedOnce = true;
-  },
-  [LoginError]: (state: AuthState) => {
-    state.loginStatus = LoginStatus.Error;
-    state.hasLoadedOnce = true;
-  },
-  [Logout]: (state: AuthState) => {
-    state.user = null;
-  }
-};
+import { PermissionValues } from "@/models/permission.model";
+import JwtHelper from "@/helpers/jwt-helper";
+import { LoginStatus } from "@/enums/login-status.enum";
+import router from "../../router";
 
 function saveUserDetails(
   user: User,
@@ -145,25 +33,15 @@ function saveUserDetails(
     localStore.saveSyncedSessionData(accessToken, DBkeys.ACCESS_TOKEN);
     localStore.saveSyncedSessionData(refreshToken, DBkeys.REFRESH_TOKEN);
     localStore.saveSyncedSessionData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
-    localStore.saveSyncedSessionData(
-      permissions,
-      DBkeys.USER_PERMISSIONS
-    );
+    localStore.saveSyncedSessionData(permissions, DBkeys.USER_PERMISSIONS);
     localStore.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
   }
 
   localStore.savePermanentData(rememberMe, DBkeys.REMEMBER_ME);
 }
 
-function logout(): void {
-  localStore.deleteData(DBkeys.ACCESS_TOKEN);
-  localStore.deleteData(DBkeys.REFRESH_TOKEN);
-  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
-  localStore.deleteData(DBkeys.USER_PERMISSIONS);
-  localStore.deleteData(DBkeys.CURRENT_USER);
-}
-
 function processLoginResponse(
+  context: any,
   response: LoginResponse,
   rememberMe?: boolean
 ) {
@@ -173,9 +51,9 @@ function processLoginResponse(
     throw new Error("accessToken cannot be null");
   }
 
-  rememberMe = rememberMe || this.rememberMe;
+  rememberMe = rememberMe || context.getters.rememberMe();
 
-  const refreshToken = response.refresh_token || this.refreshToken;
+  const refreshToken = response.refresh_token || context.getters.refreshToken();
   const expiresIn = response.expires_in;
   const tokenExpiryDate = new Date();
   tokenExpiryDate.setSeconds(tokenExpiryDate.getSeconds() + expiresIn);
@@ -212,7 +90,125 @@ function processLoginResponse(
   );
 
   return user;
-}      
+}
+
+function logout(): void {
+  localStore.deleteData(DBkeys.ACCESS_TOKEN);
+  localStore.deleteData(DBkeys.REFRESH_TOKEN);
+  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
+  localStore.deleteData(DBkeys.USER_PERMISSIONS);
+  localStore.deleteData(DBkeys.CURRENT_USER);
+
+  if (router.currentRoute.path !== "/login") {
+    router.push("/login");
+  }  
+}
+
+const state: any = {
+  loginStatus: LoginStatus.Init,
+  hasLoadedOnce: false,
+  loginUrl: "/login", // config
+  homeUrl: "/" // config
+};
+
+const getters = {
+  authStatus: (state: any) => state.loginStatus,
+  currentUser: () => (): User => {
+    return localStore.getDataObject<User>(DBkeys.CURRENT_USER);
+  },
+  userPermissions: () => (): PermissionValues[] => {
+    return (
+      localStore.getDataObject<PermissionValues[]>(DBkeys.USER_PERMISSIONS) ||
+      []
+    );
+  },
+  accessToken: () => (): string => {
+    return localStore.getData(DBkeys.ACCESS_TOKEN);
+  },
+  accessTokenExpiryDate: () => (): Date => {
+    return localStore.getDataObject<Date>(DBkeys.TOKEN_EXPIRES_IN, true);
+  },
+  refreshToken: () => (): string => {
+    return localStore.getData(DBkeys.REFRESH_TOKEN);
+  },
+  isSessionExpired: (state: any, getters: any) => (): boolean => {
+    if (getters.accessTokenExpiryDate() == null) {
+      return true;
+    }
+
+    return getters.accessTokenExpiryDate().valueOf() <= new Date().valueOf();
+  },
+  isLoggedIn: (state: any, getters: any) => (): boolean => {
+    if(getters.isSessionExpired()) {
+      console.log("lejárt");
+    }
+    return getters.currentUser() != null;
+  },
+  rememberMe: () => (): boolean => {
+    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME) == true;
+  }
+};
+
+const actions = {
+  [LoginWithPassword]: (context: any, user: any, rememberMe?: boolean) => {
+    return new Promise((resolve, reject) => {
+      context.commit(LoginWithPassword);
+      OAuthService.loginWithPassword(user)
+        .then((response: LoginResponse) => {
+          const user = processLoginResponse(context, response, rememberMe);
+          context.commit(LoginSuccess, user);
+          resolve(user);
+        })
+        .catch((err: Error) => {
+          context.commit(LoginError, err);
+          logout();
+          reject(err);
+        });
+    });
+  },
+  [RefreshLogin]: (context: any, rememberMe?: boolean) => {
+    // Ez akkor kell leginkább amikor változtatunk a user-en?!
+    return new Promise((resolve, reject) => {
+      context.commit(RefreshLogin);
+      OAuthService.refreshLogin(localStore.getData(DBkeys.REFRESH_TOKEN))
+        .then((response: LoginResponse) => {
+          processLoginResponse(context, response, rememberMe);
+          context.commit(LoginSuccess);
+          resolve();
+        })
+        .catch((err: Error) => {
+          context.commit(LoginError, err);
+          logout();
+          reject(err);
+        });
+    });
+  },
+  [Logout]: () => {
+    return new Promise(resolve => {
+      // context.commit(Logout);
+      logout();
+      resolve();
+    });
+  }
+};
+
+const mutations = {
+  [LoginWithPassword]: (state: any) => {
+    state.loginStatus = LoginStatus.Loading;
+  },
+  [RefreshLogin]: (state: any) => {
+    state.loginStatus = LoginStatus.Loading;
+  },
+  [LoginSuccess]: (state: any) => {
+    state.loginStatus = LoginStatus.Success;
+    state.hasLoadedOnce = true;
+  },
+  [LoginError]: (state: any) => {
+    state.loginStatus = LoginStatus.Error;
+    state.hasLoadedOnce = true;
+  }
+  // [Logout]: () => {}
+};
 
 export default {
   state,

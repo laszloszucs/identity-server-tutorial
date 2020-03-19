@@ -3,6 +3,7 @@ import VueRouter from "vue-router";
 import Home from "./views/Home.vue";
 import Account from "./views/Account.vue";
 import Login from "./views/Login.vue";
+import Users from "./views/Users.vue";
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -40,6 +41,14 @@ const router = new VueRouter({
       }
     },
     {
+      path: "/users",
+      name: "Users",
+      component: Users,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: "/login",
       name: "Login",
       component: Login
@@ -50,13 +59,13 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters.isLoggedIn) {
+    if (!store.getters.isLoggedIn()) {
       next("/login");
       return;
     }
   } else if (
     to.matched.some(record => record.name === "Login") &&
-    store.getters.isLoggedIn
+    store.getters.isLoggedIn()
   ) {
     next("/");
     return;

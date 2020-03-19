@@ -16,3 +16,9 @@ import { Component, Vue } from "vue-property-decorator";
 })
 export default class About extends Vue {}
 </script>
+
+<style lang="scss" scoped>
+.about {
+  text-align: center;
+}
+</style>

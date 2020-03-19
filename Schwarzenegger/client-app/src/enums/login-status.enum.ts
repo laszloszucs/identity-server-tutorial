@@ -1,6 +1,6 @@
-enum LoginStatus {
-    Init,
-    Loading,
-    Success,
-    Error
-  }
+export enum LoginStatus {
+  Init,
+  Loading,
+  Success,
+  Error
+}
