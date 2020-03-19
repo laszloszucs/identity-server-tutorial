@@ -101,7 +101,7 @@ function logout(): void {
 
   if (router.currentRoute.path !== "/login") {
     router.push("/login");
-  }  
+  }
 }
 
 const state: any = {
@@ -139,7 +139,7 @@ const getters = {
     return getters.accessTokenExpiryDate().valueOf() <= new Date().valueOf();
   },
   isLoggedIn: (state: any, getters: any) => (): boolean => {
-    if(getters.isSessionExpired()) {
+    if (getters.isSessionExpired()) {
       console.log("lejárt");
     }
     return getters.currentUser() != null;

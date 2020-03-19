@@ -2,19 +2,22 @@
   <div id="app">
     <div v-if="isLoggedIn()" class="navbar">
       <div class="navs">
-        <DxButton v-if="true || hasPermission('home.view')"
+        <DxButton
+          v-if="true || hasPermission('home.view')"
           @click="navigate('/home')"
           text="Home"
           icon="home"
           :disabled="$route.matched.some(({ name }) => name === 'Home')"
         />
-        <DxButton v-if="true || hasPermission('users.view')"
+        <DxButton
+          v-if="true || hasPermission('users.view')"
           @click="navigate('/users')"
           text="Users"
           icon="group"
           :disabled="$route.matched.some(({ name }) => name === 'Users')"
         />
-        <DxButton v-if="true || hasPermission('about.view')"
+        <DxButton
+          v-if="true || hasPermission('about.view')"
           @click="navigate('/about')"
           text="About"
           icon="info"
@@ -22,18 +25,20 @@
         />
       </div>
       <div class="other-buttons">
-        <DxButton v-if="true || hasPermission('account.view')"
+        <DxButton
+          v-if="true || hasPermission('account.view')"
           @click="navigate('/account')"
           :text="profile().userName"
           icon="user"
           :disabled="$route.matched.some(({ name }) => name === 'Account')"
         />
         <DxButton @click="logout($event)" text="Logout" type="danger" />
-      </div>      
+      </div>
     </div>
     <main>
       <router-view />
     </main>
+    <loader></loader>
   </div>
 </template>
 
@@ -45,12 +50,14 @@ import { Logout } from "../src/store/actions/auth-actions";
 import { mapState } from "vuex";
 import accountService from "./services/account.service";
 import { PermissionValues } from "./models/permission.model";
+import Loader from "./components/Loader.vue";
 
 @Component({
   components: {
     DxTabs,
     DxItem,
-    DxButton
+    DxButton,
+    Loader
   },
   computed: mapState({
     profile: (state: any, getters: any) => () => {
@@ -77,7 +84,9 @@ export default class App extends Vue {
   }
 
   hasPermission(permissionValue: string) {
-    return accountService.userHasPermission(permissionValue as PermissionValues);
+    return accountService.userHasPermission(
+      permissionValue as PermissionValues
+    );
   }
 }
 </script>

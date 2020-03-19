@@ -30,6 +30,7 @@ import DxForm, {
 } from "devextreme-vue/form";
 import { LoginUser } from "@/models/login-user.model";
 import notify from "devextreme/ui/notify";
+import EventBus from "../../helpers/event-bus";
 
 @Component({
   components: {
@@ -56,6 +57,7 @@ export default class Login extends Vue {
   };
 
   async login() {
+    EventBus.$emit("LOADING");
     this.$store
       .dispatch(LoginWithPassword, this.user)
       .then(() => {
@@ -63,17 +65,24 @@ export default class Login extends Vue {
       })
       .catch(error => {
         let errorMessage = null;
-        if(error.isAxiosError) {
+        if (error.isAxiosError) {
           errorMessage = error.message;
         } else {
           errorMessage = error.response.data.error_description;
         }
         notify(
-          this.$t("error." + errorMessage),
+          {
+            message: this.$t("error." + errorMessage),
+            position: {
+              at: "top",
+              offset: "0 40"
+            }
+          },
           "error",
-          4000
+          3000
         );
-      });
+      })
+      .finally(() => EventBus.$emit("DONE-LOADING"));
   }
 }
 </script>

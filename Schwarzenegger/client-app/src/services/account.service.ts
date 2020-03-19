@@ -14,7 +14,7 @@ export interface RolesChangedEventArg {
 }
 
 class AccountService {
-    private static instance: AccountService;
+  private static instance: AccountService;
   public static readonly roleAddedOperation: RolesChangedOperation = "add";
   public static readonly roleDeletedOperation: RolesChangedOperation = "delete";
   public static readonly roleModifiedOperation: RolesChangedOperation =
@@ -34,12 +34,14 @@ class AccountService {
   // }
 
   async getUsers() {
-      try {
-        const response = await axios.get("https://localhost:44300/api/account/users");
-        return response.data;
-      } catch (err) {
-        return [];
-      }
+    try {
+      const response = await axios.get(
+        "https://localhost:44300/api/account/users"
+      );
+      return response.data;
+    } catch (err) {
+      return [];
+    }
   }
 
   // getUsersAndRoles(page?: number, pageSize?: number) {
@@ -94,7 +96,10 @@ class AccountService {
   // }
 
   userHasPermission(permissionValue: PermissionValues): boolean {
-    return this.currentUser.isAdmin || this.permissions.some(p => p == permissionValue);
+    return (
+      this.currentUser.isAdmin ||
+      this.permissions.some(p => p == permissionValue)
+    );
   }
 
   // refreshLoggedInUser() {
