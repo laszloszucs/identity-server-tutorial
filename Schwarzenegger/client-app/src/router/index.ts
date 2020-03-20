@@ -1,14 +1,14 @@
 import Vue from "vue";
-import VueRouter from "vue-router";
+import Router from "vue-router";
 import Home from "./views/Home.vue";
 import Account from "./views/Account.vue";
 import Login from "./views/Login.vue";
 import Users from "./views/Users.vue";
 import store from "../store";
 
-Vue.use(VueRouter);
+Vue.use(Router);
 
-const router = new VueRouter({
+const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
   routes: [
@@ -56,6 +56,17 @@ const router = new VueRouter({
     { path: "*", redirect: { name: "Home" } }
   ]
 });
+
+const originalPush = Router.prototype.push;
+Router.prototype.push = function push(
+  location: any,
+  onComplete?: any,
+  onAbort?: any
+): Promise<any> {
+  if (onComplete || onAbort)
+    return originalPush.call(this, location, onComplete, onAbort);
+  return originalPush.call(this, location).catch((err: any) => err);
+};
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {

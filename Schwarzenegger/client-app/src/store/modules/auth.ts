@@ -3,7 +3,8 @@ import {
   LoginError,
   LoginSuccess,
   Logout,
-  RefreshLogin
+  RefreshLogin,
+  RefreshLoginSuccess
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
 import { User } from "@/models/user.model";
@@ -60,7 +61,6 @@ function processLoginResponse(
   const accessTokenExpiry = tokenExpiryDate;
   const jwtHelper = new JwtHelper();
   const decodedAccessToken = jwtHelper.decodeToken(accessToken) as AccessToken;
-
   const permissions: PermissionValues[] = Array.isArray(
     decodedAccessToken.permission
   )
@@ -90,6 +90,14 @@ function processLoginResponse(
   );
 
   return user;
+}
+
+function clearLocalStorage(): void {
+  localStore.deleteData(DBkeys.ACCESS_TOKEN);
+  localStore.deleteData(DBkeys.REFRESH_TOKEN);
+  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
+  localStore.deleteData(DBkeys.USER_PERMISSIONS);
+  localStore.deleteData(DBkeys.CURRENT_USER);
 }
 
 function logout(): void {
@@ -136,11 +144,17 @@ const getters = {
       return true;
     }
 
-    return getters.accessTokenExpiryDate().valueOf() <= new Date().valueOf();
+    if (getters.accessTokenExpiryDate().valueOf() <= new Date().valueOf()) {
+      // console.log("Valid access token cannot be found");
+      return true;
+    }
+
+    return false;
   },
   isLoggedIn: (state: any, getters: any) => (): boolean => {
     if (getters.isSessionExpired()) {
-      console.log("lejárt");
+      clearLocalStorage();
+      return false;
     }
     return getters.currentUser() != null;
   },
@@ -173,7 +187,7 @@ const actions = {
       OAuthService.refreshLogin(localStore.getData(DBkeys.REFRESH_TOKEN))
         .then((response: LoginResponse) => {
           processLoginResponse(context, response, rememberMe);
-          context.commit(LoginSuccess);
+          context.commit(RefreshLoginSuccess);
           resolve();
         })
         .catch((err: Error) => {
@@ -183,9 +197,9 @@ const actions = {
         });
     });
   },
-  [Logout]: () => {
+  [Logout]: (context: any) => {
     return new Promise(resolve => {
-      // context.commit(Logout);
+      context.commit(Logout);
       logout();
       resolve();
     });
@@ -203,11 +217,17 @@ const mutations = {
     state.loginStatus = LoginStatus.Success;
     state.hasLoadedOnce = true;
   },
+  [RefreshLoginSuccess]: (state: any) => {
+    state.loginStatus = LoginStatus.RefreshSuccess;
+    state.hasLoadedOnce = true;
+  },
   [LoginError]: (state: any) => {
     state.loginStatus = LoginStatus.Error;
     state.hasLoadedOnce = true;
+  },
+  [Logout]: () => {
+    state.loginStatus = LoginStatus.Init;
   }
-  // [Logout]: () => {}
 };
 
 export default {

@@ -70,9 +70,10 @@ namespace Schwarzenegger
                         IdentityConfigConstants.ApiName
                     },
                     AllowOfflineAccess = true, // For refresh token.
+                    
                     RefreshTokenExpiration = TokenExpiration.Sliding,
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
-                    //AccessTokenLifetime = 900, // Lifetime of access token in seconds.
+                    AccessTokenLifetime = 20, // Lifetime of access token in seconds.
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,+
                     //ClientSecrets =

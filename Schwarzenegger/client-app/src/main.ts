@@ -9,8 +9,17 @@ import "devextreme/dist/css/dx.light.css";
 // import DBkeys from "@/models/DBkeys";
 // import localStore from "@/helpers/local-store-manager";
 import i18n from "./i18n";
+// import "./idle-vue";
+import IdleVue from "idle-vue";
 
 Vue.config.productionTip = false;
+
+Vue.use(IdleVue, {
+  eventEmitter: new Vue(),
+  idleTime: 6000,
+  startAtIdle: false,
+  events: ["keydown", "mousedown", "touchstart"]
+});
 
 new Vue({
   router,

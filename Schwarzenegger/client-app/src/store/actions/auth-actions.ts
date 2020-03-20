@@ -11,6 +11,7 @@ export const LoginWithPassword = "LoginWithPassword";
 export const RefreshLogin = "RefreshLogin";
 
 export const LoginSuccess = "LoginSuccess";
+export const RefreshLoginSuccess = "RefreshLoginSuccess";
 export const LoginError = "LoginError";
 
 export const Logout = "Logout";

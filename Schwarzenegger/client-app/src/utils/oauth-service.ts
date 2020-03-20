@@ -25,7 +25,10 @@ async function getToken(user: any) {
   const formData = new FormData();
   formData.set("grant_type", "password");
   formData.append("client_id", "schwarzenegger_spa");
-  formData.append("scope", "schwarzenegger_api");
+  formData.append(
+    "scope",
+    "openid email phone profile offline_access roles schwarzenegger_api"
+  );
   formData.append("username", user.username);
   formData.append("password", user.password);
   return await sendForm(formData);

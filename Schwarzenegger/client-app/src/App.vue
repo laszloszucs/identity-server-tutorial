@@ -5,7 +5,7 @@
         <DxButton
           v-if="true || hasPermission('home.view')"
           @click="navigate('/home')"
-          text="Home"
+          :text="'Home'"
           icon="home"
           :disabled="$route.matched.some(({ name }) => name === 'Home')"
         />
@@ -32,7 +32,11 @@
           icon="user"
           :disabled="$route.matched.some(({ name }) => name === 'Account')"
         />
-        <DxButton @click="logout($event)" text="Logout" type="danger" />
+        <DxButton
+          @click="logout($event)"
+          :text="loginButtonText"
+          type="danger"
+        />
       </div>
     </div>
     <main>
@@ -43,14 +47,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
-import { Logout } from "../src/store/actions/auth-actions";
+import { Logout, RefreshLogin } from "../src/store/actions/auth-actions";
 import { mapState } from "vuex";
 import accountService from "./services/account.service";
 import { PermissionValues } from "./models/permission.model";
 import Loader from "./components/Loader.vue";
+import { OnIdle, OnActive } from "vue-plugin-helper-decorator";
+import { LoginStatus } from "./enums/login-status.enum";
+import EventBus from "./helpers/event-bus";
 
 @Component({
   components: {
@@ -63,12 +70,61 @@ import Loader from "./components/Loader.vue";
     profile: (state: any, getters: any) => () => {
       return getters.currentUser();
     },
-    isLoggedIn: (state, getters) => () => {
-      return getters.isLoggedIn();
-    }
   })
 })
 export default class App extends Vue {
+  private prettyIdleTime = "";
+  private isIdle = false;
+  private refreshTokenTimeoutId: number = null;
+  private idleTimerId: number = null;
+  private idleTimeExp: number = null;
+  get isLoggedIn() { 
+    return () => this.$store.getters.isLoggedIn();
+  };
+
+  mounted() {
+    if (!this.isLoggedIn()) {
+      this.navigate("/login");
+    } else {
+      this.calcRefreshTokenTimer();
+    }
+  }
+
+  calcRefreshTokenTimer() {
+    const accessTokenExpiryDate = this.$store.getters.accessTokenExpiryDate();
+    const now = new Date().valueOf();
+    const difference = accessTokenExpiryDate - now;
+    this.refreshTokenTimer(difference);
+  }
+
+  refreshTokenTimer(difference: number) {
+    const refreshTime = difference - 10 * 1000; // Lejárat előtt 10 másodperc
+
+    console.log("Next Refresh: ");
+    console.log(new Date(new Date().getTime() + refreshTime));
+
+    this.refreshTokenTimeoutId = setTimeout(
+      () => this.dispatchRefreshToken(),
+      Math.max(refreshTime, 0)
+    );
+  }
+
+  dispatchRefreshToken() {
+    if(this.isLoggedIn() && this.$store.state.auth.loginStatus === LoginStatus.Success) {
+      this.$store.dispatch(RefreshLogin).then(() => {
+        this.calcRefreshTokenTimer();
+      });
+    }
+  }
+
+  prettyDate(time) {
+    const date = new Date(parseInt(time));
+    return date.toLocaleTimeString(navigator.language, {
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  }
+
   onItemClickRoute(e: any) {
     this.navigate(e.itemData.path);
   }
@@ -80,6 +136,11 @@ export default class App extends Vue {
   }
 
   logout() {
+    clearTimeout(this.idleTimerId);
+    this.idleTimerId = null;
+    clearTimeout(this.refreshTokenTimeoutId);
+    this.refreshTokenTimeoutId = null;
+
     this.$store.dispatch(Logout);
   }
 
@@ -87,6 +148,54 @@ export default class App extends Vue {
     return accountService.userHasPermission(
       permissionValue as PermissionValues
     );
+  }
+
+  @Watch('$store.state.auth.loginStatus')
+  private onPropertyChanged(value: LoginStatus, oldValue: LoginStatus) {
+    if(value === LoginStatus.Success) {
+      this.calcRefreshTokenTimer();
+    }
+  }
+
+  get loginButtonText() {
+    if (this.isIdle) {
+      return `Logout (${this.prettyIdleTime})`;
+    }
+    return "Logout";
+  }
+
+  idleTimer() {
+    if (this.isLoggedIn() && this.isIdle) {
+      const now = new Date().valueOf();
+      const idleTimedifference = this.idleTimeExp - now;
+      this.prettyIdleTime = this.prettyDate(idleTimedifference);
+      console.log(this.prettyIdleTime);
+      this.idleTimerId = setTimeout(this.idleTimer, 1000);
+      if (idleTimedifference < 0) {
+        this.logout();
+      }
+    }
+  }
+
+  @OnIdle()
+  public whenIdle() {
+    this.isIdle = true;
+    if (this.isLoggedIn()) {
+      const dateTimeNow = new Date();
+      this.idleTimeExp = new Date(dateTimeNow.getTime() + 1 * 7000).valueOf();
+      // if (!this.idleTimerId) {
+      this.idleTimer();
+      // }
+    }
+  }
+
+  @OnActive()
+  public whenActive() {
+    this.isIdle = false;
+    // if (this.$store.getters.isLoggedIn()) {
+    //   clearTimeout(this.idleTimerId);
+    //   this.idleTimerId = null;
+    // }
   }
 }
 </script>
@@ -105,7 +214,7 @@ export default class App extends Vue {
 
 .navbar {
   display: grid;
-  grid-template-columns: auto 15%;
+  grid-template-columns: auto 20%;
 }
 
 .navs {
