@@ -4,12 +4,19 @@
       <img src="..\..\..\src\assets\schwarzenegger.png" />
     </div>
     <form @submit.prevent="login">
-      <DxForm id="form" :form-data="user" label-location="top">
+      <DxForm id="form" :form-data="loginUser" label-location="top">
         <DxSimpleItem data-field="username">
           <DxRequiredRule message="Username is required" />
         </DxSimpleItem>
         <DxSimpleItem :editor-options="passwordOptions" data-field="password">
           <DxRequiredRule message="Username is required" />
+        </DxSimpleItem>
+        <DxSimpleItem
+          :editor-options="checkBoxOptions"
+          data-field="rememberMe"
+          editor-type="dxCheckBox"
+        >
+        <DxLabel :visible="false" />
         </DxSimpleItem>
         <DxButtonItem
           :button-options="buttonOptions"
@@ -26,7 +33,8 @@ import { LoginWithPassword } from "../../store/actions/auth-actions";
 import DxForm, {
   DxButtonItem,
   DxSimpleItem,
-  DxRequiredRule
+  DxRequiredRule,
+  DxLabel
 } from "devextreme-vue/form";
 import { LoginUser } from "@/models/login-user.model";
 import notify from "devextreme/ui/notify";
@@ -37,13 +45,21 @@ import EventBus from "../../helpers/event-bus";
     DxForm,
     DxButtonItem,
     DxSimpleItem,
-    DxRequiredRule
+    DxRequiredRule,
+    DxLabel
   }
 })
 export default class Login extends Vue {
-  private user: LoginUser = {
+  private loginUser: LoginUser = {
     username: "admin",
-    password: "tempP@ss123"
+    password: "tempP@ss123",
+    rememberMe: false
+  };
+
+  private checkBoxOptions = {
+    text: "Remember Me",
+    value: false,
+    // rtlEnabled: true
   };
 
   private buttonOptions = {
@@ -59,9 +75,11 @@ export default class Login extends Vue {
   async login() {
     EventBus.$emit("LOADING");
     this.$store
-      .dispatch(LoginWithPassword, this.user)
+      .dispatch(LoginWithPassword, this.loginUser)
       .then(() => {
-        this.$router.push("/");
+        this.$router.push("/").then(() => {
+          EventBus.$emit("LOGIN");
+        });
       })
       .catch(error => {
         let errorMessage = null;

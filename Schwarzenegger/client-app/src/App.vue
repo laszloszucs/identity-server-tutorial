@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div v-if="isLoggedIn()" class="navbar">
+    <div v-if="!isSessionExpired()" class="navbar">
       <div class="navs">
         <DxButton
           v-if="true || hasPermission('home.view')"
@@ -17,7 +17,7 @@
           :disabled="$route.matched.some(({ name }) => name === 'Users')"
         />
         <DxButton
-          v-if="true || hasPermission('about.view')"
+          v-if="hasPermission('users.view')"
           @click="navigate('/about')"
           text="About"
           icon="info"
@@ -33,7 +33,8 @@
           :disabled="$route.matched.some(({ name }) => name === 'Account')"
         />
         <DxButton
-          @click="logout($event)"
+          id="logout"
+          @click="logout()"
           :text="loginButtonText"
           type="danger"
         />
@@ -47,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
 import { Logout, RefreshLogin } from "../src/store/actions/auth-actions";
@@ -55,7 +56,6 @@ import { mapState } from "vuex";
 import accountService from "./services/account.service";
 import { PermissionValues } from "./models/permission.model";
 import Loader from "./components/Loader.vue";
-import { OnIdle, OnActive } from "vue-plugin-helper-decorator";
 import { LoginStatus } from "./enums/login-status.enum";
 import EventBus from "./helpers/event-bus";
 
@@ -69,24 +69,70 @@ import EventBus from "./helpers/event-bus";
   computed: mapState({
     profile: (state: any, getters: any) => () => {
       return getters.currentUser();
-    },
+    }
   })
 })
 export default class App extends Vue {
+  private displayAtRemainedMilliSeconds = 31000;
+  private IdleTimeoutMilliSeconds = 45000;
+
   private prettyIdleTime = "";
+  private idleTimeExp = null;
   private isIdle = false;
-  private refreshTokenTimeoutId: number = null;
-  private idleTimerId: number = null;
-  private idleTimeExp: number = null;
-  get isLoggedIn() { 
+  private idleTimedifference = null;
+
+  get isLoggedIn() {
     return () => this.$store.getters.isLoggedIn();
-  };
+  }
+
+  get isSessionExpired() {
+    return () => this.$store.getters.isSessionExpired();
+  }
+
+  get loginState() {
+    return this.$store.state.auth.loginStatus;
+  }
+
+  get loginButtonText() {
+    if (this.isIdle) {
+      return `Logout (${this.prettyIdleTime})`;
+    }
+    return "Logout";
+  }
 
   mounted() {
-    if (!this.isLoggedIn()) {
+    EventBus.$on("LOGIN", () => {
+      this.init();
+    });
+    if (this.isSessionExpired()) {
       this.navigate("/login");
     } else {
-      this.calcRefreshTokenTimer();
+      this.$store.dispatch(RefreshLogin).then(() => {
+        this.init();
+      });
+    }
+
+    document.addEventListener("mousedown", this.resetIdleTimer);
+    document.addEventListener("keydown", this.resetIdleTimer);
+    document.addEventListener("touchstart", this.resetIdleTimer);
+  }
+
+  init() {
+    this.calcRefreshTokenTimer();
+
+    this.resetIdleTimer();
+    this.idleTimer();
+  }
+
+  resetIdleTimer(event: any = null) {
+    this.isIdle = false;
+    const dateTimeNow = new Date();
+    this.idleTimeExp = new Date(
+      dateTimeNow.getTime() + this.IdleTimeoutMilliSeconds
+    ).valueOf();
+    if (event?.target.closest("#logout")) {
+      // Valamiért nem mindig fut le a logout-ra kötött click esemény
+      this.logout();
     }
   }
 
@@ -98,27 +144,42 @@ export default class App extends Vue {
   }
 
   refreshTokenTimer(difference: number) {
-    const refreshTime = difference - 10 * 1000; // Lejárat előtt 10 másodperc
+    const refreshTime = difference - 10000; // Lejárat előtt 10 másodperc
+    // const currentTime = new Date();
+    // console.log("Current Time: ");
+    // console.log(currentTime);
+    // console.log("Next Refresh: ");
+    // console.log(new Date(currentTime.getTime() + refreshTime));
 
-    console.log("Next Refresh: ");
-    console.log(new Date(new Date().getTime() + refreshTime));
-
-    this.refreshTokenTimeoutId = setTimeout(
-      () => this.dispatchRefreshToken(),
-      Math.max(refreshTime, 0)
-    );
+    setTimeout(() => this.dispatchRefreshToken(), Math.max(refreshTime, 0));
   }
 
   dispatchRefreshToken() {
-    if(this.isLoggedIn() && this.$store.state.auth.loginStatus === LoginStatus.Success) {
-      this.$store.dispatch(RefreshLogin).then(() => {
-        this.calcRefreshTokenTimer();
-      });
+    const isLoggedIn = this.isLoggedIn();
+    const loginState = this.loginState;
+    // console.log("isLoggedIn");
+    // console.log(isLoggedIn);
+    // console.log("loginState");
+    // console.log(loginState);
+
+    if (isLoggedIn) {
+      if (
+        loginState === LoginStatus.Success ||
+        loginState === LoginStatus.RefreshSuccess
+      ) {
+        this.$store.dispatch(RefreshLogin).then(() => {
+          this.calcRefreshTokenTimer();
+        });
+      }
+    }
+
+    if (loginState === LoginStatus.Logout) {
+      this.navigate("/login");
     }
   }
 
   prettyDate(time) {
-    const date = new Date(parseInt(time));
+    const date = new Date(parseInt(time)); // TODO moment.js-t be kell vezetni
     return date.toLocaleTimeString(navigator.language, {
       minute: "2-digit",
       second: "2-digit"
@@ -136,11 +197,6 @@ export default class App extends Vue {
   }
 
   logout() {
-    clearTimeout(this.idleTimerId);
-    this.idleTimerId = null;
-    clearTimeout(this.refreshTokenTimeoutId);
-    this.refreshTokenTimeoutId = null;
-
     this.$store.dispatch(Logout);
   }
 
@@ -150,52 +206,23 @@ export default class App extends Vue {
     );
   }
 
-  @Watch('$store.state.auth.loginStatus')
-  private onPropertyChanged(value: LoginStatus, oldValue: LoginStatus) {
-    if(value === LoginStatus.Success) {
-      this.calcRefreshTokenTimer();
-    }
-  }
-
-  get loginButtonText() {
-    if (this.isIdle) {
-      return `Logout (${this.prettyIdleTime})`;
-    }
-    return "Logout";
-  }
-
   idleTimer() {
-    if (this.isLoggedIn() && this.isIdle) {
-      const now = new Date().valueOf();
-      const idleTimedifference = this.idleTimeExp - now;
-      this.prettyIdleTime = this.prettyDate(idleTimedifference);
-      console.log(this.prettyIdleTime);
-      this.idleTimerId = setTimeout(this.idleTimer, 1000);
-      if (idleTimedifference < 0) {
-        this.logout();
-      }
-    }
-  }
-
-  @OnIdle()
-  public whenIdle() {
-    this.isIdle = true;
     if (this.isLoggedIn()) {
-      const dateTimeNow = new Date();
-      this.idleTimeExp = new Date(dateTimeNow.getTime() + 1 * 7000).valueOf();
-      // if (!this.idleTimerId) {
-      this.idleTimer();
-      // }
+      const now = new Date().valueOf();
+      const idleTimeExp = this.idleTimeExp;
+      this.idleTimedifference = idleTimeExp - now;
+      if (this.idleTimedifference < this.displayAtRemainedMilliSeconds) {
+        this.isIdle = true;
+      }
+      if (this.idleTimedifference < 0) {
+        console.log("Idle Logout...");
+        this.logout();
+        return;
+      }
+      this.prettyIdleTime = this.prettyDate(this.idleTimedifference);
+      // console.log(this.prettyIdleTime);
+      setTimeout(() => this.idleTimer(), 1000);
     }
-  }
-
-  @OnActive()
-  public whenActive() {
-    this.isIdle = false;
-    // if (this.$store.getters.isLoggedIn()) {
-    //   clearTimeout(this.idleTimerId);
-    //   this.idleTimerId = null;
-    // }
   }
 }
 </script>

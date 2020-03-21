@@ -52,6 +52,7 @@ function processLoginResponse(
     throw new Error("accessToken cannot be null");
   }
 
+  debugger;
   rememberMe = rememberMe || context.getters.rememberMe();
 
   const refreshToken = response.refresh_token || context.getters.refreshToken();
@@ -90,14 +91,6 @@ function processLoginResponse(
   );
 
   return user;
-}
-
-function clearLocalStorage(): void {
-  localStore.deleteData(DBkeys.ACCESS_TOKEN);
-  localStore.deleteData(DBkeys.REFRESH_TOKEN);
-  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
-  localStore.deleteData(DBkeys.USER_PERMISSIONS);
-  localStore.deleteData(DBkeys.CURRENT_USER);
 }
 
 function logout(): void {
@@ -152,24 +145,26 @@ const getters = {
     return false;
   },
   isLoggedIn: (state: any, getters: any) => (): boolean => {
-    if (getters.isSessionExpired()) {
-      clearLocalStorage();
-      return false;
-    }
+    // if (getters.isSessionExpired()) {
+    //   // clearLocalStorage();
+    //   return false;
+    // }
     return getters.currentUser() != null;
   },
   rememberMe: () => (): boolean => {
-    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME) == true;
+    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME);
   }
 };
 
 const actions = {
-  [LoginWithPassword]: (context: any, user: any, rememberMe?: boolean) => {
+  [LoginWithPassword]: (context: any, loginUser: any) => {
     return new Promise((resolve, reject) => {
+      localStore.savePermanentData(loginUser.rememberMe, DBkeys.REMEMBER_ME);
       context.commit(LoginWithPassword);
-      OAuthService.loginWithPassword(user)
+      OAuthService.loginWithPassword(loginUser)
         .then((response: LoginResponse) => {
-          const user = processLoginResponse(context, response, rememberMe);
+          debugger;
+          const user = processLoginResponse(context, response, loginUser.rememberMe);
           context.commit(LoginSuccess, user);
           resolve(user);
         })
@@ -203,6 +198,12 @@ const actions = {
       logout();
       resolve();
     });
+  },
+  [RefreshLoginSuccess]: (context: any) => {
+    return new Promise(resolve => {
+      context.commit(RefreshLoginSuccess);
+      resolve();
+    });
   }
 };
 
@@ -226,8 +227,8 @@ const mutations = {
     state.hasLoadedOnce = true;
   },
   [Logout]: () => {
-    state.loginStatus = LoginStatus.Init;
-  }
+    state.loginStatus = LoginStatus.Logout;
+  },
 };
 
 export default {

@@ -70,13 +70,13 @@ Router.prototype.push = function push(
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters.isLoggedIn()) {
+    if (store.getters.isSessionExpired()) {
       next("/login");
       return;
     }
   } else if (
     to.matched.some(record => record.name === "Login") &&
-    store.getters.isLoggedIn()
+    !store.getters.isSessionExpired()
   ) {
     next("/");
     return;
