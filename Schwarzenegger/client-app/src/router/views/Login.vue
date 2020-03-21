@@ -1,29 +1,32 @@
 <template>
-  <div class="container">
-    <div class="image-container">
-      <img src="..\..\..\src\assets\schwarzenegger.png" />
+  <div class="login-container">
+    <div class="card-back">
+      <div class="image-container">
+        <img class="responsive" src="..\..\..\src\assets\schwarzenegger.png" />
+      </div>
+      <form @submit.prevent="login">
+        <DxForm id="form" :form-data="loginUser" label-location="top">
+          <DxSimpleItem data-field="username">
+            <DxRequiredRule message="Username is required" />
+          </DxSimpleItem>
+          <DxSimpleItem :editor-options="passwordOptions" data-field="password">
+            <DxRequiredRule message="Username is required" />
+          </DxSimpleItem>
+          <DxSimpleItem itemType="empty"></DxSimpleItem>
+          <DxSimpleItem
+            :editor-options="checkBoxOptions"
+            data-field="rememberMe"
+            editor-type="dxCheckBox"
+          >
+            <DxLabel :visible="false" />
+          </DxSimpleItem>
+          <DxButtonItem
+            :button-options="buttonOptions"
+            horizontal-alignment="right"
+          ></DxButtonItem>
+        </DxForm>
+      </form>
     </div>
-    <form @submit.prevent="login">
-      <DxForm id="form" :form-data="loginUser" label-location="top">
-        <DxSimpleItem data-field="username">
-          <DxRequiredRule message="Username is required" />
-        </DxSimpleItem>
-        <DxSimpleItem :editor-options="passwordOptions" data-field="password">
-          <DxRequiredRule message="Username is required" />
-        </DxSimpleItem>
-        <DxSimpleItem
-          :editor-options="checkBoxOptions"
-          data-field="rememberMe"
-          editor-type="dxCheckBox"
-        >
-        <DxLabel :visible="false" />
-        </DxSimpleItem>
-        <DxButtonItem
-          :button-options="buttonOptions"
-          horizontal-alignment="right"
-        ></DxButtonItem>
-      </DxForm>
-    </form>
   </div>
 </template>
 
@@ -58,7 +61,7 @@ export default class Login extends Vue {
 
   private checkBoxOptions = {
     text: "Remember Me",
-    value: false,
+    value: false
     // rtlEnabled: true
   };
 
@@ -106,12 +109,34 @@ export default class Login extends Vue {
 </script>
 
 <style lang="scss">
-.container {
-  padding: 200px;
-  width: 40%;
+.login-container {
+  padding: 5%;
+  width: 90%;
+  max-width: 600px;
   margin: auto;
 }
+
+.card-back {
+  border-radius: 0.3rem;
+  // padding: 120px 90px 120px 90px;
+  padding: 10% 5% 10% 5%;
+  -webkit-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+  box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+}
+
 .image-container {
   text-align: center;
+}
+
+.responsive {
+  max-width: 200px;
+  height: auto;
+  @media (max-width: 767px) {
+    width: 30vh;
+  }
+  @media (min-width: 768px) {
+    width: 100%;
+  }
 }
 </style>

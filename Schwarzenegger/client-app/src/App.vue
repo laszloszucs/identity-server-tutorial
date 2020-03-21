@@ -3,23 +3,23 @@
     <div v-if="!isSessionExpired()" class="navbar">
       <div class="navs">
         <DxButton
-          v-if="true || hasPermission('home.view')"
+          v-if="hasPermission('home.view')"
           @click="navigate('/home')"
-          :text="'Home'"
+          :text="isSmall('Home')"
           icon="home"
           :disabled="$route.matched.some(({ name }) => name === 'Home')"
         />
         <DxButton
-          v-if="true || hasPermission('users.view')"
+          v-if="hasPermission('users.view')"
           @click="navigate('/users')"
-          text="Users"
+          :text="isSmall('Users')"
           icon="group"
           :disabled="$route.matched.some(({ name }) => name === 'Users')"
         />
         <DxButton
-          v-if="hasPermission('users.view')"
+          v-if="hasPermission('about.view')"
           @click="navigate('/about')"
-          text="About"
+          :text="isSmall('About')"
           icon="info"
           :disabled="$route.matched.some(({ name }) => name === 'About')"
         />
@@ -28,19 +28,20 @@
         <DxButton
           v-if="true || hasPermission('account.view')"
           @click="navigate('/account')"
-          :text="profile().userName"
+          :text="isSmall(profile().userName)"
           icon="user"
           :disabled="$route.matched.some(({ name }) => name === 'Account')"
         />
         <DxButton
           id="logout"
           @click="logout()"
-          :text="loginButtonText"
+          :text="logoutText"
+          :icon="isNotSmall('runner')"
           type="danger"
         />
       </div>
     </div>
-    <main>
+    <main :class="{ 'logged-in': !isSessionExpired() }">
       <router-view />
     </main>
     <loader></loader>
@@ -48,7 +49,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
 import { Logout, RefreshLogin } from "../src/store/actions/auth-actions";
@@ -73,13 +74,42 @@ import EventBus from "./helpers/event-bus";
   })
 })
 export default class App extends Vue {
-  private displayAtRemainedMilliSeconds = 31000;
-  private IdleTimeoutMilliSeconds = 45000;
+  // private displayAtRemainedMilliSeconds = 31000;
+  // private IdleTimeoutMilliSeconds = 45000;
+  private displayAtRemainedMilliSeconds = 450000;
+  private IdleTimeoutMilliSeconds = 450000;
+  private breakPoint = 768;
+  private isBig = window.innerWidth >= this.breakPoint;
 
   private prettyIdleTime = "";
   private idleTimeExp = null;
   private isIdle = false;
   private idleTimedifference = null;
+  private logoutText = null;
+
+  isNotSmall(text) {
+    return this.isBig ? null : text;
+  }
+  
+  isSmall(text) {
+    return !this.isBig ? null : text;
+  }
+
+  getLogoutText() {
+    return `${this.isBig ? "Logout" : ""}${this.isBig ? " " : ""}${
+      this.isIdle ? "(" + this.prettyIdleTime + ")" : ""
+    }`;
+  }
+
+  @Watch('isIdle')
+  onIsIdleChanged(value: string, oldValue: string) {
+    this.logoutText = this.getLogoutText();
+  }
+
+  @Watch('isBig')
+  onIsBigChanged(value: string, oldValue: string) {
+    this.logoutText = this.getLogoutText();
+  }
 
   get isLoggedIn() {
     return () => this.$store.getters.isLoggedIn();
@@ -93,16 +123,10 @@ export default class App extends Vue {
     return this.$store.state.auth.loginStatus;
   }
 
-  get loginButtonText() {
-    if (this.isIdle) {
-      return `Logout (${this.prettyIdleTime})`;
-    }
-    return "Logout";
-  }
-
   mounted() {
     EventBus.$on("LOGIN", () => {
       this.init();
+      this.logoutText = this.getLogoutText();
     });
     if (this.isSessionExpired()) {
       this.navigate("/login");
@@ -110,11 +134,14 @@ export default class App extends Vue {
       this.$store.dispatch(RefreshLogin).then(() => {
         this.init();
       });
+      this.logoutText = this.getLogoutText();
     }
 
     document.addEventListener("mousedown", this.resetIdleTimer);
     document.addEventListener("keydown", this.resetIdleTimer);
     document.addEventListener("touchstart", this.resetIdleTimer);
+
+    window.addEventListener('resize', this.reportWindowSize);
   }
 
   init() {
@@ -124,13 +151,17 @@ export default class App extends Vue {
     this.idleTimer();
   }
 
+  reportWindowSize() {
+    this.isBig = window.innerWidth >= this.breakPoint;
+  }
+
   resetIdleTimer(event: any = null) {
     this.isIdle = false;
     const dateTimeNow = new Date();
     this.idleTimeExp = new Date(
       dateTimeNow.getTime() + this.IdleTimeoutMilliSeconds
     ).valueOf();
-    if (event?.target.closest("#logout")) {
+    if (event?.target.closest("#logout") && event?.which === 1) {
       // Valamiért nem mindig fut le a logout-ra kötött click esemény
       this.logout();
     }
@@ -220,6 +251,7 @@ export default class App extends Vue {
         return;
       }
       this.prettyIdleTime = this.prettyDate(this.idleTimedifference);
+      this.logoutText = this.getLogoutText();
       // console.log(this.prettyIdleTime);
       setTimeout(() => this.idleTimer(), 1000);
     }
@@ -229,30 +261,35 @@ export default class App extends Vue {
 
 <style lang="scss">
 #app {
+  height: 100%;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
-
   display: grid;
-  gap: 20px;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto 1fr max-content;
 }
 
 .navbar {
+  margin: 0 15px 15px 15px;
   display: grid;
-  grid-template-columns: auto 20%;
+  grid-template-columns: 1fr max-content;
 }
 
 .navs {
   display: grid;
-  grid-template-columns: auto auto auto;
+  // grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
 }
 
 .other-buttons {
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 5px;
+  @media (max-width: 767px) {
+    grid-template-columns: 70px 120px; // repeat(2, 100px);  
+  }
+  @media (min-width: 768px) {
+    grid-template-columns: 102px 130px // repeat(2, 150px);  
+  }
 }
 
 .userName {
@@ -265,7 +302,11 @@ export default class App extends Vue {
 }
 
 .navs .dx-button {
+  border-bottom: 1px solid grey !important;
   border-right: 1px solid #2c3e50 !important;
+  &:first-child {
+    border-left: 1px solid #2c3e50 !important;
+  }
 }
 
 .dx-button.dx-button-danger {
@@ -291,7 +332,24 @@ export default class App extends Vue {
 }
 
 main {
-  width: 80%;
-  margin: auto;
+  overflow: auto;
+  margin: 1%;
+  &.logged-in {
+    border-radius: 0.3rem;
+    padding: 30px;
+    -webkit-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+    box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+  }
+}
+.dx-button.dx-button-danger {
+  .dx-icon.dx-icon-runner {
+    color: red !important;
+  }
+  &.dx-state-hover {
+    .dx-icon.dx-icon-runner {
+      color: #fff !important;
+    }
+  }
 }
 </style>
