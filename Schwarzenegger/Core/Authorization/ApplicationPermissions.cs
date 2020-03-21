@@ -27,16 +27,32 @@ namespace Schwarzenegger.Core.Authorization
             RolesPermissionGroupName, "Permission to assign roles to users");
 
 
+        public static ApplicationPermission ViewHome = new ApplicationPermission("View Home", "home.view",
+            UsersPermissionGroupName, "Permission to view Home");
+
+
+        public static ApplicationPermission ViewAbout = new ApplicationPermission("View About", "about.view",
+            UsersPermissionGroupName, "Permission to view About");
+
+
+        public static ApplicationPermission ViewAccount = new ApplicationPermission("View Account", "account.view",
+            UsersPermissionGroupName, "Permission to view my Account");
+
+
         static ApplicationPermissions()
         {
             var allPermissions = new List<ApplicationPermission>
             {
                 ViewUsers,
-                ManageUsers,
+                //ManageUsers,
 
-                ViewRoles,
-                ManageRoles,
-                AssignRoles
+                //ViewRoles,
+                //ManageRoles,
+                //AssignRoles,
+
+                ViewHome,
+                ViewAbout,
+                ViewAccount
             };
 
             AllPermissions = allPermissions.AsReadOnly();

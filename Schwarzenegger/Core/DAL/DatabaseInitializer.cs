@@ -33,11 +33,11 @@ namespace Schwarzenegger.Core.DAL
         {
             //await _context.Database.MigrateAsync().ConfigureAwait(false); // TODO Megvizsgálni, hogy fel lehet-e okosan használni
 
+            const string adminRoleName = "administrator";
             if (!await _context.Users.AnyAsync())
             {
                 _logger.LogInformation("Generating inbuilt accounts");
 
-                const string adminRoleName = "administrator";
                 const string userRoleName = "user";
 
                 await EnsureRoleAsync(adminRoleName, "Default administrator",
@@ -53,6 +53,25 @@ namespace Schwarzenegger.Core.DAL
 
                 _logger.LogInformation("Inbuilt account generation completed");
             }
+            else
+            {
+                _logger.LogInformation("Update administrator Role Claims");
+                await UpdateRoleClaimsAsync(adminRoleName, "Default administrator",
+                    ApplicationPermissions.GetAllPermissionValues());
+
+                await _context.SaveChangesAsync();
+
+            }
+        }
+        private async Task UpdateRoleClaimsAsync(string roleName, string description, string[] claims)
+        {
+            var applicationRole = await _accountManager.GetRoleByNameAsync(roleName);
+
+            var result = await _accountManager.UpdateRoleAsync(applicationRole, claims);
+
+            if (!result.Succeeded)
+                throw new Exception(
+                    $"Seeding \"{description}\" role failed. Errors: {string.Join(Environment.NewLine, result.Errors)}");
         }
 
         private async Task EnsureRoleAsync(string roleName, string description, string[] claims)
