@@ -11,15 +11,6 @@ import store from "./store";
 import axios from "axios";
 import i18n from "./i18n";
 
-Vue.config.productionTip = false;
-
-new Vue({
-  router,
-  store,
-  i18n,
-  render: h => h(App)
-}).$mount("#app");
-
 axios.interceptors.request.use(
   config => {
     const accessToken = store.getters.accessToken();
@@ -34,3 +25,12 @@ axios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+Vue.config.productionTip = false;
+
+new Vue({
+  router,
+  store,
+  i18n,
+  render: h => h(App)
+}).$mount("#app");
