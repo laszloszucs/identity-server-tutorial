@@ -10,8 +10,17 @@ namespace Schwarzenegger.ViewModels
         [MinimumCount(1, ErrorMessage = "Roles cannot be empty")]
         public string[] Roles { get; set; }
     }
+    
+    public class InsertUserViewModel : UserBaseViewModel
+    {
+        [Required]
+        [MinLength(6, ErrorMessage = "New Password must be at least 6 characters")]
+        public string NewPassword { get; set; }
 
-
+        //[MinimumCount(1, ErrorMessage = "Roles cannot be empty")]
+        public string[] Roles { get; set; }
+    }
+    
     public class UserEditViewModel : UserBaseViewModel
     {
         public string CurrentPassword { get; set; }
@@ -27,8 +36,6 @@ namespace Schwarzenegger.ViewModels
     public class UserPatchViewModel
     {
         public string FullName { get; set; }
-
-        public string JobTitle { get; set; }
 
         public string PhoneNumber { get; set; }
 
@@ -50,8 +57,6 @@ namespace Schwarzenegger.ViewModels
         [StringLength(200, ErrorMessage = "Email must be at most 200 characters")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
         public string Email { get; set; }
-
-        public string JobTitle { get; set; }
 
         public string PhoneNumber { get; set; }
 

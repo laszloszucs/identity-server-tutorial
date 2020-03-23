@@ -7,22 +7,9 @@ namespace Schwarzenegger.Core.Models
 {
     public class ApplicationUser : IdentityUser, IAuditableEntity
     {
-        public virtual string FriendlyName
-        {
-            get
-            {
-                var friendlyName = string.IsNullOrWhiteSpace(FullName) ? UserName : FullName;
-
-                if (!string.IsNullOrWhiteSpace(JobTitle))
-                    friendlyName = $"{JobTitle} {friendlyName}";
-
-                return friendlyName;
-            }
-        }
-
-
+        public virtual string FriendlyName => string.IsNullOrWhiteSpace(FullName) ? UserName : FullName;
+        
         public bool IsAdmin { get; set; }
-        public string JobTitle { get; set; }
         public string FullName { get; set; }
         public string Configuration { get; set; }
         public bool IsEnabled { get; set; }

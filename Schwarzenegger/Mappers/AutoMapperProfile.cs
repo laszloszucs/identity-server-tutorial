@@ -15,9 +15,17 @@ namespace Schwarzenegger.Mappers
             CreateMap<UserViewModel, ApplicationUser>()
                 .ForMember(d => d.Roles, map => map.Ignore())
                 .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));
+            
+            CreateMap<ApplicationUser, InsertUserViewModel>()
+                .ForMember(d => d.Roles, map => map.Ignore());
+
+            CreateMap<InsertUserViewModel, ApplicationUser> ()
+                .ForMember(d => d.Roles, map => map.Ignore())
+                .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));
 
             CreateMap<ApplicationUser, UserEditViewModel>()
                 .ForMember(d => d.Roles, map => map.Ignore());
+
             CreateMap<UserEditViewModel, ApplicationUser>()
                 .ForMember(d => d.Roles, map => map.Ignore())
                 .ForMember(d => d.Id, map => map.Condition(src => src.Id != null));

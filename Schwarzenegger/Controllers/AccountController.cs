@@ -259,12 +259,16 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(201, Type = typeof(UserViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> Register([FromBody] UserEditViewModel user)
+        public async Task<IActionResult> Register([FromBody] InsertUserViewModel user)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
                 Policies.AssignAllowedRolesPolicy)).Succeeded)
                 return new ForbidResult();
 
+            if (!TryValidateModel(user, nameof(UserEditViewModel)))
+            {
+                return BadRequest(ModelState);
+            }
 
             if (ModelState.IsValid)
             {

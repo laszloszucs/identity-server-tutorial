@@ -23,7 +23,7 @@
           :disabled="$route.matched.some(({ name }) => name === 'About')"
         />
       </div>
-      <div :class="{ 'other-buttons': hasPermission('account.view') } ">
+      <div :class="{ 'other-buttons': hasPermission('account.view') }">
         <DxButton
           id="adminButton"
           class="admin-button"
@@ -92,7 +92,7 @@ export default class App extends Vue {
   isNotSmall(text) {
     return this.isBig ? null : text;
   }
-  
+
   isSmall(text) {
     return !this.isBig ? null : text;
   }
@@ -103,13 +103,13 @@ export default class App extends Vue {
     }`;
   }
 
-  @Watch('isIdle')
-  onIsIdleChanged(value: string, oldValue: string) {
+  @Watch("isIdle")
+  onIsIdleChanged() {
     this.logoutText = this.getLogoutText();
   }
 
-  @Watch('isBig')
-  onIsBigChanged(value: string, oldValue: string) {
+  @Watch("isBig")
+  onIsBigChanged() {
     this.logoutText = this.getLogoutText();
   }
 
@@ -143,7 +143,7 @@ export default class App extends Vue {
     document.addEventListener("keydown", this.resetIdleTimer);
     document.addEventListener("touchstart", this.resetIdleTimer);
 
-    window.addEventListener('resize', this.reportWindowSize);
+    window.addEventListener("resize", this.reportWindowSize);
   }
 
   init() {
@@ -261,7 +261,7 @@ export default class App extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #app {
   height: 100%;
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -286,13 +286,12 @@ export default class App extends Vue {
 
 .other-buttons {
   display: grid;
-  grid-template-areas: 
-    "admin-button logout-button";
+  grid-template-areas: "admin-button logout-button";
   @media (max-width: 767px) {
-    grid-template-columns: 70px 120px; // repeat(2, 100px);  
+    grid-template-columns: 70px 120px; // repeat(2, 100px);
   }
   @media (min-width: 768px) {
-    grid-template-columns: 105px 130px // repeat(2, 150px);  
+    grid-template-columns: 105px 130px; // repeat(2, 150px);
   }
 }
 
@@ -324,7 +323,7 @@ export default class App extends Vue {
   }
   &.dx-state-disabled {
     border-bottom: none !important;
-  } 
+  }
 }
 
 #adminButton {
@@ -333,7 +332,7 @@ export default class App extends Vue {
   border-bottom: 1px solid grey !important;
   &.dx-state-disabled {
     border-bottom: none !important;
-  } 
+  }
 }
 
 .dx-button.dx-button-danger {
@@ -350,7 +349,7 @@ export default class App extends Vue {
 .dx-button.dx-state-disabled {
   z-index: -1;
   opacity: 100 !important;
-  background-color: rgba(0, 165, 187, 0.280) !important;
+  background-color: rgba(0, 165, 187, 0.28) !important;
   border-bottom: none !important;
   -webkit-box-shadow: 0px 0px 35px -4px rgba(0, 165, 187, 0.75);
   -moz-box-shadow: 0px 0px 35px -4px rgba(0, 87, 187, 0.75);

@@ -61,7 +61,7 @@ export default class Login extends Vue {
 
   private checkBoxOptions = {
     text: "Remember Me",
-    value: false
+    value: true
     // rtlEnabled: true
   };
 
@@ -108,7 +108,7 @@ export default class Login extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .login-container {
   padding: 5%;
   width: 90%;

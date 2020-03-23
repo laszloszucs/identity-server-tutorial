@@ -71,12 +71,13 @@ function processLoginResponse(
     decodedAccessToken.name,
     decodedAccessToken.fullname,
     decodedAccessToken.email,
-    decodedAccessToken.jobtitle,
     decodedAccessToken.phone_number,
+    true,
+    false,
     Array.isArray(decodedAccessToken.role)
       ? decodedAccessToken.role
       : [decodedAccessToken.role],
-      decodedAccessToken.is_admin
+    decodedAccessToken.is_admin
   );
   user.isEnabled = true;
 

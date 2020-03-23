@@ -1,11 +1,8 @@
-// import { User } from "../models/user.model";
-// import { Role } from '../models/Role';
-// import { Permission, PermissionNames, PermissionValues } from '../models/permission.model';
-// import { UserEdit } from '../models/user-edit.model';
 import store from "../store";
 import { PermissionValues } from "@/models/permission.model";
 import { Role } from "@/models/role.model";
-import axios from "axios";
+import { InsertUser } from "@/models/user.model";
+import RequestHandler from "./requestHandler";
 
 export type RolesChangedOperation = "add" | "delete" | "modify";
 export interface RolesChangedEventArg {
@@ -20,11 +17,16 @@ class AccountService {
   public static readonly roleModifiedOperation: RolesChangedOperation =
     "modify";
 
-  //   private _rolesChanged = new Subject<RolesChangedEventArg>();
+  private readonly path = "account/users";
 
-  // getUser(userId?: string) {
-  //     return this.accountEndpoint.getUserEndpoint<User>(userId);
-  // }
+  constructor() {
+    if (AccountService.instance) {
+      return AccountService.instance;
+    }
+    AccountService.instance = this;
+
+    return this;
+  }
 
   // getUserAndRoles(userId?: string) {
 
@@ -34,14 +36,24 @@ class AccountService {
   // }
 
   async getUsers() {
-    try {
-      const response = await axios.get(
-        "https://localhost:44300/api/account/users"
-      );
-      return response.data;
-    } catch (err) {
-      return [];
-    }
+    return await RequestHandler.get(this.path);
+  }
+
+  async insertUser(insertUser: InsertUser) {
+    debugger;
+    return await RequestHandler.post(this.path, insertUser);
+  }
+
+  async updateUser(updateUser: any) {
+    return await RequestHandler.put(this.path, JSON.stringify(updateUser));
+  }
+
+  async removeUser(id: any) {
+    return await RequestHandler.delete(this.path, id);
+  }
+
+  async getRoles() {
+    return await RequestHandler.get("account/roles");
   }
 
   // getUsersAndRoles(page?: number, pageSize?: number) {
@@ -96,13 +108,17 @@ class AccountService {
   // }
 
   userHasPermissions(permissionValues: PermissionValues[]): boolean {
-    let hasPermission = true; 
-    if(this.currentUser.isAdmin) {
+    let hasPermission = true;
+    if (this.currentUser.isAdmin) {
       return true;
     }
 
     permissionValues.forEach(permissionValue => {
-      if(!this.permissions.some(p => p as PermissionValues == permissionValue as PermissionValues)) {
+      if (
+        !this.permissions.some(
+          p => (p as PermissionValues) == (permissionValue as PermissionValues)
+        )
+      ) {
         hasPermission = false;
       }
     });
@@ -116,74 +132,6 @@ class AccountService {
       this.permissions.some(p => p == permissionValue)
     );
   }
-
-  // refreshLoggedInUser() {
-  //     return this.accountEndpoint.refreshLogin();
-  // }
-
-  // getRoles(page?: number, pageSize?: number) {
-
-  //     return this.accountEndpoint.getRolesEndpoint<Role[]>(page, pageSize);
-  // }
-
-  // getRolesAndPermissions(page?: number, pageSize?: number) {
-
-  //     return forkJoin(
-  //         this.accountEndpoint.getRolesEndpoint<Role[]>(page, pageSize),
-  //         this.accountEndpoint.getPermissionsEndpoint<Permission[]>());
-  // }
-
-  // updateRole(role: Role) {
-  //     if (role.id) {
-  //         return this.accountEndpoint.getUpdateRoleEndpoint(role, role.id).pipe(
-  //             tap(data => this.onRolesChanged([role], AccountService.roleModifiedOperation)));
-  //     } else {
-  //         return this.accountEndpoint.getRoleByRoleNameEndpoint<Role>(role.name).pipe(
-  //             mergeMap(foundRole => {
-  //                 role.id = foundRole.id;
-  //                 return this.accountEndpoint.getUpdateRoleEndpoint(role, role.id);
-  //             }),
-  //             tap(data => this.onRolesChanged([role], AccountService.roleModifiedOperation)));
-  //     }
-  // }
-
-  // newRole(role: Role) {
-  //     return this.accountEndpoint.getNewRoleEndpoint<Role>(role).pipe<Role>(
-  //         tap(data => this.onRolesChanged([role], AccountService.roleAddedOperation)));
-  // }
-
-  // deleteRole(roleOrRoleId: string | Role): Observable<Role> {
-
-  //     if (typeof roleOrRoleId === 'string' || roleOrRoleId instanceof String) {
-  //         return this.accountEndpoint.getDeleteRoleEndpoint<Role>(roleOrRoleId as string).pipe<Role>(
-  //             tap(data => this.onRolesChanged([data], AccountService.roleDeletedOperation)));
-  //     } else {
-
-  //         if (roleOrRoleId.id) {
-  //             return this.deleteRole(roleOrRoleId.id);
-  //         } else {
-  //             return this.accountEndpoint.getRoleByRoleNameEndpoint<Role>(roleOrRoleId.name).pipe<Role>(
-  //                 mergeMap(role => this.deleteRole(role.id)));
-  //         }
-  //     }
-  // }
-
-  // getPermissions() {
-
-  //     return this.accountEndpoint.getPermissionsEndpoint<Permission[]>();
-  // }
-
-  //   private onRolesChanged(roles: Role[] | string[], op: RolesChangedOperation) {
-  //     this._rolesChanged.next({ roles, operation: op });
-  //   }
-
-  //   onRolesUserCountChanged(roles: Role[] | string[]) {
-  //     return this.onRolesChanged(roles, AccountService.roleModifiedOperation);
-  //   }
-
-  //   getRolesChangedEvent(): Observable<RolesChangedEventArg> {
-  //     return this._rolesChanged.asObservable();
-  //   }
 
   get permissions(): PermissionValues[] {
     return store.getters.userPermissions();

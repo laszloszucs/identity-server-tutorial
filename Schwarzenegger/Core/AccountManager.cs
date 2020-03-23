@@ -215,6 +215,8 @@ namespace Schwarzenegger.Core
         public async Task<bool> TestCanDeleteUserAsync(string userId)
 #pragma warning restore 1998
         {
+
+            return true;
             throw new NotImplementedException();
 
             //if (await _context.Orders.Where(o => o.CashierId == userId).AnyAsync())

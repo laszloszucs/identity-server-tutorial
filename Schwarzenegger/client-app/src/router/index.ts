@@ -68,8 +68,11 @@ Router.prototype.push = function push(
 
 router.beforeEach(async (to, from, next) => {
   to.matched.forEach(record => {
-    if(record.meta.permissions) {
-      if (store.getters.isSessionExpired() || !accountService.userHasPermissions(record.meta.permissions)) {
+    if (record.meta.permissions) {
+      if (
+        store.getters.isSessionExpired() ||
+        !accountService.userHasPermissions(record.meta.permissions)
+      ) {
         next("/login");
         return;
       }

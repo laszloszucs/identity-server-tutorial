@@ -28,7 +28,7 @@ axios.interceptors.request.use(
 
 Vue.config.productionTip = false;
 
-new Vue({
+export default new Vue({
   router,
   store,
   i18n,
