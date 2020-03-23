@@ -73,7 +73,7 @@ namespace Schwarzenegger
                     
                     RefreshTokenExpiration = TokenExpiration.Sliding,
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
-                    AccessTokenLifetime = 20, // Lifetime of access token in seconds.
+                    AccessTokenLifetime = 3600, // Lifetime of access token in seconds.
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,+
                     //ClientSecrets =

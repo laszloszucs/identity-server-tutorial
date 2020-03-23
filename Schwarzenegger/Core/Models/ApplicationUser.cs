@@ -21,6 +21,7 @@ namespace Schwarzenegger.Core.Models
         }
 
 
+        public bool IsAdmin { get; set; }
         public string JobTitle { get; set; }
         public string FullName { get; set; }
         public string Configuration { get; set; }

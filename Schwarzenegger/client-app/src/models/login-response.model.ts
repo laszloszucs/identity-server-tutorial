@@ -26,4 +26,5 @@ export interface AccessToken {
   configuration: string;
   scope: string | string[];
   amr: string[];
+  is_admin: boolean;
 }

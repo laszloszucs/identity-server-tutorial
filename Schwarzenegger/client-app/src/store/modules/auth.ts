@@ -65,8 +65,7 @@ function processLoginResponse(
     decodedAccessToken.permission
   )
     ? decodedAccessToken.permission
-    : [decodedAccessToken.permission];
-
+    : [];
   const user = new User(
     decodedAccessToken.sub,
     decodedAccessToken.name,
@@ -76,7 +75,8 @@ function processLoginResponse(
     decodedAccessToken.phone_number,
     Array.isArray(decodedAccessToken.role)
       ? decodedAccessToken.role
-      : [decodedAccessToken.role]
+      : [decodedAccessToken.role],
+      decodedAccessToken.is_admin
   );
   user.isEnabled = true;
 

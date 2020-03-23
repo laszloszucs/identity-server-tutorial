@@ -16,6 +16,7 @@ using Schwarzenegger.Core;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.DAL.Interfaces;
+using Schwarzenegger.Core.ExtensionMethods;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
 using Schwarzenegger.Helpers;
@@ -104,20 +105,17 @@ namespace Schwarzenegger
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Policies.ViewAllUsersPolicy,
-                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewUsers));
-                options.AddPolicy(Policies.ManageAllUsersPolicy,
-                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageUsers));
-
-                options.AddPolicy(Policies.ViewAllRolesPolicy,
-                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles));
                 options.AddPolicy(Policies.ViewRoleByRoleNamePolicy,
                     policy => policy.Requirements.Add(new ViewRoleAuthorizationRequirement()));
-                options.AddPolicy(Policies.ManageAllRolesPolicy,
-                    policy => policy.RequireClaim(ClaimConstants.Permission, ApplicationPermissions.ManageRoles));
 
                 options.AddPolicy(Policies.AssignAllowedRolesPolicy,
                     policy => policy.Requirements.Add(new AssignRolesAuthorizationRequirement()));
+
+                options.AddPolicyWithAdmin(Policies.ViewAllUsersPolicy, ApplicationPermissions.ViewUsers);
+                options.AddPolicyWithAdmin(Policies.ManageAllUsersPolicy, ApplicationPermissions.ManageUsers);
+                options.AddPolicyWithAdmin(Policies.ViewAllRolesPolicy, ApplicationPermissions.ViewRoles);
+                options.AddPolicyWithAdmin(Policies.ManageAllRolesPolicy, ApplicationPermissions.ManageRoles);
+
             });
 
             services.AddCors(options =>

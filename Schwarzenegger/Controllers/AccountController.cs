@@ -53,7 +53,7 @@ namespace Schwarzenegger.Controllers
         public async Task<IActionResult> GetUserById(string id)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Read)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             var userVM = await GetUserViewModelHelper(id);
@@ -74,7 +74,7 @@ namespace Schwarzenegger.Controllers
 
             if (!(await _authorizationService.AuthorizeAsync(User, appUser?.Id ?? "", AccountManagementOperations.Read))
                 .Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
             if (appUser == null)
                 return NotFound(userName);
@@ -140,7 +140,7 @@ namespace Schwarzenegger.Controllers
 
 
             if ((await Task.WhenAll(manageUsersPolicy, assignRolePolicy)).Any(r => !r.Succeeded))
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             if (ModelState.IsValid)
@@ -219,7 +219,7 @@ namespace Schwarzenegger.Controllers
         public async Task<IActionResult> UpdateUser(string id, [FromBody] JsonPatchDocument<UserPatchViewModel> patch)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Update)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             if (ModelState.IsValid)
@@ -263,7 +263,7 @@ namespace Schwarzenegger.Controllers
         {
             if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
                 Policies.AssignAllowedRolesPolicy)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             if (ModelState.IsValid)
@@ -296,7 +296,7 @@ namespace Schwarzenegger.Controllers
         public async Task<IActionResult> DeleteUser(string id)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Delete)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             var appUser = await _accountManager.GetUserByIdAsync(id);
@@ -381,7 +381,7 @@ namespace Schwarzenegger.Controllers
 
             if (!(await _authorizationService.AuthorizeAsync(User, appRole?.Name ?? "",
                 Policies.ViewRoleByRoleNamePolicy)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
             if (appRole == null)
                 return NotFound(id);
@@ -397,7 +397,7 @@ namespace Schwarzenegger.Controllers
         public async Task<IActionResult> GetRoleByName(string name)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, name, Policies.ViewRoleByRoleNamePolicy)).Succeeded)
-                return new ChallengeResult();
+                return new ForbidResult();
 
 
             var roleVM = await GetRoleViewModelHelper(name);

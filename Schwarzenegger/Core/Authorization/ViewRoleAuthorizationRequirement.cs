@@ -16,6 +16,12 @@ namespace Schwarzenegger.Core.Authorization
             if (context.User == null)
                 return Task.CompletedTask;
 
+            if (context.User.HasClaim(PropertyConstants.IsAdmin, "true"))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
+
             if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles) ||
                 context.User.IsInRole(roleName))
                 context.Succeed(requirement);

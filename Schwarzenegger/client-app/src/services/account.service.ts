@@ -95,6 +95,21 @@ class AccountService {
   //     return this.accountEndpoint.getUnblockUserEndpoint(userId);
   // }
 
+  userHasPermissions(permissionValues: PermissionValues[]): boolean {
+    let hasPermission = true; 
+    if(this.currentUser.isAdmin) {
+      return true;
+    }
+
+    permissionValues.forEach(permissionValue => {
+      if(!this.permissions.some(p => p as PermissionValues == permissionValue as PermissionValues)) {
+        hasPermission = false;
+      }
+    });
+
+    return hasPermission;
+  }
+
   userHasPermission(permissionValue: PermissionValues): boolean {
     return (
       this.currentUser.isAdmin ||

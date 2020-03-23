@@ -37,6 +37,8 @@ namespace Schwarzenegger.Helpers
             if (user.FullName != null)
                 claims.Add(new Claim(PropertyConstants.FullName, user.FullName));
 
+            claims.Add(new Claim(PropertyConstants.IsAdmin, user.IsAdmin.ToString().ToLower(), ClaimValueTypes.Boolean));
+
             if (user.Configuration != null)
                 claims.Add(new Claim(PropertyConstants.Configuration, user.Configuration));
 

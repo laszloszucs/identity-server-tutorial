@@ -44,11 +44,11 @@ namespace Schwarzenegger.Core.Authorization
             var allPermissions = new List<ApplicationPermission>
             {
                 ViewUsers,
-                //ManageUsers,
+                ManageUsers,
 
-                //ViewRoles,
-                //ManageRoles,
-                //AssignRoles,
+                ViewRoles,
+                ManageRoles,
+                AssignRoles,
 
                 ViewHome,
                 ViewAbout,

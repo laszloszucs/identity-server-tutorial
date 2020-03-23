@@ -30,6 +30,8 @@
         ///<summary>A property that specifies the job title of an entity</summary>
         public const string JobTitle = "jobtitle";
 
+        public const string IsAdmin = "is_admin";
+
         ///<summary>A property that specifies the configuration/customizations of an entity</summary>
         public const string Configuration = "configuration";
     }

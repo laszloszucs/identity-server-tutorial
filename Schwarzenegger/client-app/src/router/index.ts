@@ -5,6 +5,7 @@ import Account from "./views/Account.vue";
 import Login from "./views/Login.vue";
 import Users from "./views/Users.vue";
 import store from "../store";
+import accountService from "../services/account.service";
 
 Vue.use(Router);
 
@@ -15,16 +16,13 @@ const router = new Router({
     {
       path: "/",
       name: "Home",
-      component: Home,
-      meta: {
-        requiresAuth: true
-      }
+      component: Home
     },
     {
       path: "/about",
       name: "About",
       meta: {
-        requiresAuth: true
+        permissions: ["about.view"]
       },
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
@@ -37,7 +35,7 @@ const router = new Router({
       name: "Account",
       component: Account,
       meta: {
-        requiresAuth: true
+        permissions: ["account.view"]
       }
     },
     {
@@ -45,7 +43,7 @@ const router = new Router({
       name: "Users",
       component: Users,
       meta: {
-        requiresAuth: true
+        permissions: ["users.view"]
       }
     },
     {
@@ -69,12 +67,16 @@ Router.prototype.push = function push(
 };
 
 router.beforeEach(async (to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (store.getters.isSessionExpired()) {
-      next("/login");
-      return;
+  to.matched.forEach(record => {
+    if(record.meta.permissions) {
+      if (store.getters.isSessionExpired() || !accountService.userHasPermissions(record.meta.permissions)) {
+        next("/login");
+        return;
+      }
     }
-  } else if (
+  });
+
+  if (
     to.matched.some(record => record.name === "Login") &&
     !store.getters.isSessionExpired()
   ) {

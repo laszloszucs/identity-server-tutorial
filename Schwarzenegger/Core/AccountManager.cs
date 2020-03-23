@@ -114,7 +114,10 @@ namespace Schwarzenegger.Core
 
             try
             {
-                result = await _userManager.AddToRolesAsync(user, roles.Distinct());
+                if (roles != null)
+                {
+                    result = await _userManager.AddToRolesAsync(user, roles.Distinct());
+                }
             }
             catch
             {

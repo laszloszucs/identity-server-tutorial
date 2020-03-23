@@ -3,7 +3,6 @@
     <div v-if="!isSessionExpired()" class="navbar">
       <div class="navs">
         <DxButton
-          v-if="hasPermission('home.view')"
           @click="navigate('/home')"
           :text="isSmall('Home')"
           icon="home"
@@ -24,9 +23,11 @@
           :disabled="$route.matched.some(({ name }) => name === 'About')"
         />
       </div>
-      <div class="other-buttons">
+      <div :class="{ 'other-buttons': hasPermission('account.view') } ">
         <DxButton
-          v-if="true || hasPermission('account.view')"
+          id="adminButton"
+          class="admin-button"
+          v-if="hasPermission('account.view')"
           @click="navigate('/account')"
           :text="isSmall(profile().userName)"
           icon="user"
@@ -34,6 +35,7 @@
         />
         <DxButton
           id="logout"
+          class="logout-button"
           @click="logout()"
           :text="logoutText"
           :icon="isNotSmall('runner')"
@@ -284,12 +286,22 @@ export default class App extends Vue {
 
 .other-buttons {
   display: grid;
+  grid-template-areas: 
+    "admin-button logout-button";
   @media (max-width: 767px) {
     grid-template-columns: 70px 120px; // repeat(2, 100px);  
   }
   @media (min-width: 768px) {
-    grid-template-columns: 102px 130px // repeat(2, 150px);  
+    grid-template-columns: 105px 130px // repeat(2, 150px);  
   }
+}
+
+.admin-button {
+  grid-area: admin-button;
+}
+
+.logout-button {
+  grid-area: logout-button;
 }
 
 .userName {
@@ -301,12 +313,27 @@ export default class App extends Vue {
   border: none !important;
 }
 
-.navs .dx-button {
+.navbar .navs .dx-button {
   border-bottom: 1px solid grey !important;
   border-right: 1px solid #2c3e50 !important;
   &:first-child {
     border-left: 1px solid #2c3e50 !important;
   }
+  &:last-child {
+    border-right: none !important;
+  }
+  &.dx-state-disabled {
+    border-bottom: none !important;
+  } 
+}
+
+#adminButton {
+  // border: none !important;
+  border-left: 1px solid grey !important;
+  border-bottom: 1px solid grey !important;
+  &.dx-state-disabled {
+    border-bottom: none !important;
+  } 
 }
 
 .dx-button.dx-button-danger {
@@ -321,14 +348,26 @@ export default class App extends Vue {
 }
 
 .dx-button.dx-state-disabled {
+  z-index: -1;
   opacity: 100 !important;
-  background-color: #e1e2e1c7 !important;
+  background-color: rgba(0, 165, 187, 0.280) !important;
+  border-bottom: none !important;
+  -webkit-box-shadow: 0px 0px 35px -4px rgba(0, 165, 187, 0.75);
+  -moz-box-shadow: 0px 0px 35px -4px rgba(0, 87, 187, 0.75);
+  box-shadow: 0px 0px 35px -4px rgba(0, 165, 187, 0.75);
   i {
     opacity: 100 !important;
   }
   span {
     opacity: 100 !important;
   }
+}
+
+.dx-button.dx-state-hover {
+  background-color: rgba(0, 165, 187, 0.1) !important;
+  // -webkit-box-shadow: 0px 0px 40px 5px rgba(0, 165, 187, 0.75);
+  // -moz-box-shadow: 0px 0px 40px 5px rgba(0, 87, 187, 0.75);
+  // box-shadow: 0px 0px 40px 5px rgba(0, 165, 187, 0.75);
 }
 
 main {
@@ -342,6 +381,7 @@ main {
     box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
   }
 }
+
 .dx-button.dx-button-danger {
   .dx-icon.dx-icon-runner {
     color: red !important;

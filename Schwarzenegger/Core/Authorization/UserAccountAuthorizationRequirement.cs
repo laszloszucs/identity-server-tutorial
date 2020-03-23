@@ -25,6 +25,12 @@ namespace Schwarzenegger.Core.Authorization
             if (context.User == null || requirement.OperationName != AccountManagementOperations.ReadOperationName)
                 return Task.CompletedTask;
 
+            if (context.User.HasClaim(PropertyConstants.IsAdmin, "true"))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
+
             if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ViewUsers) ||
                 GetIsSameUser(context.User, targetUserId))
                 context.Succeed(requirement);
@@ -53,6 +59,12 @@ namespace Schwarzenegger.Core.Authorization
                 requirement.OperationName != AccountManagementOperations.UpdateOperationName &&
                 requirement.OperationName != AccountManagementOperations.DeleteOperationName)
                 return Task.CompletedTask;
+
+            if (context.User.HasClaim(PropertyConstants.IsAdmin, "true"))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
 
             if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ManageUsers) ||
                 GetIsSameUser(context.User, targetUserId))

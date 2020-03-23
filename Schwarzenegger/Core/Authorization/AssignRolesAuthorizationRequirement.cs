@@ -22,6 +22,12 @@ namespace Schwarzenegger.Core.Authorization
             }
             else if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.AssignRoles))
             {
+                if (context.User.HasClaim(PropertyConstants.IsAdmin, "true")) // TODO Ez így jó?
+                {
+                    context.Succeed(requirement);
+                    return Task.CompletedTask;
+                }
+
                 if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ViewRoles)
                 ) // If user has ViewRoles permission, then he can assign any roles
                     context.Succeed(requirement);
