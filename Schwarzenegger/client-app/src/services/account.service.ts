@@ -3,6 +3,7 @@ import { PermissionValues } from "@/models/permission.model";
 import { Role } from "@/models/role.model";
 import { InsertUser } from "@/models/user.model";
 import RequestHandler from "./requestHandler";
+import { ChangePassword } from "@/models/change-password.model";
 
 export type RolesChangedOperation = "add" | "delete" | "modify";
 export interface RolesChangedEventArg {
@@ -54,6 +55,13 @@ class AccountService {
 
   async getRoles() {
     return await RequestHandler.get("account/roles");
+  }
+
+  async changePassword(data: ChangePassword) {
+    return await RequestHandler.post(
+      `${this.path}/${data.userId}/changepassword`,
+      data.newPassword
+    );
   }
 
   // getUsersAndRoles(page?: number, pageSize?: number) {

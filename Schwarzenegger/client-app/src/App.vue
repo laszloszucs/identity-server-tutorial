@@ -2,6 +2,7 @@
   <div id="app">
     <div v-if="!isSessionExpired()" class="navbar">
       <div class="navs">
+        <!-- TODO: Csere DxToolbar-ra? -->
         <DxButton
           @click="navigate('/home')"
           :text="isSmall('Home')"
