@@ -53,16 +53,14 @@ import EventBus from "../../helpers/event-bus";
   }
 })
 export default class Login extends Vue {
-  private loginUser: LoginUser = {
+    private loginUser: LoginUser = {
     username: "admin",
     password: "tempP@ss123",
-    rememberMe: false
+    rememberMe: true
   };
 
   private checkBoxOptions = {
-    text: "Remember Me",
-    value: true
-    // rtlEnabled: true
+    text: "Remember Me"
   };
 
   private buttonOptions = {

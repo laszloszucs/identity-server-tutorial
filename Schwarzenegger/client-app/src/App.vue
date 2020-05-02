@@ -220,10 +220,6 @@ export default class App extends Vue {
     });
   }
 
-  onItemClickRoute(e: any) {
-    this.navigate(e.itemData.path);
-  }
-
   navigate(to) {
     if (this.$route.path !== to) {
       this.$router.push(to);
@@ -383,11 +379,11 @@ main {
 }
 
 .dx-button.dx-button-danger {
-  .dx-icon.dx-icon-runner {
+  ::v-deep .dx-icon-runner {
     color: red !important;
   }
   &.dx-state-hover {
-    .dx-icon.dx-icon-runner {
+    ::v-deep .dx-icon.dx-icon-runner {
       color: #fff !important;
     }
   }
