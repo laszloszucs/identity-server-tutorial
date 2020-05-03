@@ -1,11 +1,11 @@
 <template>
   <div class="vld-parent">
-    <loading :active="isLoading"></loading>
+    <loading :active="isLoading || load" :opacity="load ? 1 : 0.5"></loading>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import EventBus from "../helpers/event-bus";
@@ -16,12 +16,18 @@ import EventBus from "../helpers/event-bus";
   }
 })
 export default class Loader extends Vue {
-  mounted() {
+  created() {
     EventBus.$on("LOADING", () => this.loaders++);
     EventBus.$on("DONE-LOADING", () => this.loaders--);
   }
 
   private loaders = 0;
+  
+  @Prop({default: false})
+  load: boolean  
+
+  @Prop({default: false})
+  isWhite: boolean
 
   get isLoading() {
     return this.loaders > 0;

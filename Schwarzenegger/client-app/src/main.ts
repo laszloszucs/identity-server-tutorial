@@ -10,6 +10,9 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 import i18n from "./i18n";
+import EventBus from "./helpers/event-bus";
+import { RefreshLogin } from "./store/actions/auth-actions";
+import startRefreshTokenTimer from "./utils/loginRefresh";
 
 axios.interceptors.request.use(
   config => {
@@ -32,5 +35,25 @@ export default new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
+  created() {
+    if (!this.$store.getters.rememberMe()) {
+      if (this.$route.path !== "/login") {
+        debugger;
+        this.$router.push("/login");
+      }
+    } else {
+      if (this.$store.getters.isSessionExpired()) {
+        EventBus.$emit("LOADING");
+        this.$store.dispatch(RefreshLogin).then(() => {
+          startRefreshTokenTimer(this.$store);
+          this.$router.push("/").then(() => {
+            EventBus.$emit("LOGIN");
+          });
+        });
+      } else {
+        startRefreshTokenTimer(this.$store);
+      }      
+    }
+  }
 }).$mount("#app");

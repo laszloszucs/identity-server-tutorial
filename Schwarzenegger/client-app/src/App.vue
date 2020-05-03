@@ -47,7 +47,7 @@
     <main :class="{ 'logged-in': !isSessionExpired() }">
       <router-view />
     </main>
-    <loader></loader>
+    <loader :load="!hasLoadedOnce && isLoading" :isWhite="true"></loader>
   </div>
 </template>
 
@@ -60,8 +60,8 @@ import { mapState } from "vuex";
 import accountService from "./services/account.service";
 import { PermissionValues } from "./models/permission.model";
 import Loader from "./components/Loader.vue";
-import { LoginStatus } from "./enums/login-status.enum";
 import EventBus from "./helpers/event-bus";
+import { LoginStatus } from "@/enums/login-status.enum";
 
 @Component({
   components: {
@@ -73,6 +73,12 @@ import EventBus from "./helpers/event-bus";
   computed: mapState({
     profile: (state: any, getters: any) => () => {
       return getters.currentUser();
+    },
+    hasLoadedOnce: (state: any) => {
+      return state.auth.hasLoadedOnce;
+    },
+    isLoading: (state: any) => {
+      return state.auth.loginStatus === LoginStatus.Loading;
     }
   })
 })
@@ -122,10 +128,6 @@ export default class App extends Vue {
     return () => this.$store.getters.isSessionExpired();
   }
 
-  get loginState() {
-    return this.$store.state.auth.loginStatus;
-  }
-
   mounted() {
     EventBus.$on("LOGIN", () => {
       this.init();
@@ -148,10 +150,10 @@ export default class App extends Vue {
   }
 
   init() {
-    this.calcRefreshTokenTimer();
-
-    this.resetIdleTimer();
-    this.idleTimer();
+    if(!this.$store.getters.rememberMe()) {
+      this.resetIdleTimer();
+      this.idleTimer();
+    }
   }
 
   reportWindowSize() {
@@ -167,48 +169,6 @@ export default class App extends Vue {
     if (event?.target.closest("#logout") && event?.which === 1) {
       // Valamiért nem mindig fut le a logout-ra kötött click esemény
       this.logout();
-    }
-  }
-
-  calcRefreshTokenTimer() {
-    const accessTokenExpiryDate = this.$store.getters.accessTokenExpiryDate();
-    const now = new Date().valueOf();
-    const difference = accessTokenExpiryDate - now;
-    this.refreshTokenTimer(difference);
-  }
-
-  refreshTokenTimer(difference: number) {
-    const refreshTime = difference - 10000; // Lejárat előtt 10 másodperc
-    // const currentTime = new Date();
-    // console.log("Current Time: ");
-    // console.log(currentTime);
-    // console.log("Next Refresh: ");
-    // console.log(new Date(currentTime.getTime() + refreshTime));
-
-    setTimeout(() => this.dispatchRefreshToken(), Math.max(refreshTime, 0));
-  }
-
-  dispatchRefreshToken() {
-    const isLoggedIn = this.isLoggedIn();
-    const loginState = this.loginState;
-    // console.log("isLoggedIn");
-    // console.log(isLoggedIn);
-    // console.log("loginState");
-    // console.log(loginState);
-
-    if (isLoggedIn) {
-      if (
-        loginState === LoginStatus.Success ||
-        loginState === LoginStatus.RefreshSuccess
-      ) {
-        this.$store.dispatch(RefreshLogin).then(() => {
-          this.calcRefreshTokenTimer();
-        });
-      }
-    }
-
-    if (loginState === LoginStatus.Logout) {
-      this.navigate("/login");
     }
   }
 
@@ -251,7 +211,6 @@ export default class App extends Vue {
       }
       this.prettyIdleTime = this.prettyDate(this.idleTimedifference);
       this.logoutText = this.getLogoutText();
-      // console.log(this.prettyIdleTime);
       setTimeout(() => this.idleTimer(), 1000);
     }
   }

@@ -99,6 +99,7 @@ function logout(): void {
   localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
   localStore.deleteData(DBkeys.USER_PERMISSIONS);
   localStore.deleteData(DBkeys.CURRENT_USER);
+  localStore.deleteData(DBkeys.REMEMBER_ME);
 
   if (router.currentRoute.path !== "/login") {
     router.push("/login");
@@ -209,6 +210,7 @@ const actions = {
 const mutations = {
   [LoginWithPassword]: (state: any) => {
     state.loginStatus = LoginStatus.Loading;
+    state.hasLoadedOnce = true;
   },
   [RefreshLogin]: (state: any) => {
     state.loginStatus = LoginStatus.Loading;

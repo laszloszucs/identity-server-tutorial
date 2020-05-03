@@ -5,11 +5,13 @@
       :allow-column-reordering="true"
       :data-source="users"
       :show-borders="true"
+      :column-auto-width="true"
       :row-alternation-enabled="true"
       :show-row-lines="true"
       @init-new-row="onInitNewRow"
       @editing-start="onEditingStart"
     >
+      <DxColumnFixing :enabled="true" />
       <DxEditing
         :allow-updating="true"
         :allow-deleting="true"
@@ -69,10 +71,10 @@
       <DxPaging />
       <DxSearchPanel :visible="true" />
       <DxColumn data-field="id" :visible="false" :allowEditing="false" />
-      <DxColumn data-field="email">
+      <DxColumn data-field="userName" :fixed="true">
         <DxRequiredRule />
       </DxColumn>
-      <DxColumn data-field="userName">
+      <DxColumn data-field="email">
         <DxRequiredRule />
       </DxColumn>
       <DxColumn data-field="newPassword" data-type="password" :visible="false">
@@ -197,7 +199,8 @@ import {
   DxPopup as DxDataGridEditPopup,
   DxPosition,
   DxForm as DxDatagridEditForm,
-  DxButton
+  DxButton,
+  DxColumnFixing
 } from "devextreme-vue/data-grid";
 import DxTagBox from "devextreme-vue/tag-box";
 import DxToolbar, { DxItem as DxToolbarItem } from "devextreme-vue/toolbar";
@@ -236,7 +239,8 @@ import { ChangePassword } from "../../models/change-password.model";
     DxLabel,
     DxDataGridEditPopup,
     DxForm,
-    DxPopupToolbarItem
+    DxPopupToolbarItem,
+    DxColumnFixing
   }
 })
 export default class Users extends Vue {

@@ -42,6 +42,7 @@ import DxForm, {
 import { LoginUser } from "@/models/login-user.model";
 import notify from "devextreme/ui/notify";
 import EventBus from "../../helpers/event-bus";
+import startRefreshTokenTimer from "../../utils/loginRefresh";
 
 @Component({
   components: {
@@ -53,7 +54,7 @@ import EventBus from "../../helpers/event-bus";
   }
 })
 export default class Login extends Vue {
-    private loginUser: LoginUser = {
+  private loginUser: LoginUser = {
     username: "admin",
     password: "tempP@ss123",
     rememberMe: true
@@ -78,6 +79,8 @@ export default class Login extends Vue {
     this.$store
       .dispatch(LoginWithPassword, this.loginUser)
       .then(() => {
+        startRefreshTokenTimer(this.$store);
+
         this.$router.push("/").then(() => {
           EventBus.$emit("LOGIN");
         });
