@@ -14,6 +14,6 @@ namespace Schwarzenegger.ViewModels
 
         public int UsersCount { get; set; }
 
-        public PermissionViewModel[] Permissions { get; set; }
+        public string[] Permissions { get; set; }
     }
 }

@@ -75,10 +75,11 @@ namespace Schwarzenegger.Core
         }
 
 
-        public async Task<List<(ApplicationUser User, string[] Roles)>> GetUsersAndRolesAsync(int page, int pageSize)
+        public async Task<List<(ApplicationUser User, string[] Roles, string[] Claims)>> GetUsersAndRolesAsync(int page, int pageSize)
         {
             IQueryable<ApplicationUser> usersQuery = _context.Users
                 .Include(u => u.Roles)
+                .Include(u => u.Claims)
                 .OrderBy(u => u.UserName);
 
             if (page != -1)
@@ -97,7 +98,8 @@ namespace Schwarzenegger.Core
 
             return users
                 .Select(u => (u,
-                    roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray()))
+                    roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray(),
+                    u.Claims.Select(c => c.ClaimValue).ToArray()))
                 .ToList();
         }
 

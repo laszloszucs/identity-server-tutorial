@@ -67,7 +67,7 @@ namespace Schwarzenegger.Core.Authorization
         {
             return AllPermissions.Where(p => p.Value == permissionValue).SingleOrDefault();
         }
-
+        
         public static string[] GetAllPermissionValues()
         {
             return AllPermissions.Select(p => p.Value).ToArray();

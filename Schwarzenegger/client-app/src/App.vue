@@ -17,6 +17,13 @@
           :disabled="$route.matched.some(({ name }) => name === 'Users')"
         />
         <DxButton
+          v-if="hasPermission('roles.view')"
+          @click="navigate('/roles')"
+          :text="isSmall('Roles')"
+          icon="fieldchooser"
+          :disabled="$route.matched.some(({ name }) => name === 'Roles')"
+        />
+        <DxButton
           v-if="hasPermission('about.view')"
           @click="navigate('/about')"
           :text="isSmall('About')"
@@ -150,7 +157,7 @@ export default class App extends Vue {
   }
 
   init() {
-    if(!this.$store.getters.rememberMe()) {
+    if (!this.$store.getters.rememberMe()) {
       this.resetIdleTimer();
       this.idleTimer();
     }

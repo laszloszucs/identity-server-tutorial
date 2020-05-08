@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.Helpers;
 using Schwarzenegger.Core.Interfaces;
@@ -18,6 +20,7 @@ namespace Schwarzenegger.Controllers
     [Authorize]
     [Route("api/[controller]")]
     // [ApiExplorerSettings(IgnoreApi = true)]
+    [ApiController]
     public class AccountController : ControllerBase
     {
         private const string GetUserByIdActionName = "GetUserById";
@@ -105,6 +108,7 @@ namespace Schwarzenegger.Controllers
             {
                 var userVM = _mapper.Map<UserViewModel>(item.User);
                 userVM.Roles = item.Roles;
+                userVM.Claims = item.Claims;
 
                 usersVM.Add(userVM);
             }
@@ -122,7 +126,41 @@ namespace Schwarzenegger.Controllers
             return await UpdateUser(Utilities.GetUserId(User), user);
         }
 
+        [HttpPut("users")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> UpdateUser([FromForm]string key, [FromForm]string values)
+        {
+            var (newValues, roles) = DeattachRoles(values);
 
+            var appUser = await _accountManager.GetUserByIdAsync(key);
+            var currentRoles = appUser != null ? (await _accountManager.GetUserRolesAsync(appUser)).ToArray() : null;
+
+            if (appUser == null)
+            {
+                return NotFound(new { Message = "User cannot be found" });
+            }
+
+            JsonConvert.PopulateObject(newValues, appUser);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (succeeded, errors) = await _accountManager.UpdateUserAsync(appUser, roles ?? currentRoles);
+            if (succeeded)
+            {
+                return Ok();
+            }
+
+            AddError(errors);
+
+            return BadRequest(ModelState);
+        }
+        
         [HttpPut("users/{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -261,9 +299,9 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> Register([FromBody] InsertUserViewModel user)
         {
-            if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
-                Policies.AssignAllowedRolesPolicy)).Succeeded)
-                return new ForbidResult();
+            //if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
+            //    Policies.AssignAllowedRolesPolicy)).Succeeded)
+            //    return new ForbidResult();
 
             if (!TryValidateModel(user, nameof(UserEditViewModel)))
             {
@@ -457,7 +495,7 @@ namespace Schwarzenegger.Controllers
                 _mapper.Map(role, appRole);
 
                 var result =
-                    await _accountManager.UpdateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
+                    await _accountManager.UpdateRoleAsync(appRole, role.Permissions);
                 if (result.Succeeded)
                     return NoContent();
 
@@ -483,7 +521,7 @@ namespace Schwarzenegger.Controllers
                 var appRole = _mapper.Map<ApplicationRole>(role);
 
                 var result =
-                    await _accountManager.CreateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
+                    await _accountManager.CreateRoleAsync(appRole, role.Permissions);
                 if (result.Succeeded)
                 {
                     var roleVM = await GetRoleViewModelHelper(appRole.Name);
@@ -566,6 +604,21 @@ namespace Schwarzenegger.Controllers
         private void AddError(string error, string key = "")
         {
             ModelState.AddModelError(key, error);
+        }
+
+        private (string, string[]) DeattachRoles(string values)
+        {
+            var json = JsonConvert.DeserializeObject<JObject>(values);
+
+            if (!json.ContainsKey("roles"))
+            {
+                return (json.ToString(), null);
+            }
+
+            var roles = json.GetValue("roles").ToObject<string[]>();
+            json.Remove("roles");
+
+            return (json.ToString(), roles);
         }
     }
 }

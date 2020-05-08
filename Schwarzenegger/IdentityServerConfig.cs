@@ -72,8 +72,8 @@ namespace Schwarzenegger
                     AllowOfflineAccess = true, // For refresh token.
                     
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
-                    AccessTokenLifetime = 30, // Lifetime of access token in seconds.
+                    RefreshTokenUsage = TokenUsage.ReUse,
+                    AccessTokenLifetime = 3600, // Lifetime of access token in seconds.
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,+
                     //ClientSecrets =

@@ -1,6 +1,7 @@
 import axios from "axios";
 import notify from "devextreme/ui/notify";
 import vue from "./../main";
+import qs from "qs";
 
 class RequestHandler {
   private static instance: RequestHandler;
@@ -43,7 +44,11 @@ class RequestHandler {
   async put(path: string, data: string) {
     // TODO put-nál benne van az id a data-ban
     try {
-      const response = await axios.put(this.fullUrl(path), data);
+      const response = await axios.put(this.fullUrl(path), qs.stringify(data), {
+        headers: {
+          "content-zype": "application/x-www-form-urlencoded"
+        }
+      });
       return response.data;
     } catch (error) {
       await this.error(error);
@@ -53,7 +58,6 @@ class RequestHandler {
 
   async delete(path: string, id: any) {
     try {
-      debugger;
       const response = await axios.delete(this.fullUrl(path, id));
       return response.data;
     } catch (error) {

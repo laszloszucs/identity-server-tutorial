@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.Models;
@@ -34,7 +35,7 @@ namespace Schwarzenegger.Mappers
                 .ReverseMap();
 
             CreateMap<ApplicationRole, RoleViewModel>()
-                .ForMember(d => d.Permissions, map => map.MapFrom(s => s.Claims))
+                .ForMember(d => d.Permissions, map => map.MapFrom(s => s.Claims.Select(c => c.ClaimValue)))
                 .ForMember(d => d.UsersCount, map => map.MapFrom(s => s.Users != null ? s.Users.Count : 0))
                 .ReverseMap();
             CreateMap<RoleViewModel, ApplicationRole>()

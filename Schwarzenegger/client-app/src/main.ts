@@ -39,7 +39,6 @@ export default new Vue({
   created() {
     if (!this.$store.getters.rememberMe()) {
       if (this.$route.path !== "/login") {
-        debugger;
         this.$router.push("/login");
       }
     } else {
@@ -53,7 +52,7 @@ export default new Vue({
         });
       } else {
         startRefreshTokenTimer(this.$store);
-      }      
+      }
     }
   }
 }).$mount("#app");

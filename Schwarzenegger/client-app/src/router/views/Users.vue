@@ -10,6 +10,7 @@
       :show-row-lines="true"
       @init-new-row="onInitNewRow"
       @editing-start="onEditingStart"
+      @editor-preparing="onEditorPreparing"
     >
       <DxColumnFixing :enabled="true" />
       <DxEditing
@@ -33,11 +34,16 @@
             <DxFormItem data-field="fullName" />
             <DxFormItem data-field="phoneNumber" />
           </DxFormItem>
-          <DxFormItem :col-count="2" :col-span="2" item-type="group">
+          <DxFormItem v-if="hasPermission('roles.manage')" :col-count="2" :col-span="2" item-type="group">
             <DxFormItem
               :col-span="2"
               data-field="roles"
               editor-type="dxTagBox"
+              :editor-options="{
+                dataSource: rolesLookup,
+                valueExpr: 'name',
+                displayExpr: 'description'
+              }"
             />
           </DxFormItem>
           <DxFormItem :col-span="2" itemType="empty"></DxFormItem>
@@ -90,10 +96,10 @@
       <DxColumn data-field="fullName" />
 
       <DxColumn data-field="phoneNumber" />
-      <DxColumn
+      <DxColumn v-if="hasPermission('roles.view')"
         data-field="roles"
         cell-template="rolesCellTemplate"
-        edit-cell-template="rolesEditCellTemplate"
+        width="200"
       >
       </DxColumn>
       <template #rolesCellTemplate="cell">
@@ -118,6 +124,7 @@
           :value="cell.data.value"
           valueExpr="name"
           displayExpr="description"
+          :on-initialized="onInitializedTagBox"
         >
         </DxTagBox>
       </template>
@@ -215,6 +222,8 @@ import DxPopup, {
   DxToolbarItem as DxPopupToolbarItem
 } from "devextreme-vue/popup";
 import { ChangePassword } from "../../models/change-password.model";
+import logger from "../../utils/logger";
+import { PermissionValues } from '@/models/permission.model';
 
 @Component({
   components: {
@@ -333,6 +342,30 @@ export default class Users extends Vue {
 
   onEditingStart() {
     this.isNewRow = false;
+  }
+
+  hasPermission(permissionValue: string) {
+    return accountService.userHasPermission(
+      permissionValue as PermissionValues
+    );
+  }
+
+  onEditorPreparing(e) {
+    logger.log(e.dataField, "blue");
+    console.log(e);
+    if (e.dataField == "roles" && e.parentType === "dataRow") {
+      e.editorName = "dxTagBox"; // Changes the editor's type
+      e.editorOptions.onValueChanged = function(args) {
+        // Implement your logic here
+        debugger;
+        e.setValue(args.value); // Updates the cell value
+      };
+    }
+  }
+
+  onInitializedTagBox() {
+    // logger.log(e, "blue");
+    // console.log(e);
   }
 
   onInitNewRow() {

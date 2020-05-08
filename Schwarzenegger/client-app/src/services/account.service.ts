@@ -41,12 +41,11 @@ class AccountService {
   }
 
   async insertUser(insertUser: InsertUser) {
-    debugger;
     return await RequestHandler.post(this.path, insertUser);
   }
 
   async updateUser(updateUser: any) {
-    return await RequestHandler.put(this.path, JSON.stringify(updateUser));
+    return await RequestHandler.put(this.path, updateUser);
   }
 
   async removeUser(id: any) {

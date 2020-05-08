@@ -22,12 +22,12 @@ export default class Loader extends Vue {
   }
 
   private loaders = 0;
-  
-  @Prop({default: false})
-  load: boolean  
 
-  @Prop({default: false})
-  isWhite: boolean
+  @Prop({ default: false })
+  load: boolean;
+
+  @Prop({ default: false })
+  isWhite: boolean;
 
   get isLoading() {
     return this.loaders > 0;

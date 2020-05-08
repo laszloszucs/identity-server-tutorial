@@ -9,6 +9,7 @@ namespace Schwarzenegger.ViewModels
 
         [MinimumCount(1, ErrorMessage = "Roles cannot be empty")]
         public string[] Roles { get; set; }
+        public string[] Claims { get; set; }
     }
     
     public class InsertUserViewModel : UserBaseViewModel
@@ -19,6 +20,7 @@ namespace Schwarzenegger.ViewModels
 
         //[MinimumCount(1, ErrorMessage = "Roles cannot be empty")]
         public string[] Roles { get; set; }
+        public string[] Claims { get; set; }
     }
     
     public class UserEditViewModel : UserBaseViewModel
@@ -30,6 +32,7 @@ namespace Schwarzenegger.ViewModels
 
         [MinimumCount(1, ErrorMessage = "Roles cannot be empty")]
         public string[] Roles { get; set; }
+        public string[] Claims { get; set; }
     }
 
 

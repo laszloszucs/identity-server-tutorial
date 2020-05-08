@@ -4,6 +4,7 @@ import Home from "./views/Home.vue";
 import Account from "./views/Account.vue";
 import Login from "./views/Login.vue";
 import Users from "./views/Users.vue";
+import Roles from "./views/Roles.vue";
 import store from "../store";
 import accountService from "../services/account.service";
 
@@ -44,6 +45,14 @@ const router = new Router({
       component: Users,
       meta: {
         permissions: ["users.view"]
+      }
+    },
+    {
+      path: "/roles",
+      name: "Roles",
+      component: Roles,
+      meta: {
+        permissions: ["roles.view"]
       }
     },
     {
