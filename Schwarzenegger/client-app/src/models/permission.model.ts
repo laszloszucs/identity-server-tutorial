@@ -1,107 +1,102 @@
+
+export type PermissionGroups =
+| "Users"
+| "Roles"
+| "About";
+
 export type PermissionNames =
-  | "View Users"
-  | "Manage Users"
-  | "View Roles"
-  | "Manage Roles"
-  | "Assign Roles"
-  | "View Homes"
-  | "View About"
-  | "View Account";
+| "View Users"
+| "Manage Users"
+| "View Roles"
+| "Manage Roles"
+| "Assign Roles"
+| "View Homes"
+| "View About"
+| "View Account";
 
 export type PermissionValues =
-  | "users.view"
-  | "users.manage"
-  | "roles.view"
-  | "roles.manage"
-  | "roles.assign"
-  | "home.view"
-  | "about.view"
-  | "account.view";
+| null
+| "users.view"
+| "users.manage"
+| "roles.view"
+| "roles.manage"
+| "roles.assign"
+| "home.view"
+| "about.view"
+| "account.view";
+
+
+interface PermissionType {
+  group: PermissionGroups,
+  values: PermissionValueTypes[]
+}
+
+interface PermissionValueTypes {
+  name: PermissionValueType, 
+  value: PermissionValues
+}
+
+export type PermissionValueType =
+  | "None"
+  | "View Only"
+  | "Manage";  
 
 export class Permission {
-  public static readonly viewUsersPermission: PermissionValues = "users.view";
-
-  public static readonly manageUsersPermission: PermissionValues =
-    "users.manage";
-
-  public static readonly viewRolesPermission: PermissionValues = "roles.view";
-
-  public static readonly manageRolesPermission: PermissionValues =
-    "roles.manage";
-
-  public static readonly assignRolesPermission: PermissionValues =
-    "roles.assign";
-
-  public static readonly viewHomePermission: PermissionValues = "home.view";
-
-  public static readonly viewAboutPermission: PermissionValues = "about.view";
-
-  public static readonly viewAccountPermission: PermissionValues =
-    "account.view";
-
-  public static readonly viewUsers: any = {
-    value: Permission.viewUsersPermission,
-    name: "View Users"
+  public static readonly usersPermission: PermissionType = {
+    group: "Users",
+    values: [
+      {
+        name: "None",
+        value: null
+      },
+      {
+        name: "View Only",
+        value: "users.view"
+      },
+      {
+        name: "Manage",
+        value: "users.manage"
+      }
+    ],
   };
 
-  public static readonly manageUsers: any = {
-    value: Permission.manageUsersPermission,
-    name: "Manage Users"
+  public static readonly rolesPermission: PermissionType = {
+    group: "Roles",
+    values: [
+      {
+        name: "None",
+        value: null
+      },
+      {
+        name: "View Only",
+        value: "roles.view"
+      },
+      {
+        name: "Manage",
+        value: "roles.manage"
+      }
+    ],
   };
 
-  public static readonly viewRoles: any = {
-    value: Permission.viewRolesPermission,
-    name: "View Roles"
+  public static readonly aboutPermission: PermissionType = {
+    group: "About",
+    values: [
+      {
+        name: "None",
+        value: null
+      },
+      {
+        name: "View Only",
+        value: "about.view"
+      }
+    ],
   };
 
-  public static readonly manageRoles: any = {
-    value: Permission.manageRolesPermission,
-    name: "Manage Roles"
-  };
-
-  public static readonly assignRoles: any = {
-    value: Permission.assignRolesPermission,
-    name: "Assign Roles"
-  };
-
-  public static readonly viewHome: any = {
-    value: Permission.viewHomePermission,
-    name: "View Home"
-  };
-
-  public static readonly viewAbout: any = {
-    value: Permission.viewAboutPermission,
-    name: "View About"
-  };
-
-  public static readonly viewAccount: any = {
-    value: Permission.viewAccountPermission,
-    name: "View Account"
-  };
-
-  public static getAllPermissionValues(): string[] {
+  public static getAllPermissions(): PermissionType[] {
     return [
-      this.viewUsersPermission,
-      this.manageUsersPermission,
-      this.viewRolesPermission,
-      this.manageRolesPermission,
-      this.assignRolesPermission,
-      this.viewHomePermission,
-      this.viewAboutPermission,
-      this.viewAccountPermission
-    ];
-  }
-
-  public static getAllPermissions(): any[] {
-    return [
-      this.viewUsers,
-      this.manageUsers,
-      this.viewRoles,
-      this.manageRoles,
-      this.assignRoles,
-      this.viewHome,
-      this.viewAbout,
-      this.viewAccount
+      this.usersPermission,
+      this.rolesPermission,
+      this.aboutPermission,
     ];
   }
 

@@ -48,11 +48,16 @@
             <DxFormItem
               :col-span="2"
               data-field="permissions"
-              editor-type="dxTagBox"
+              editor-type="dxList"
               :editor-options="{
                 dataSource: permissionsLookup,
                 valueExpr: 'value',
-                displayExpr: 'name'
+                displayExpr: 'name',                
+                selectionMode: 'none',
+                activeStateEnabled: false,
+                focusStateEnabled: false,
+                hoverStateEnabled: false,
+                itemTemplate : 'permissionListItemTemplate'
               }"
             />
           </DxFormItem>
@@ -125,6 +130,14 @@
           />
         </DxToolbar>
       </template>
+      <template #permissionListItemTemplate="item">
+        <div class="permission-list-item">
+          <div>{{ console.log(item) }}</div>
+          <div>{{ item.data.group }}</div>
+          <DxSelectBox class="selectbox" width="200px" keyExpr="value" displayExpr="name" :items="item.data.values"></DxSelectBox>
+        </div>        
+        <!-- <b>{{ console.log(item) }}</b> -->
+      </template>
     </DxDataGrid>
   </div>
 </template>
@@ -160,6 +173,7 @@ import DxForm, {
 import DxPopup, {
   DxToolbarItem as DxPopupToolbarItem
 } from "devextreme-vue/popup";
+import DxSelectBox from "devextreme-vue/select-box";
 import { Permission } from "../../models/permission.model";
 import logger from "../../utils/logger";
 
@@ -187,7 +201,8 @@ import logger from "../../utils/logger";
     DxDataGridEditPopup,
     DxForm,
     DxPopupToolbarItem,
-    DxColumnFixing
+    DxColumnFixing,
+    DxSelectBox
   }
 })
 export default class Roles extends Vue {
@@ -220,16 +235,16 @@ export default class Roles extends Vue {
   };
 
   onEditorPreparing(e) {
-    logger.log(e.dataField, "blue");
-    console.log(e);
-    if (e.dataField == "permissions" && e.parentType === "dataRow") {
-      e.editorName = "dxTagBox"; // Changes the editor's type
-      e.editorOptions.onValueChanged = function(args) {
-        // Implement your logic here
-        debugger;
-        e.setValue(args.value); // Updates the cell value
-      };
-    }
+    // logger.log(e.dataField, "blue");
+    // console.log(e);
+    // if (e.dataField == "permissions" && e.parentType === "dataRow") {
+    //   e.editorName = "dxTagBox"; // Changes the editor's type
+    //   e.editorOptions.onValueChanged = function(args) {
+    //     // Implement your logic here
+    //     debugger;
+    //     e.setValue(args.value); // Updates the cell value
+    //   };
+    // }
   }
 
   onInitNewRow() {
@@ -245,7 +260,7 @@ export default class Roles extends Vue {
   }
 
   private permissionsLookup = new CustomStore({
-    key: "value",
+    key: "group",
     loadMode: "raw",
     load: async () => await Permission.getAllPermissions()
   });
@@ -265,7 +280,7 @@ export default class Roles extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .about {
   text-align: center;
 }
@@ -273,5 +288,24 @@ export default class Roles extends Vue {
 ::v-deep .dx-datagrid-content .dx-datagrid-table .dx-row > td,
 .dx-datagrid-content .dx-datagrid-table .dx-row > tr > td {
   vertical-align: middle !important;
+}
+
+// TODO Erre visszatérni, mert nem működik, a lista elemén továbbra is a pointer cursor van...
+.dx-list-item {
+  border-top: none !important;
+  cursor: default !important;
+}
+
+.permission-list-item {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  grid-template-columns: 0% 5% 95% 0%;
+  padding: 5px;
+  cursor: default !important;
+  border-top: none;
+  & .selectbox {
+    justify-self: start;
+  }
 }
 </style>
