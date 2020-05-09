@@ -52,12 +52,12 @@
               :editor-options="{
                 dataSource: permissionsLookup,
                 valueExpr: 'value',
-                displayExpr: 'name',                
+                displayExpr: 'name',
                 selectionMode: 'none',
                 activeStateEnabled: false,
                 focusStateEnabled: false,
                 hoverStateEnabled: false,
-                itemTemplate : 'permissionListItemTemplate'
+                itemTemplate: 'permissionListItemTemplate'
               }"
             />
           </DxFormItem>
@@ -134,8 +134,15 @@
         <div class="permission-list-item">
           <div>{{ console.log(item) }}</div>
           <div>{{ item.data.group }}</div>
-          <DxSelectBox class="selectbox" width="200px" keyExpr="value" displayExpr="name" :items="item.data.values"></DxSelectBox>
-        </div>        
+          <DxSelectBox
+            class="selectbox"
+            width="200px"
+            keyExpr="value"
+            displayExpr="name"
+            :items="item.data.values"
+            :value="getValue(item.data.values)"
+          ></DxSelectBox>
+        </div>
         <!-- <b>{{ console.log(item) }}</b> -->
       </template>
     </DxDataGrid>
@@ -209,6 +216,7 @@ export default class Roles extends Vue {
   private isNewRow = false;
   private gridRefName = "rolesGrid";
   private users = null;
+  private permissionValue = null;
   // private permissions = null;
   console = console;
   public roles = new CustomStore({
@@ -235,16 +243,38 @@ export default class Roles extends Vue {
   };
 
   onEditorPreparing(e) {
-    // logger.log(e.dataField, "blue");
-    // console.log(e);
-    // if (e.dataField == "permissions" && e.parentType === "dataRow") {
-    //   e.editorName = "dxTagBox"; // Changes the editor's type
-    //   e.editorOptions.onValueChanged = function(args) {
-    //     // Implement your logic here
-    //     debugger;
-    //     e.setValue(args.value); // Updates the cell value
-    //   };
-    // }
+    logger.log(e.dataField, "blue");
+    console.log(e);
+    if (e.dataField == "permissions" && e.parentType === "dataRow") {
+      this.permissionValue = e.editorOptions.value;
+      e.editorOptions.onValueChanged = function(args) {
+        // Implement your logic here
+        debugger;
+        e.setValue(args.value); // Updates the cell value
+      };
+    }
+  }
+
+  getValue(values) {
+    logger.log(this.permissionValue, "purple");
+    logger.log(values, "gray");
+    debugger;
+
+    const manage = values.find(value => value.name === "Manage");
+
+    if (manage) {
+      if (this.permissionValue.includes(manage.value)) {
+        return manage;
+      }
+    }
+
+    const viewOnly = values.find(value => value.name === "View Only");
+
+    if (this.permissionValue.includes(viewOnly.value)) {
+      return viewOnly;
+    }
+
+    return values.find(value => value.name === "None");
   }
 
   onInitNewRow() {
@@ -300,7 +330,7 @@ export default class Roles extends Vue {
   display: grid;
   align-items: center;
   justify-items: center;
-  grid-template-columns: 0% 5% 95% 0%;
+  grid-template-columns: 0% 0% 5% 95% 0%;
   padding: 5px;
   cursor: default !important;
   border-top: none;

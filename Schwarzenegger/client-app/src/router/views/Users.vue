@@ -34,7 +34,12 @@
             <DxFormItem data-field="fullName" />
             <DxFormItem data-field="phoneNumber" />
           </DxFormItem>
-          <DxFormItem v-if="hasPermission('roles.manage')" :col-count="2" :col-span="2" item-type="group">
+          <DxFormItem
+            v-if="hasPermission('roles.manage')"
+            :col-count="2"
+            :col-span="2"
+            item-type="group"
+          >
             <DxFormItem
               :col-span="2"
               data-field="roles"
@@ -96,7 +101,8 @@
       <DxColumn data-field="fullName" />
 
       <DxColumn data-field="phoneNumber" />
-      <DxColumn v-if="hasPermission('roles.view')"
+      <DxColumn
+        v-if="hasPermission('roles.view')"
         data-field="roles"
         cell-template="rolesCellTemplate"
         width="200"
@@ -223,7 +229,7 @@ import DxPopup, {
 } from "devextreme-vue/popup";
 import { ChangePassword } from "../../models/change-password.model";
 import logger from "../../utils/logger";
-import { PermissionValues } from '@/models/permission.model';
+import { PermissionValues } from "@/models/permission.model";
 
 @Component({
   components: {

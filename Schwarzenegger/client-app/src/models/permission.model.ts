@@ -1,45 +1,37 @@
-
-export type PermissionGroups =
-| "Users"
-| "Roles"
-| "About";
+export type PermissionGroups = "Users" | "Roles" | "About";
 
 export type PermissionNames =
-| "View Users"
-| "Manage Users"
-| "View Roles"
-| "Manage Roles"
-| "Assign Roles"
-| "View Homes"
-| "View About"
-| "View Account";
+  | "View Users"
+  | "Manage Users"
+  | "View Roles"
+  | "Manage Roles"
+  | "Assign Roles"
+  | "View Homes"
+  | "View About"
+  | "View Account";
 
 export type PermissionValues =
-| null
-| "users.view"
-| "users.manage"
-| "roles.view"
-| "roles.manage"
-| "roles.assign"
-| "home.view"
-| "about.view"
-| "account.view";
-
+  | null
+  | "users.view"
+  | "users.manage"
+  | "roles.view"
+  | "roles.manage"
+  | "roles.assign"
+  | "home.view"
+  | "about.view"
+  | "account.view";
 
 interface PermissionType {
-  group: PermissionGroups,
-  values: PermissionValueTypes[]
+  group: PermissionGroups;
+  values: PermissionValueTypes[];
 }
 
 interface PermissionValueTypes {
-  name: PermissionValueType, 
-  value: PermissionValues
+  name: PermissionValueType;
+  value: PermissionValues;
 }
 
-export type PermissionValueType =
-  | "None"
-  | "View Only"
-  | "Manage";  
+export type PermissionValueType = "None" | "View Only" | "Manage";
 
 export class Permission {
   public static readonly usersPermission: PermissionType = {
@@ -57,7 +49,7 @@ export class Permission {
         name: "Manage",
         value: "users.manage"
       }
-    ],
+    ]
   };
 
   public static readonly rolesPermission: PermissionType = {
@@ -75,7 +67,7 @@ export class Permission {
         name: "Manage",
         value: "roles.manage"
       }
-    ],
+    ]
   };
 
   public static readonly aboutPermission: PermissionType = {
@@ -89,15 +81,11 @@ export class Permission {
         name: "View Only",
         value: "about.view"
       }
-    ],
+    ]
   };
 
   public static getAllPermissions(): PermissionType[] {
-    return [
-      this.usersPermission,
-      this.rolesPermission,
-      this.aboutPermission,
-    ];
+    return [this.usersPermission, this.rolesPermission, this.aboutPermission];
   }
 
   constructor(
