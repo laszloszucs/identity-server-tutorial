@@ -107,6 +107,7 @@ namespace Schwarzenegger.Core
         public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(ApplicationUser user,
             IEnumerable<string> roles, string password)
         {
+            user.IsEnabled = true;
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
                 return (false, result.Errors.Select(e => e.Description).ToArray());

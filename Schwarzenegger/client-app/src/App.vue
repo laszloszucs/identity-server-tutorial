@@ -35,7 +35,6 @@
         <DxButton
           id="adminButton"
           class="admin-button"
-          v-if="hasPermission('account.view')"
           @click="navigate('/account')"
           :text="isSmall(profile().userName)"
           icon="user"

@@ -105,16 +105,17 @@ namespace Schwarzenegger
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Policies.ViewRoleByRoleNamePolicy,
-                    policy => policy.Requirements.Add(new ViewRoleAuthorizationRequirement()));
+                options.AddPolicyWithAdmin(Policies.ViewUsersPolicy, ApplicationPermissions.ViewUsers);
+                options.AddPolicyWithAdmin(Policies.AddUsersPolicy, ApplicationPermissions.AddUsers);
+                options.AddPolicyWithAdmin(Policies.UpdateUsersPolicy, ApplicationPermissions.UpdateUsers);
+                options.AddPolicyWithAdmin(Policies.DeleteUsersPolicy, ApplicationPermissions.DeleteUsers);
 
-                options.AddPolicy(Policies.AssignAllowedRolesPolicy,
-                    policy => policy.Requirements.Add(new AssignRolesAuthorizationRequirement()));
+                options.AddPolicyWithAdmin(Policies.ViewRolesPolicy, ApplicationPermissions.ViewRoles);
+                options.AddPolicyWithAdmin(Policies.AddRolesPolicy, ApplicationPermissions.AddRoles);
+                options.AddPolicyWithAdmin(Policies.UpdateRolesPolicy, ApplicationPermissions.UpdateRoles);
+                options.AddPolicyWithAdmin(Policies.DeleteRolesPolicy, ApplicationPermissions.DeleteRoles);
 
-                options.AddPolicyWithAdmin(Policies.ViewAllUsersPolicy, ApplicationPermissions.ViewUsers);
-                options.AddPolicyWithAdmin(Policies.ManageAllUsersPolicy, ApplicationPermissions.ManageUsers);
-                options.AddPolicyWithAdmin(Policies.ViewAllRolesPolicy, ApplicationPermissions.ViewRoles);
-                options.AddPolicyWithAdmin(Policies.ManageAllRolesPolicy, ApplicationPermissions.ManageRoles);
+                options.AddPolicyWithAdmin(Policies.ViewAboutPolicy, ApplicationPermissions.ViewAbout);
 
             });
 

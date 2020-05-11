@@ -32,7 +32,7 @@ namespace Schwarzenegger.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policies.ViewAllRolesPolicy)]
+        [Authorize(Policies.ViewRolesPolicy)]
         public async Task<IActionResult> GetAsync()
         {
             var roles = await _context.Roles.Include(r => r.Users).Include(r => r.Claims).ToListAsync();
@@ -43,7 +43,7 @@ namespace Schwarzenegger.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policies.ManageAllRolesPolicy)]
+        [Authorize(Policies.UpdateRolesPolicy)]
         public async Task<IActionResult> PutAsync([FromForm]string key, [FromForm]string values)
         {
             var (newValues, permissions) = DeattachPermissions(values);
@@ -73,7 +73,7 @@ namespace Schwarzenegger.Controllers
         }
 
         [HttpGet("claims")]
-        [Authorize(Policies.ViewAllRolesPolicy)]
+        [Authorize(Policies.ViewRolesPolicy)]
         public IActionResult Claims()
         {
             var claims = ApplicationPermissions.AllPermissions;

@@ -7,52 +7,44 @@ namespace Schwarzenegger.Core.Authorization
     public static class ApplicationPermissions
     {
         public const string UsersPermissionGroupName = "User Permissions";
-
         public const string RolesPermissionGroupName = "Role Permissions";
+        public const string AboutPermissionGroupName = "About Permissions";
         public static ReadOnlyCollection<ApplicationPermission> AllPermissions;
 
         public static ApplicationPermission ViewUsers = new ApplicationPermission("View Users", "users.view",
             UsersPermissionGroupName, "Permission to view other users account details");
-
-        public static ApplicationPermission ManageUsers = new ApplicationPermission("Manage Users", "users.manage",
-            UsersPermissionGroupName, "Permission to create, delete and modify other users account details");
+        public static ApplicationPermission AddUsers = new ApplicationPermission("Add Users", "users.add",
+            UsersPermissionGroupName, "Add Users");
+        public static ApplicationPermission UpdateUsers = new ApplicationPermission("Update Users", "users.update",
+            UsersPermissionGroupName, "Update Users");
+        public static ApplicationPermission DeleteUsers = new ApplicationPermission("Delete Users", "users.delete",
+            UsersPermissionGroupName, "Delete Users");
 
         public static ApplicationPermission ViewRoles = new ApplicationPermission("View Roles", "roles.view",
             RolesPermissionGroupName, "Permission to view available roles");
-
-        public static ApplicationPermission ManageRoles = new ApplicationPermission("Manage Roles", "roles.manage",
-            RolesPermissionGroupName, "Permission to create, delete and modify roles");
-
-        public static ApplicationPermission AssignRoles = new ApplicationPermission("Assign Roles", "roles.assign",
-            RolesPermissionGroupName, "Permission to assign roles to users");
-
-
-        public static ApplicationPermission ViewHome = new ApplicationPermission("View Home", "home.view",
-            UsersPermissionGroupName, "Permission to view Home");
-
+        public static ApplicationPermission AddRoles = new ApplicationPermission("Add Roles", "roles.add",
+            RolesPermissionGroupName, "Add Roles");
+        public static ApplicationPermission UpdateRoles = new ApplicationPermission("Update Roles", "roles.update",
+            RolesPermissionGroupName, "Update Roles");
+        public static ApplicationPermission DeleteRoles = new ApplicationPermission("Delete Roles", "roles.delete",
+            RolesPermissionGroupName, "Delete Roles");
 
         public static ApplicationPermission ViewAbout = new ApplicationPermission("View About", "about.view",
-            UsersPermissionGroupName, "Permission to view About");
-
-
-        public static ApplicationPermission ViewAccount = new ApplicationPermission("View Account", "account.view",
-            UsersPermissionGroupName, "Permission to view my Account");
-
-
+            AboutPermissionGroupName, "Permission to view About");
+        
         static ApplicationPermissions()
         {
             var allPermissions = new List<ApplicationPermission>
             {
                 ViewUsers,
-                ManageUsers,
-
+                AddUsers,
+                UpdateUsers,
+                DeleteUsers,
                 ViewRoles,
-                ManageRoles,
-                AssignRoles,
-
-                ViewHome,
+                AddRoles,
+                UpdateRoles,
+                DeleteRoles,
                 ViewAbout,
-                ViewAccount
             };
 
             AllPermissions = allPermissions.AsReadOnly();
@@ -71,11 +63,6 @@ namespace Schwarzenegger.Core.Authorization
         public static string[] GetAllPermissionValues()
         {
             return AllPermissions.Select(p => p.Value).ToArray();
-        }
-
-        public static string[] GetAdministrativePermissionValues()
-        {
-            return new string[] {ManageUsers, ManageRoles, AssignRoles};
         }
     }
 

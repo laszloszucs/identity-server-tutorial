@@ -20,7 +20,7 @@ namespace Schwarzenegger.Core.Authorization
             {
                 context.Succeed(requirement);
             }
-            else if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.AssignRoles))
+            else if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.UpdateRoles))
             {
                 if (context.User.HasClaim(PropertyConstants.IsAdmin, "true")) // TODO Ez így jó?
                 {

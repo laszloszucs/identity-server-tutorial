@@ -35,9 +35,6 @@ const router = new Router({
       path: "/account",
       name: "Account",
       component: Account,
-      meta: {
-        permissions: ["account.view"]
-      }
     },
     {
       path: "/users",

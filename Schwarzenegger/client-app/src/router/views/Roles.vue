@@ -1,7 +1,6 @@
 <template>
   <div class="roles">
     <DxDataGrid
-      v-if="users"
       :ref="gridRefName"
       :data-source="roles"
       :show-borders="true"
@@ -27,33 +26,15 @@
         >
         </DxDataGridEditPopup>
         <DxDatagridEditForm>
-          <DxFormItem :col-count="2" :col-span="2" item-type="group">
-            <DxFormItem :col-span="2" data-field="id" />
+          <DxFormItem :col-count="1" :col-span="1" item-type="group">
+            <DxFormItem :col-span="1" data-field="id" />
             <DxFormItem data-field="name" />
             <DxFormItem data-field="description" />
           </DxFormItem>
-          <DxFormItem :col-count="2" :col-span="2" item-type="group">
+          <DxFormItem :col-count="1" :col-span="1" item-type="group">
             <DxFormItem
-              :col-span="2"
-              data-field="users"
-              editor-type="dxTagBox"
-              :editor-options="{
-                dataSource: users,
-                valueExpr: 'userId',
-                displayExpr: 'userName'
-              }"
-            />
-          </DxFormItem>
-          <DxFormItem :col-count="2" :col-span="2" item-type="group">
-            <DxFormItem
-              :col-span="2"
+              :col-span="1"
               data-field="permissions"
-              editor-type="dxTagBox"
-              :editor-options="{
-                dataSource: permissionsLookup,
-                valueExpr: 'value',
-                displayExpr: 'name',
-              }"
             />
           </DxFormItem>
           <!-- <DxFormItem :col-span="2" itemType="empty"></DxFormItem> -->
@@ -65,36 +46,17 @@
       <DxSearchPanel :visible="true" />
       <DxColumn data-field="id" :visible="false" :allowEditing="false" />
       <DxColumn data-field="name" />
-      <DxColumn data-field="description" />
-      <DxColumn
-        data-field="users"
-        cell-template="usersCellTemplate"
-        width="200"
-      />
+      <DxColumn data-field="description" />      
       <DxColumn
         data-field="permissions"
         cell-template="permissionsCellTemplate"
+        edit-cell-template="permissionsEditCellTemplate"
         width="200"
       />
       <DxColumn data-field="createdBy" />
       <DxColumn data-field="updatedBy" />
       <DxColumn data-field="CreatedDate" />
       <DxColumn data-field="UpdatedDate" />
-      <template #usersCellTemplate="cell">
-        <DxTagBox
-          :readOnly="true"
-          :dataSource="users"
-          :value="cell.data.value"
-          valueExpr="userId"
-          tag-template="usersTagTemplate"
-        >
-          <template #usersTagTemplate="item">
-            <div class="dx-tag-content" style="padding: 3px 6px 4px 2px;">
-              {{ getUserUserNameById(item.data.userId) }}
-            </div>
-          </template>
-        </DxTagBox>
-      </template>
       <template #permissionsCellTemplate="cell">
         <DxTagBox
           :readOnly="true"
@@ -109,6 +71,19 @@
             </div>
           </template>
         </DxTagBox>
+      </template>
+      <template #permissionsEditCellTemplate="cell">
+        <DxList
+          :dataSource="groupedPermissionsLookup"     
+          :show-selection-controls="true"
+          :grouped="true"
+          selection-mode="multiple"
+          :selected-item-keys.sync="cell.data.value"
+          valueExpr="value"
+          displayExpr="name"
+          :on-selection-changed="(value) => onValueChanged(cell)"
+        >
+        </DxList>
       </template>
       <template #getTitle>
         <DxToolbar>
@@ -150,6 +125,7 @@ import {
   DxColumnFixing
 } from "devextreme-vue/data-grid";
 import DxTagBox from "devextreme-vue/tag-box";
+import DxList from "devextreme-vue/list";
 import DxToolbar, { DxItem as DxToolbarItem } from "devextreme-vue/toolbar";
 import CustomStore from "devextreme/data/custom_store";
 import DxForm, {
@@ -163,6 +139,8 @@ import DxPopup, {
 import DxSelectBox from "devextreme-vue/select-box";
 import { Permission } from "../../models/permission.model";
 import logger from "../../utils/logger";
+import DataSource from 'devextreme/data/data_source';
+import { createStore } from 'devextreme-aspnet-data-nojquery';
 
 @Component({
   components: {
@@ -189,13 +167,13 @@ import logger from "../../utils/logger";
     DxForm,
     DxPopupToolbarItem,
     DxColumnFixing,
-    DxSelectBox
+    DxSelectBox,
+    DxList
   }
 })
 export default class Roles extends Vue {
   private isNewRow = false;
   private gridRefName = "rolesGrid";
-  private users = null;
   console = console;
   public roles = new CustomStore({
     key: "id",
@@ -241,28 +219,52 @@ export default class Roles extends Vue {
     this.isNewRow = false;
   }
 
+  onValueChanged(cellInfo) {
+    debugger;
+    cellInfo.data.setValue(cellInfo.data.value);
+    cellInfo.data.component.updateDimensions();
+  }
+  
+  groupBy(array, key) {
+    return array.reduce(function(rv, item) {
+      (rv[item[key]] = rv[item[key]] || []).push(item);
+      return rv;
+    }, {});
+  };
+
   get dataGrid() {
     return (this.$refs[this.gridRefName] as any).instance;
   }
 
-  private permissionsLookup = new CustomStore({
-    key: "value",
-    loadMode: "raw",
-    load: async () => await Permission.getAllPermissions()
+  permissionGrouped() {
+    const permissions = this.groupBy(Permission.getAllPermissions(), 'groupName');
+
+    const arr = Object.entries(permissions).map(([index, item]) => {
+      return {
+        key: index,
+        items: item
+      }
+    });
+
+    return arr;
+  }
+
+  private permissionsLookup = new DataSource({
+    store: {
+        type: "array",
+        data: Permission.getAllPermissions(),
+        key: 'value'
+    }
   });
 
-  async created() {
-    this.users = await accountService.getUsers();
-    // this.permissionsLookup = Permission.getAllPermissions();
-  }
-
-  // getClaimNameByValue(value) {
-  //   return this.claims.find(claim => claim.value === value).name;
-  // }
-
-  getUserUserNameById(userId) {
-    return this.users.find(user => user.id === userId).userName;
-  }
+  private groupedPermissionsLookup = new DataSource({
+    store: {
+        type: "array",
+        data: this.permissionGrouped(),
+        group: 'groupName',
+        key: 'value'
+    }
+  });
 }
 </script>
 

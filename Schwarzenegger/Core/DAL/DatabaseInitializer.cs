@@ -25,7 +25,7 @@ namespace Schwarzenegger.Core.DAL
 
         public async Task InitializeAsync()
         {
-            //await _context.Database.EnsureDeletedAsync();
+            // await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync().ConfigureAwait(false);
             await SeedAsync();
         }
@@ -41,8 +41,8 @@ namespace Schwarzenegger.Core.DAL
 
                 const string userRoleName = "user";
 
-                await EnsureRoleAsync(operatorRoleName, "Operator", new[] { "home.view", "account.view" });
-                await EnsureRoleAsync(userRoleName, "User", new [] { "home.view", "account.view", "roles.view" });
+                await EnsureRoleAsync(operatorRoleName, "Operator", new[] { "users.view", "roles.view", "about.view" });
+                await EnsureRoleAsync(userRoleName, "User", new [] { "about.view" });
 
                 await CreateUserAsync("admin", "tempP@ss123", "Inbuilt Administrator", "admin@schwarzenegger.com",
                     "+1 (123) 000-0000", new[] { operatorRoleName }, true);

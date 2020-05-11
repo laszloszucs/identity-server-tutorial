@@ -66,7 +66,8 @@ namespace Schwarzenegger.Core.Authorization
                 return Task.CompletedTask;
             }
 
-            if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.ManageUsers) ||
+            // TODO Permission-t átnézni, nem biztos, hogy itt az UpdateUsers kell
+            if (context.User.HasClaim(ClaimConstants.Permission, ApplicationPermissions.UpdateUsers) ||
                 GetIsSameUser(context.User, targetUserId))
                 context.Succeed(requirement);
 

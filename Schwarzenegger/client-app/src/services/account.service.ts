@@ -58,8 +58,11 @@ class AccountService {
 
   async changePassword(data: ChangePassword) {
     return await RequestHandler.post(
-      `${this.path}/${data.userId}/changepassword`,
-      data.newPassword
+      `${this.path}/changepassword`,
+      {
+        userId: data.userId,
+        newPassword: data.newPassword
+      }
     );
   }
 

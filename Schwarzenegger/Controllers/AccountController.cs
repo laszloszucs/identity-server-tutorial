@@ -53,6 +53,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(UserViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.ViewUsersPolicy)] // TODO Ide kell?
         public async Task<IActionResult> GetUserById(string id)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Read)).Succeeded)
@@ -71,6 +72,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(UserViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.ViewUsersPolicy)]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
             var appUser = await _accountManager.GetUserByUserNameAsync(userName);
@@ -87,7 +89,7 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpGet("users")]
-        [Authorize(Policies.ViewAllUsersPolicy)]
+        [Authorize(Policies.ViewUsersPolicy)]
         [ProducesResponseType(200, Type = typeof(List<UserViewModel>))]
         public async Task<IActionResult> GetUsers()
         {
@@ -96,7 +98,7 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpGet("users/{pageNumber:int}/{pageSize:int}")]
-        [Authorize(Policies.ViewAllUsersPolicy)]
+        [Authorize(Policies.ViewUsersPolicy)]
         [ProducesResponseType(200, Type = typeof(List<UserViewModel>))]
         public async Task<IActionResult> GetUsers(int pageNumber, int pageSize)
         {
@@ -131,6 +133,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.UpdateUsersPolicy)]
         public async Task<IActionResult> UpdateUser([FromForm]string key, [FromForm]string values)
         {
             var (newValues, roles) = DeattachRoles(values);
@@ -160,12 +163,29 @@ namespace Schwarzenegger.Controllers
 
             return BadRequest(ModelState);
         }
-        
+
+        [HttpPost("users/changepassword")]
+        [Authorize(Policies.UpdateUsersPolicy)]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] NewPasswordObj newPasswordObj)
+        {
+            var appUser = await _accountManager.GetUserByIdAsync(newPasswordObj.userId);
+            var result = await _accountManager.ResetPasswordAsync(appUser, newPasswordObj.newPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+
+            AddError(result.Errors);
+            return BadRequest(ModelState);
+        }
+
         [HttpPut("users/{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.UpdateUsersPolicy)]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserEditViewModel user)
         {
             var appUser = await _accountManager.GetUserByIdAsync(id);
@@ -174,7 +194,7 @@ namespace Schwarzenegger.Controllers
             var manageUsersPolicy = _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Update);
             var assignRolePolicy =
                 _authorizationService.AuthorizeAsync(User, (user.Roles, currentRoles),
-                    Policies.AssignAllowedRolesPolicy);
+                    Policies.UpdateRolesPolicy); // TODO Ez itt jólvan?
 
 
             if ((await Task.WhenAll(manageUsersPolicy, assignRolePolicy)).Any(r => !r.Succeeded))
@@ -254,6 +274,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.UpdateUsersPolicy)]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] JsonPatchDocument<UserPatchViewModel> patch)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Update)).Succeeded)
@@ -293,10 +314,10 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpPost("users")]
-        [Authorize(Policies.ManageAllUsersPolicy)]
         [ProducesResponseType(201, Type = typeof(UserViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
+        [Authorize(Policies.AddUsersPolicy)]
         public async Task<IActionResult> Register([FromBody] InsertUserViewModel user)
         {
             //if (!(await _authorizationService.AuthorizeAsync(User, (user.Roles, new string[] { }),
@@ -335,6 +356,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.DeleteUsersPolicy)]
         public async Task<IActionResult> DeleteUser(string id)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Delete)).Succeeded)
@@ -363,9 +385,9 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpPut("users/unblock/{id}")]
-        [Authorize(Policies.ManageAllUsersPolicy)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.UpdateUsersPolicy)]
         public async Task<IActionResult> UnblockUser(string id)
         {
             var appUser = await _accountManager.GetUserByIdAsync(id);
@@ -417,12 +439,13 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(RoleViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.ViewRolesPolicy)]
         public async Task<IActionResult> GetRoleById(string id)
         {
             var appRole = await _accountManager.GetRoleByIdAsync(id);
 
             if (!(await _authorizationService.AuthorizeAsync(User, appRole?.Name ?? "",
-                Policies.ViewRoleByRoleNamePolicy)).Succeeded)
+                Policies.ViewRolesPolicy)).Succeeded)
                 return new ForbidResult();
 
             if (appRole == null)
@@ -436,9 +459,10 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(RoleViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.ViewRolesPolicy)]
         public async Task<IActionResult> GetRoleByName(string name)
         {
-            if (!(await _authorizationService.AuthorizeAsync(User, name, Policies.ViewRoleByRoleNamePolicy)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, name, Policies.ViewRolesPolicy)).Succeeded)
                 return new ForbidResult();
 
 
@@ -452,8 +476,8 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpGet("roles")]
-        [Authorize(Policies.ViewAllRolesPolicy)]
         [ProducesResponseType(200, Type = typeof(List<RoleViewModel>))]
+        [Authorize(Policies.ViewRolesPolicy)]
         public async Task<IActionResult> GetRoles()
         {
             return await GetRoles(-1, -1);
@@ -461,7 +485,7 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpGet("roles/{pageNumber:int}/{pageSize:int}")]
-        [Authorize(Policies.ViewAllRolesPolicy)]
+        [Authorize(Policies.ViewRolesPolicy)]
         [ProducesResponseType(200, Type = typeof(List<RoleViewModel>))]
         public async Task<IActionResult> GetRoles(int pageNumber, int pageSize)
         {
@@ -471,10 +495,10 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpPut("roles/{id}")]
-        [Authorize(Policies.ManageAllRolesPolicy)]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.UpdateRolesPolicy)]
         public async Task<IActionResult> UpdateRole(string id, [FromBody] RoleViewModel role)
         {
             if (ModelState.IsValid)
@@ -507,9 +531,9 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpPost("roles")]
-        [Authorize(Policies.ManageAllRolesPolicy)]
         [ProducesResponseType(201, Type = typeof(RoleViewModel))]
         [ProducesResponseType(400)]
+        [Authorize(Policies.AddRolesPolicy)]
         public async Task<IActionResult> CreateRole([FromBody] RoleViewModel role)
         {
             if (ModelState.IsValid)
@@ -536,10 +560,10 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpDelete("roles/{id}")]
-        [Authorize(Policies.ManageAllRolesPolicy)]
         [ProducesResponseType(200, Type = typeof(RoleViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [Authorize(Policies.DeleteRolesPolicy)]
         public async Task<IActionResult> DeleteRole(string id)
         {
             var appRole = await _accountManager.GetRoleByIdAsync(id);
@@ -564,8 +588,8 @@ namespace Schwarzenegger.Controllers
 
 
         [HttpGet("permissions")]
-        [Authorize(Policies.ViewAllRolesPolicy)]
         [ProducesResponseType(200, Type = typeof(List<PermissionViewModel>))]
+        [Authorize(Policies.ViewRolesPolicy)]
         public IActionResult GetAllPermissions()
         {
             return Ok(_mapper.Map<List<PermissionViewModel>>(ApplicationPermissions.AllPermissions));
@@ -619,6 +643,12 @@ namespace Schwarzenegger.Controllers
             json.Remove("roles");
 
             return (json.ToString(), roles);
+        }
+
+        public class NewPasswordObj
+        {
+            public string userId;
+            public string newPassword;
         }
     }
 }

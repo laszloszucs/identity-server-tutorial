@@ -2,39 +2,49 @@ export type PermissionGroups = "Users" | "Roles" | "About";
 
 export type PermissionNames =
   | "View Users"
-  | "Manage Users"
+  | "Add Users"
+  | "Update Users"
+  | "Delete Users"
   | "View Roles"
-  | "Manage Roles"
-  | "Assign Roles"
-  | "View Homes"
-  | "View About"
-  | "View Account";
+  | "Add Roles"
+  | "Update Roles"
+  | "Delete Roles"
+  | "View About";
 
 export type PermissionValues =
   | "users.view"
-  | "users.manage"
+  | "users.add"
+  | "users.update"
+  | "users.delete"
   | "roles.view"
-  | "roles.manage"
-  | "roles.assign"
-  | "home.view"
-  | "about.view"
-  | "account.view";
+  | "roles.add"
+  | "roles.update"
+  | "roles.delete"
+  | "about.view";
 
 export class Permission {
   public static readonly viewUsersPermission: Permission = new Permission("View Users", "users.view", "Users", "View Users");
-  public static readonly manageUsersPermission: Permission = new Permission("Manage Users", "users.manage", "Users", "Manage Users");
+  public static readonly addUsersPermission: Permission = new Permission("Add Users", "users.add", "Users", "Add Users");
+  public static readonly updateUsersPermission: Permission = new Permission("Update Users", "users.update", "Users", "Update Users");
+  public static readonly deleteUsersPermission: Permission = new Permission("Delete Users", "users.delete", "Users", "Delete Users");
   
   public static readonly viewRolesPermission: Permission = new Permission("View Roles", "roles.view", "Roles", "View Roles");
-  public static readonly manageRolesPermission: Permission = new Permission("Manage Roles", "roles.manage", "Roles", "Manage Roles");
+  public static readonly addRolesPermission: Permission = new Permission("Add Roles", "roles.add", "Roles", "Add Roles");
+  public static readonly updateRolesPermission: Permission = new Permission("Update Roles", "roles.update", "Roles", "Update Roles");
+  public static readonly deleteRolesPermission: Permission = new Permission("Delete Roles", "roles.delete", "Roles", "Delete Roles");
   
   public static readonly viewAboutPermission: Permission = new Permission("View About", "about.view", "About", "View About");
 
   public static getAllPermissions(): Permission[] {
     return [
       this.viewUsersPermission,
-      this.manageUsersPermission,
+      this.addUsersPermission,
+      this.updateUsersPermission,
+      this.deleteUsersPermission,
       this.viewRolesPermission,
-      this.manageRolesPermission,
+      this.addRolesPermission,
+      this.updateRolesPermission,
+      this.deleteRolesPermission,
       this.viewAboutPermission
     ];
   }

@@ -34,8 +34,9 @@
             <DxFormItem data-field="fullName" />
             <DxFormItem data-field="phoneNumber" />
           </DxFormItem>
+          <!-- TODO A permission vizsgálatokat tesztelni kell, valószínűleg több helyen kell vizsgálni -->
           <DxFormItem
-            v-if="hasPermission('roles.manage')"
+            v-if="hasPermission('roles.view')"
             :col-count="2"
             :col-span="2"
             item-type="group"
@@ -153,6 +154,7 @@
         <DxForm
           :ref="newPasswordFormRefName"
           :form-data.sync="passwordFormData"
+          @on-initialized="onInitializedPasswordForm"
         >
           <DxFormItem
             data-field="newPassword"
@@ -328,11 +330,15 @@ export default class Users extends Vue {
     }
   };
 
-  onShowningChangePasswordPopup() {
-    this.initPasswordFields();
+  onInitializedPasswordForm() {
+    debugger;
   }
 
-  initPasswordFields() {
+  onShowningChangePasswordPopup(e) {
+    this.initPasswordFields(e);
+  }
+
+  initPasswordFields(e) {
     this.newPasswordForm.resetValues();
   }
 
@@ -347,13 +353,14 @@ export default class Users extends Vue {
   }
 
   onEditorPreparing(e) {
-    logger.log(e.dataField, "blue");
-    console.log(e);
+    if (e.dataField == "id" && e.parentType === "dataRow") {
+      this.passwordFormData.userId = e.value;      
+    }
+
     if (e.dataField == "roles" && e.parentType === "dataRow") {
       e.editorName = "dxTagBox"; // Changes the editor's type
       e.editorOptions.onValueChanged = function(args) {
         // Implement your logic here
-        debugger;
         e.setValue(args.value); // Updates the cell value
       };
     }
