@@ -48,16 +48,11 @@
             <DxFormItem
               :col-span="2"
               data-field="permissions"
-              editor-type="dxList"
+              editor-type="dxTagBox"
               :editor-options="{
                 dataSource: permissionsLookup,
                 valueExpr: 'value',
                 displayExpr: 'name',
-                selectionMode: 'none',
-                activeStateEnabled: false,
-                focusStateEnabled: false,
-                hoverStateEnabled: false,
-                itemTemplate: 'permissionListItemTemplate'
               }"
             />
           </DxFormItem>
@@ -130,21 +125,6 @@
           />
         </DxToolbar>
       </template>
-      <template #permissionListItemTemplate="item">
-        <div class="permission-list-item">
-          <div>{{ console.log(item) }}</div>
-          <div>{{ item.data.group }}</div>
-          <DxSelectBox
-            class="selectbox"
-            width="200px"
-            keyExpr="value"
-            displayExpr="name"
-            :items="item.data.values"
-            :value="getValue(item.data.values)"
-          ></DxSelectBox>
-        </div>
-        <!-- <b>{{ console.log(item) }}</b> -->
-      </template>
     </DxDataGrid>
   </div>
 </template>
@@ -216,8 +196,6 @@ export default class Roles extends Vue {
   private isNewRow = false;
   private gridRefName = "rolesGrid";
   private users = null;
-  private permissionValue = null;
-  // private permissions = null;
   console = console;
   public roles = new CustomStore({
     key: "id",
@@ -246,35 +224,13 @@ export default class Roles extends Vue {
     logger.log(e.dataField, "blue");
     console.log(e);
     if (e.dataField == "permissions" && e.parentType === "dataRow") {
-      this.permissionValue = e.editorOptions.value;
+      logger.log(e.editorOptions.value, "purple");
       e.editorOptions.onValueChanged = function(args) {
         // Implement your logic here
         debugger;
         e.setValue(args.value); // Updates the cell value
       };
     }
-  }
-
-  getValue(values) {
-    logger.log(this.permissionValue, "purple");
-    logger.log(values, "gray");
-    debugger;
-
-    const manage = values.find(value => value.name === "Manage");
-
-    if (manage) {
-      if (this.permissionValue.includes(manage.value)) {
-        return manage;
-      }
-    }
-
-    const viewOnly = values.find(value => value.name === "View Only");
-
-    if (this.permissionValue.includes(viewOnly.value)) {
-      return viewOnly;
-    }
-
-    return values.find(value => value.name === "None");
   }
 
   onInitNewRow() {
@@ -290,14 +246,14 @@ export default class Roles extends Vue {
   }
 
   private permissionsLookup = new CustomStore({
-    key: "group",
+    key: "value",
     loadMode: "raw",
     load: async () => await Permission.getAllPermissions()
   });
 
   async created() {
     this.users = await accountService.getUsers();
-    // this.permissions = Permission.getAllPermissions();
+    // this.permissionsLookup = Permission.getAllPermissions();
   }
 
   // getClaimNameByValue(value) {

@@ -124,16 +124,6 @@
           </template>
         </DxTagBox>
       </template>
-      <template #rolesEditCellTemplate="cell">
-        <DxTagBox
-          :dataSource="rolesLookup"
-          :value="cell.data.value"
-          valueExpr="name"
-          displayExpr="description"
-          :on-initialized="onInitializedTagBox"
-        >
-        </DxTagBox>
-      </template>
       <DxColumn data-field="isLockedOut" />
       <DxColumn data-field="isEnabled" />
       <template #getTitle>

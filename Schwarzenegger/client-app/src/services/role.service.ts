@@ -22,6 +22,7 @@ class RoleService {
   }
 
   async update(data) {
+    debugger;
     return await RequestHandler.put(this.path, data);
   }
 
