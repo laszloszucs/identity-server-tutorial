@@ -36,5 +36,6 @@ namespace Schwarzenegger.Core.Interfaces
         Task<(bool Succeeded, string[] Errors)> UpdateRoleAsync(ApplicationRole role, IEnumerable<string> claims);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user);
         Task<(bool Succeeded, string[] Errors)> UpdateUserAsync(ApplicationUser user, IEnumerable<string> roles);
+        Task<(bool Succeeded, string[] Errors)> RemoveTokenAsync(ApplicationUser appUser);
     }
 }

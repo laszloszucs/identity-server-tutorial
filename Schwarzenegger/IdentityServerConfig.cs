@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -48,7 +49,7 @@ namespace Schwarzenegger
         ///     Ez mondja meg milyen alkalmazások csatlakozhatnak és azok melyik API-kat érhetik el
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<Client> GetClients()
+        public static IEnumerable<Client> GetClients(string allowedCorsOrigins)
         {
             return new[]
             {
@@ -71,16 +72,17 @@ namespace Schwarzenegger
                     },
                     AllowOfflineAccess = true, // For refresh token.
                     
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    RefreshTokenUsage = TokenUsage.ReUse,
-                    AccessTokenLifetime = 3600, // Lifetime of access token in seconds.
+                    RefreshTokenExpiration = TokenExpiration.Absolute,
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    AccessTokenLifetime = 60, // Lifetime of access token in seconds.
+                    UpdateAccessTokenClaimsOnRefresh = true,
                     //AbsoluteRefreshTokenLifetime = 7200,
-                    //SlidingRefreshTokenLifetime = 900,+
+                    //SlidingRefreshTokenLifetime = 900,+s
                     //ClientSecrets =
                     //{
                     //    new Secret("secret".Sha256())
                     //},
-                    AllowedCorsOrigins = { "https://localhost:44301" }
+                    AllowedCorsOrigins = { allowedCorsOrigins }
                 },
 
                 new Client
@@ -90,7 +92,6 @@ namespace Schwarzenegger
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     AllowAccessTokensViaBrowser = true,
                     RequireClientSecret = false,
-                    //AllowedCorsOrigins = { "https://localhost:44300" },
                     AllowedScopes =
                     {
                         IdentityConfigConstants.ApiName

@@ -77,7 +77,7 @@ namespace Schwarzenegger
                     .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
                 .AddInMemoryApiResources(IdentityServerConfig
                     .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
-                .AddInMemoryClients(IdentityServerConfig.GetClients()) // és a Client-ek, melyek a megbízható alkalmazások
+                .AddInMemoryClients(IdentityServerConfig.GetClients(Configuration["AllowedCorsOrigins"])) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<ProfileService>();
 
@@ -105,17 +105,17 @@ namespace Schwarzenegger
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicyWithAdmin(Policies.ViewUsersPolicy, ApplicationPermissions.ViewUsers);
-                options.AddPolicyWithAdmin(Policies.AddUsersPolicy, ApplicationPermissions.AddUsers);
-                options.AddPolicyWithAdmin(Policies.UpdateUsersPolicy, ApplicationPermissions.UpdateUsers);
-                options.AddPolicyWithAdmin(Policies.DeleteUsersPolicy, ApplicationPermissions.DeleteUsers);
+                options.AddPolicyWithAdmin(ApplicationPermissions.ViewUsers);
+                options.AddPolicyWithAdmin(ApplicationPermissions.AddUsers);
+                options.AddPolicyWithAdmin(ApplicationPermissions.UpdateUsers);
+                options.AddPolicyWithAdmin(ApplicationPermissions.DeleteUsers);
 
-                options.AddPolicyWithAdmin(Policies.ViewRolesPolicy, ApplicationPermissions.ViewRoles);
-                options.AddPolicyWithAdmin(Policies.AddRolesPolicy, ApplicationPermissions.AddRoles);
-                options.AddPolicyWithAdmin(Policies.UpdateRolesPolicy, ApplicationPermissions.UpdateRoles);
-                options.AddPolicyWithAdmin(Policies.DeleteRolesPolicy, ApplicationPermissions.DeleteRoles);
+                options.AddPolicyWithAdmin(ApplicationPermissions.ViewRoles);
+                options.AddPolicyWithAdmin(ApplicationPermissions.AddRoles);
+                options.AddPolicyWithAdmin(ApplicationPermissions.UpdateRoles);
+                options.AddPolicyWithAdmin(ApplicationPermissions.DeleteRoles);
 
-                options.AddPolicyWithAdmin(Policies.ViewAboutPolicy, ApplicationPermissions.ViewAbout);
+                options.AddPolicyWithAdmin(ApplicationPermissions.ViewAbout);
 
             });
 
@@ -160,12 +160,6 @@ namespace Schwarzenegger
             //services.AddScoped<IEmailSender, EmailSender>();
 
             services.AddScoped<IAccountManager, AccountManager>();
-
-            // Auth Handlers
-            services.AddSingleton<IAuthorizationHandler, ViewUserAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, ManageUserAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, ViewRoleAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, AssignRolesAuthorizationHandler>();
 
             // DB Creation and Seeding
             services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();

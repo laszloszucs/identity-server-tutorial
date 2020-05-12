@@ -35,7 +35,7 @@ namespace Schwarzenegger.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policies.ViewRolesPolicy)]
+        [Authorize(ApplicationPermissions.ViewRolesPolicy)]
         public async Task<IActionResult> GetAsync()
         {
             var roles = await _context.Roles.Include(r => r.Users).Include(r => r.Claims).ToListAsync();
@@ -48,7 +48,7 @@ namespace Schwarzenegger.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(RoleViewModel))]
         [ProducesResponseType(400)]
-        [Authorize(Policies.AddRolesPolicy)]
+        [Authorize(ApplicationPermissions.AddRolesPolicy)]
         public async Task<IActionResult> PostAsync([FromBody] RoleViewModel role)
         {
             if (!ModelState.IsValid)
@@ -76,7 +76,7 @@ namespace Schwarzenegger.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policies.UpdateRolesPolicy)]
+        [Authorize(ApplicationPermissions.UpdateRolesPolicy)]
         public async Task<IActionResult> PutAsync([FromForm]string key, [FromForm]string values)
         {
             var (newValues, permissions) = DeattachPermissions(values);
@@ -109,7 +109,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(RoleViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [Authorize(Policies.DeleteRolesPolicy)]
+        [Authorize(ApplicationPermissions.DeleteRolesPolicy)]
         public async Task<IActionResult> DeleteRole(string id)
         {
             var appRole = await _accountManager.GetRoleByIdAsync(id);
@@ -121,7 +121,7 @@ namespace Schwarzenegger.Controllers
                 return BadRequest("Role cannot be deleted. Remove all users from this role and try again");
 
 
-            var roleVM = await GetRoleViewModelHelper(appRole.Name);
+            var roleVm = await GetRoleViewModelHelper(appRole.Name);
 
             var result = await _accountManager.DeleteRoleAsync(appRole);
             if (!result.Succeeded)
@@ -129,11 +129,11 @@ namespace Schwarzenegger.Controllers
                                     string.Join(", ", result.Errors));
 
 
-            return Ok(roleVM);
+            return Ok(roleVm);
         }
 
         [HttpGet("claims")]
-        [Authorize(Policies.ViewRolesPolicy)]
+        [Authorize(ApplicationPermissions.ViewRolesPolicy)]
         public IActionResult Claims()
         {
             var claims = ApplicationPermissions.AllPermissions;

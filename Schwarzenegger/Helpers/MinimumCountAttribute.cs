@@ -9,7 +9,7 @@ namespace Schwarzenegger.Helpers
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class MinimumCountAttribute : ValidationAttribute
     {
-        private const string _defaultError = "'{0}' must have at least {1} item.";
+        private const string DefaultError = "'{0}' must have at least {1} item.";
         private readonly bool _allowEmptyStringValues;
         private readonly int _minCount;
         private readonly bool _required;
@@ -19,7 +19,7 @@ namespace Schwarzenegger.Helpers
         }
 
         public MinimumCountAttribute(int minCount, bool required = true, bool allowEmptyStringValues = false) : base(
-            _defaultError)
+            DefaultError)
         {
             _minCount = minCount;
             _required = required;

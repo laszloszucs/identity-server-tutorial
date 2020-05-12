@@ -18,18 +18,20 @@ namespace Schwarzenegger.Core
         private readonly ApplicationDbContext _context;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
 
         public AccountManager(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
-            IHttpContextAccessor httpAccessor)
+            IHttpContextAccessor httpAccessor, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _context.CurrentUserId = httpAccessor.HttpContext?.User.FindFirst(ClaimConstants.Subject)?.Value?.Trim();
             _userManager = userManager;
             _roleManager = roleManager;
+            _signInManager = signInManager;
         }
 
 
@@ -177,6 +179,15 @@ namespace Schwarzenegger.Core
             return (true, new string[] { });
         }
 
+        public async Task<(bool Succeeded, string[] Errors)> RemoveTokenAsync(ApplicationUser appUser)
+        {
+            await _signInManager.SignOutAsync();
+            //var info = await _signInManager.GetExternalLoginInfoAsync();
+            _context.UserTokens.RemoveRange(_context.UserTokens.Where(ut => ut.UserId == appUser.Id/* && ut.LoginProvider == info.LoginProvider*/));
+            await _context.SaveChangesAsync();
+
+            return (true, new string[] { });
+        }
 
         public async Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(ApplicationUser user,
             string newPassword)

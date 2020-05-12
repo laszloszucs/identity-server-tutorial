@@ -5,9 +5,9 @@ namespace Schwarzenegger.Core.ExtensionMethods
 {
     public static class PolicyExtensionMethods
     {
-        public static void AddPolicyWithAdmin(this AuthorizationOptions options, string policyName, ApplicationPermission applicationPermission)
+        public static void AddPolicyWithAdmin(this AuthorizationOptions options, ApplicationPermission applicationPermission)
         {
-            options.AddPolicy(policyName, policy =>
+            options.AddPolicy(applicationPermission.Name, policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
                         (c.Type == ClaimConstants.Permission && c.Value == applicationPermission)

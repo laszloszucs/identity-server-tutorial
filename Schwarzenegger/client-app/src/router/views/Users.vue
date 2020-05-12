@@ -190,6 +190,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import accountService from "../../services/account.service";
+import roleService from "../../services/role.service";
 import {
   DxDataGrid,
   DxGrouping,
@@ -279,7 +280,7 @@ export default class Users extends Vue {
   private rolesLookup = new CustomStore({
     key: "Value",
     loadMode: "raw",
-    load: async () => await accountService.getRoles()
+    load: async () => await roleService.get()
   });
 
   get dataGrid() {
