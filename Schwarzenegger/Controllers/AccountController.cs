@@ -6,7 +6,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Schwarzenegger.Core.Authorization;
@@ -27,17 +26,14 @@ namespace Schwarzenegger.Controllers
         private const string GetRoleByIdActionName = "GetRoleById";
         private readonly IAccountManager _accountManager;
         private readonly IAuthorizationService _authorizationService;
-        private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
 
         public AccountController(IMapper mapper, IAccountManager accountManager,
-            IAuthorizationService authorizationService,
-            ILogger<AccountController> logger)
+            IAuthorizationService authorizationService)
         {
             _mapper = mapper;
             _accountManager = accountManager;
             _authorizationService = authorizationService;
-            _logger = logger;
         }
 
 
@@ -53,7 +49,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(200, Type = typeof(UserViewModel))]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        [Authorize(Policies.ViewUsersPolicy)] // TODO Ide kell?
+        [Authorize(Policies.ViewUsersPolicy)]
         public async Task<IActionResult> GetUserById(string id)
         {
             if (!(await _authorizationService.AuthorizeAsync(User, id, AccountManagementOperations.Read)).Succeeded)
@@ -168,15 +164,15 @@ namespace Schwarzenegger.Controllers
         [Authorize(Policies.UpdateUsersPolicy)]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] NewPasswordObj newPasswordObj)
         {
-            var appUser = await _accountManager.GetUserByIdAsync(newPasswordObj.userId);
-            var result = await _accountManager.ResetPasswordAsync(appUser, newPasswordObj.newPassword);
+            var appUser = await _accountManager.GetUserByIdAsync(newPasswordObj.UserId);
+            var (succeeded, errors) = await _accountManager.ResetPasswordAsync(appUser, newPasswordObj.NewPassword);
 
-            if (result.Succeeded)
+            if (succeeded)
             {
                 return Ok();
             }
 
-            AddError(result.Errors);
+            AddError(errors);
             return BadRequest(ModelState);
         }
 
@@ -528,65 +524,7 @@ namespace Schwarzenegger.Controllers
 
             return BadRequest(ModelState);
         }
-
-
-        [HttpPost("roles")]
-        [ProducesResponseType(201, Type = typeof(RoleViewModel))]
-        [ProducesResponseType(400)]
-        [Authorize(Policies.AddRolesPolicy)]
-        public async Task<IActionResult> CreateRole([FromBody] RoleViewModel role)
-        {
-            if (ModelState.IsValid)
-            {
-                if (role == null)
-                    return BadRequest($"{nameof(role)} cannot be null");
-
-
-                var appRole = _mapper.Map<ApplicationRole>(role);
-
-                var result =
-                    await _accountManager.CreateRoleAsync(appRole, role.Permissions);
-                if (result.Succeeded)
-                {
-                    var roleVM = await GetRoleViewModelHelper(appRole.Name);
-                    return CreatedAtAction(GetRoleByIdActionName, new {id = roleVM.Id}, roleVM);
-                }
-
-                AddError(result.Errors);
-            }
-
-            return BadRequest(ModelState);
-        }
-
-
-        [HttpDelete("roles/{id}")]
-        [ProducesResponseType(200, Type = typeof(RoleViewModel))]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        [Authorize(Policies.DeleteRolesPolicy)]
-        public async Task<IActionResult> DeleteRole(string id)
-        {
-            var appRole = await _accountManager.GetRoleByIdAsync(id);
-
-            if (appRole == null)
-                return NotFound(id);
-
-            if (!await _accountManager.TestCanDeleteRoleAsync(id))
-                return BadRequest("Role cannot be deleted. Remove all users from this role and try again");
-
-
-            var roleVM = await GetRoleViewModelHelper(appRole.Name);
-
-            var result = await _accountManager.DeleteRoleAsync(appRole);
-            if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst deleting role: " +
-                                    string.Join(", ", result.Errors));
-
-
-            return Ok(roleVM);
-        }
-
-
+        
         [HttpGet("permissions")]
         [ProducesResponseType(200, Type = typeof(List<PermissionViewModel>))]
         [Authorize(Policies.ViewRolesPolicy)]
@@ -643,12 +581,6 @@ namespace Schwarzenegger.Controllers
             json.Remove("roles");
 
             return (json.ToString(), roles);
-        }
-
-        public class NewPasswordObj
-        {
-            public string userId;
-            public string newPassword;
         }
     }
 }

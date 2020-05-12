@@ -57,13 +57,10 @@ class AccountService {
   }
 
   async changePassword(data: ChangePassword) {
-    return await RequestHandler.post(
-      `${this.path}/changepassword`,
-      {
-        userId: data.userId,
-        newPassword: data.newPassword
-      }
-    );
+    return await RequestHandler.post(`${this.path}/changepassword`, {
+      userId: data.userId,
+      newPassword: data.newPassword
+    });
   }
 
   // getUsersAndRoles(page?: number, pageSize?: number) {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -11,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.Interfaces;
+using Schwarzenegger.Core.Models;
 using Schwarzenegger.ViewModels;
 
 namespace Schwarzenegger.Controllers
@@ -20,6 +22,7 @@ namespace Schwarzenegger.Controllers
     [Authorize]
     public class RolesController : ControllerBase
     {
+        private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IAccountManager _accountManager;
@@ -41,6 +44,36 @@ namespace Schwarzenegger.Controllers
             //var dtos = _mapper.Map<IEnumerable<IdentityRole>>(roles);
             //return dtos;
         }
+        
+        [HttpPost]
+        [ProducesResponseType(201, Type = typeof(RoleViewModel))]
+        [ProducesResponseType(400)]
+        [Authorize(Policies.AddRolesPolicy)]
+        public async Task<IActionResult> PostAsync([FromBody] RoleViewModel role)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (role == null)
+                return BadRequest($"{nameof(role)} cannot be null");
+
+
+            var appRole = _mapper.Map<ApplicationRole>(role);
+
+            var (succeeded, errors) =
+                await _accountManager.CreateRoleAsync(appRole, role.Permissions);
+            if (!succeeded)
+            {
+                AddError(errors);
+
+                return BadRequest(ModelState);
+            }
+
+            var roleVm = await GetRoleViewModelHelper(appRole.Name);
+            return Ok(roleVm);
+        }
 
         [HttpPut]
         [Authorize(Policies.UpdateRolesPolicy)]
@@ -48,6 +81,7 @@ namespace Schwarzenegger.Controllers
         {
             var (newValues, permissions) = DeattachPermissions(values);
             var appRole = await _accountManager.GetRoleByIdAsync(key);
+
             //var currentPermissions = appRole != null ? (await _accountManager.GetPermissions(appRole)).ToArray() : null;
 
             if (appRole == null)
@@ -69,7 +103,33 @@ namespace Schwarzenegger.Controllers
             AddError(errors);
 
             return BadRequest(ModelState);
+        }
 
+        [HttpDelete("{id}")]
+        [ProducesResponseType(200, Type = typeof(RoleViewModel))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [Authorize(Policies.DeleteRolesPolicy)]
+        public async Task<IActionResult> DeleteRole(string id)
+        {
+            var appRole = await _accountManager.GetRoleByIdAsync(id);
+
+            if (appRole == null)
+                return NotFound(id);
+
+            if (!await _accountManager.TestCanDeleteRoleAsync(id))
+                return BadRequest("Role cannot be deleted. Remove all users from this role and try again");
+
+
+            var roleVM = await GetRoleViewModelHelper(appRole.Name);
+
+            var result = await _accountManager.DeleteRoleAsync(appRole);
+            if (!result.Succeeded)
+                throw new Exception("The following errors occurred whilst deleting role: " +
+                                    string.Join(", ", result.Errors));
+
+
+            return Ok(roleVM);
         }
 
         [HttpGet("claims")]
@@ -103,6 +163,16 @@ namespace Schwarzenegger.Controllers
             json.Remove("permissions");
 
             return (json.ToString(), permissions);
+        }
+
+        private async Task<RoleViewModel> GetRoleViewModelHelper(string roleName)
+        {
+            var role = await _accountManager.GetRoleLoadRelatedAsync(roleName);
+            if (role != null)
+                return _mapper.Map<RoleViewModel>(role);
+
+
+            return null;
         }
     }
 }

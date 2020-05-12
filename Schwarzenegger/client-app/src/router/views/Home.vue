@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <button @click="callApi">Call API</button>
+    <DxButton @click="callApi" type="success" height="35" width="95">Call API</DxButton>
     <DxDataGrid
       :allow-column-reordering="true"
       :data-source="values"
@@ -24,6 +24,7 @@ import {
   DxSearchPanel,
   DxPaging
 } from "devextreme-vue/data-grid";
+import DxButton from "devextreme-vue/button"
 
 @Component({
   components: {
@@ -31,7 +32,8 @@ import {
     DxGrouping,
     DxGroupPanel,
     DxSearchPanel,
-    DxPaging
+    DxPaging,
+    DxButton
   }
 })
 export default class Hello extends Vue {

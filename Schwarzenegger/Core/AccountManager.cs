@@ -251,7 +251,13 @@ namespace Schwarzenegger.Core
 
         public async Task<ApplicationRole> GetRoleByIdAsync(string roleId)
         {
-            return await _roleManager.FindByIdAsync(roleId);
+            var role = await _context.Roles
+                .Include(r => r.Claims)
+                .Include(r => r.Users)
+                .Where(r => r.Id == roleId)
+                .SingleOrDefaultAsync();
+
+            return role;
         }
 
 

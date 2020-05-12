@@ -9,13 +9,12 @@
       :show-row-lines="true"
       @init-new-row="onInitNewRow"
       @editing-start="onEditingStart"
-      @editor-preparing="onEditorPreparing"
     >
       <!-- <DxColumnFixing :enabled="true" /> -->
       <DxEditing
-        :allow-updating="true"
-        :allow-deleting="true"
-        :allow-adding="true"
+        :allow-updating="hasPermission('roles.update')"
+        :allow-deleting="hasPermission('roles.delete')"
+        :allow-adding="hasPermission('roles.add')"
         mode="popup"
       >
         <DxDataGridEditPopup
@@ -26,16 +25,13 @@
         >
         </DxDataGridEditPopup>
         <DxDatagridEditForm>
-          <DxFormItem :col-count="1" :col-span="1" item-type="group">
-            <DxFormItem :col-span="1" data-field="id" />
+          <DxFormItem :col-count="2" :col-span="2" item-type="group">
+            <DxFormItem data-field="id" :visible="false" />
             <DxFormItem data-field="name" />
             <DxFormItem data-field="description" />
-          </DxFormItem>
-          <DxFormItem :col-count="1" :col-span="1" item-type="group">
-            <DxFormItem
-              :col-span="1"
-              data-field="permissions"
-            />
+            <DxFormItem :col-span="2" data-field="permissions"
+              ><DxLabel :visible="false" text="Show the Order"></DxLabel>
+            </DxFormItem>
           </DxFormItem>
           <!-- <DxFormItem :col-span="2" itemType="empty"></DxFormItem> -->
         </DxDatagridEditForm>
@@ -46,12 +42,12 @@
       <DxSearchPanel :visible="true" />
       <DxColumn data-field="id" :visible="false" :allowEditing="false" />
       <DxColumn data-field="name" />
-      <DxColumn data-field="description" />      
+      <DxColumn data-field="description" />
       <DxColumn
         data-field="permissions"
         cell-template="permissionsCellTemplate"
         edit-cell-template="permissionsEditCellTemplate"
-        width="200"
+        width="300"
       />
       <DxColumn data-field="createdBy" />
       <DxColumn data-field="updatedBy" />
@@ -74,14 +70,17 @@
       </template>
       <template #permissionsEditCellTemplate="cell">
         <DxList
-          :dataSource="groupedPermissionsLookup"     
+          height="100%"
+          :dataSource="groupedPermissionsLookup"
           :show-selection-controls="true"
           :grouped="true"
           selection-mode="multiple"
           :selected-item-keys.sync="cell.data.value"
           valueExpr="value"
           displayExpr="name"
-          :on-selection-changed="(value) => onValueChanged(cell)"
+          showScrollbar="always"
+          :on-selection-changed="value => onValueChanged(cell)"
+          class="list-bordering"
         >
         </DxList>
       </template>
@@ -138,9 +137,8 @@ import DxPopup, {
 } from "devextreme-vue/popup";
 import DxSelectBox from "devextreme-vue/select-box";
 import { Permission } from "../../models/permission.model";
-import logger from "../../utils/logger";
-import DataSource from 'devextreme/data/data_source';
-import { createStore } from 'devextreme-aspnet-data-nojquery';
+import DataSource from "devextreme/data/data_source";
+import { PermissionValues } from "@/models/permission.model";
 
 @Component({
   components: {
@@ -198,19 +196,6 @@ export default class Roles extends Vue {
     }
   };
 
-  onEditorPreparing(e) {
-    logger.log(e.dataField, "blue");
-    console.log(e);
-    if (e.dataField == "permissions" && e.parentType === "dataRow") {
-      logger.log(e.editorOptions.value, "purple");
-      e.editorOptions.onValueChanged = function(args) {
-        // Implement your logic here
-        debugger;
-        e.setValue(args.value); // Updates the cell value
-      };
-    }
-  }
-
   onInitNewRow() {
     this.isNewRow = true;
   }
@@ -220,30 +205,38 @@ export default class Roles extends Vue {
   }
 
   onValueChanged(cellInfo) {
-    debugger;
     cellInfo.data.setValue(cellInfo.data.value);
     cellInfo.data.component.updateDimensions();
   }
-  
+
+  hasPermission(permissionValue: string) {
+    return accountService.userHasPermission(
+      permissionValue as PermissionValues
+    );
+  }
+
   groupBy(array, key) {
     return array.reduce(function(rv, item) {
       (rv[item[key]] = rv[item[key]] || []).push(item);
       return rv;
     }, {});
-  };
+  }
 
   get dataGrid() {
     return (this.$refs[this.gridRefName] as any).instance;
   }
 
   permissionGrouped() {
-    const permissions = this.groupBy(Permission.getAllPermissions(), 'groupName');
+    const permissions = this.groupBy(
+      Permission.getAllPermissions(),
+      "groupName"
+    );
 
     const arr = Object.entries(permissions).map(([index, item]) => {
       return {
         key: index,
         items: item
-      }
+      };
     });
 
     return arr;
@@ -251,18 +244,18 @@ export default class Roles extends Vue {
 
   private permissionsLookup = new DataSource({
     store: {
-        type: "array",
-        data: Permission.getAllPermissions(),
-        key: 'value'
+      type: "array",
+      data: Permission.getAllPermissions(),
+      key: "value"
     }
   });
 
   private groupedPermissionsLookup = new DataSource({
     store: {
-        type: "array",
-        data: this.permissionGrouped(),
-        group: 'groupName',
-        key: 'value'
+      type: "array",
+      data: this.permissionGrouped(),
+      group: "groupName",
+      key: "value"
     }
   });
 }
@@ -279,10 +272,10 @@ export default class Roles extends Vue {
 }
 
 // TODO Erre visszatérni, mert nem működik, a lista elemén továbbra is a pointer cursor van...
-.dx-list-item {
-  border-top: none !important;
-  cursor: default !important;
-}
+// .dx-list-item {
+//   border-top: none !important;
+//   cursor: default !important;
+// }
 
 .permission-list-item {
   display: grid;
@@ -295,5 +288,21 @@ export default class Roles extends Vue {
   & .selectbox {
     justify-self: start;
   }
+}
+
+.dx-scrollable-scrollbar.dx-widget.dx-scrollbar-vertical.dx-scrollbar-hoverable {
+  background-color: rgba(191, 191, 191, 0.2);
+}
+
+// .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible {
+//     background-color: yellow;
+// }
+
+.dx-scrollable-scroll-content {
+  background-color: rgba(191, 191, 191, 0.7) !important;
+}
+
+.dx-scrollable-content {
+  margin-right: 10px;
 }
 </style>

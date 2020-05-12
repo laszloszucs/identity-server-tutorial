@@ -111,7 +111,7 @@ export default class Login extends Vue {
 
 <style lang="scss" scoped>
 .login-container {
-  padding: 5%;
+  padding: 40px 5% 5% 5%;
   width: 90%;
   max-width: 600px;
   margin: auto;

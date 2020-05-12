@@ -14,9 +14,9 @@
     >
       <DxColumnFixing :enabled="true" />
       <DxEditing
-        :allow-updating="true"
-        :allow-deleting="true"
-        :allow-adding="true"
+        :allow-updating="hasPermission('users.update')"
+        :allow-deleting="hasPermission('users.delete')"
+        :allow-adding="hasPermission('users.add')"
         mode="popup"
       >
         <DxDataGridEditPopup
@@ -154,7 +154,6 @@
         <DxForm
           :ref="newPasswordFormRefName"
           :form-data.sync="passwordFormData"
-          @on-initialized="onInitializedPasswordForm"
         >
           <DxFormItem
             data-field="newPassword"
@@ -220,7 +219,6 @@ import DxPopup, {
   DxToolbarItem as DxPopupToolbarItem
 } from "devextreme-vue/popup";
 import { ChangePassword } from "../../models/change-password.model";
-import logger from "../../utils/logger";
 import { PermissionValues } from "@/models/permission.model";
 
 @Component({
@@ -330,15 +328,11 @@ export default class Users extends Vue {
     }
   };
 
-  onInitializedPasswordForm() {
-    debugger;
+  onShowningChangePasswordPopup() {
+    this.initPasswordFields();
   }
 
-  onShowningChangePasswordPopup(e) {
-    this.initPasswordFields(e);
-  }
-
-  initPasswordFields(e) {
+  initPasswordFields() {
     this.newPasswordForm.resetValues();
   }
 
@@ -354,7 +348,7 @@ export default class Users extends Vue {
 
   onEditorPreparing(e) {
     if (e.dataField == "id" && e.parentType === "dataRow") {
-      this.passwordFormData.userId = e.value;      
+      this.passwordFormData.userId = e.value;
     }
 
     if (e.dataField == "roles" && e.parentType === "dataRow") {
