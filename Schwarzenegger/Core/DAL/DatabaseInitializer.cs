@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Schwarzenegger.Core.DAL.Interfaces;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
+using Schwarzenegger.Helpers;
+using System.Linq;
 
 namespace Schwarzenegger.Core.DAL
 {
@@ -14,19 +19,27 @@ namespace Schwarzenegger.Core.DAL
         private readonly IAccountManager _accountManager;
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
+        private readonly PersistedGrantDbContext _persistedGrantDbContext;
+        private readonly ConfigurationDbContext _configurationDbContext;
+        private readonly IOptions<AppSettings> _appSettings;
 
         public DatabaseInitializer(ApplicationDbContext context, IAccountManager accountManager,
-            ILogger<DatabaseInitializer> logger)
+            ILogger<DatabaseInitializer> logger, PersistedGrantDbContext persistedGrantDbContext,
+            ConfigurationDbContext configurationDbContext, IOptions<AppSettings> appSettings)
         {
             _accountManager = accountManager;
             _context = context;
             _logger = logger;
+            _persistedGrantDbContext = persistedGrantDbContext;
+            _configurationDbContext = configurationDbContext;
+            _appSettings = appSettings;
         }
 
         public async Task InitializeAsync()
         {
             // await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+            // InitializeTokenServerConfigurationDatabase();
             await SeedAsync();
         }
 
@@ -41,20 +54,20 @@ namespace Schwarzenegger.Core.DAL
 
                 const string userRoleName = "user";
 
-                await EnsureRoleAsync(operatorRoleName, "Operator", new[] { "users.view", "roles.view", "about.view" });
-                await EnsureRoleAsync(userRoleName, "User", new [] { "about.view" });
+                await EnsureRoleAsync(operatorRoleName, "Operator", new[] {"users.view", "roles.view", "about.view"});
+                await EnsureRoleAsync(userRoleName, "User", new[] {"about.view"});
 
                 await CreateUserAsync("admin", "tempP@ss123", "Inbuilt Administrator", "admin@schwarzenegger.com",
-                    "+1 (123) 000-0000", new[] { operatorRoleName }, true);
+                    "+1 (123) 000-0000", new[] {operatorRoleName}, true);
                 await CreateUserAsync("user", "tempP@ss123", "Inbuilt Standard User", "user@schwarzenegger.com",
-                    "+1 (123) 000-0001", new[] { userRoleName });
+                    "+1 (123) 000-0001", new[] {userRoleName});
 
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Inbuilt account generation completed");
             }
         }
-        
+
         private async Task EnsureRoleAsync(string roleName, string description, IEnumerable<string> claims)
         {
             if (await _accountManager.GetRoleByNameAsync(roleName) == null)
@@ -89,5 +102,44 @@ namespace Schwarzenegger.Core.DAL
                 throw new Exception(
                     $"Seeding \"{userName}\" user failed. Errors: {string.Join(Environment.NewLine, errors)}");
         }
+
+        private void InitializeTokenServerConfigurationDatabase()
+        {
+                _persistedGrantDbContext.Database.Migrate();
+                _configurationDbContext.Database.Migrate();
+
+            if (!_configurationDbContext.Clients.Any())
+                {
+                    foreach (var client in IdentityServerConfig.GetClients(_appSettings.Value.AllowedCorsOrigins))
+                    {
+                        _configurationDbContext.Clients.Add(client.ToEntity());
+                    }
+
+                    _configurationDbContext.SaveChanges();
+                }
+
+                if (!_configurationDbContext.IdentityResources.Any())
+                {
+                    foreach (var resource in IdentityServerConfig.GetIdentityResources())
+                    {
+                        _configurationDbContext.IdentityResources.Add(resource.ToEntity());
+                    }
+
+                    _configurationDbContext.SaveChanges();
+                }
+
+                if (_configurationDbContext.ApiResources.Any())
+                {
+                    return;
+                }
+
+                foreach (var resource in IdentityServerConfig.GetApis())
+                {
+                    _configurationDbContext.ApiResources.Add(resource.ToEntity());
+                }
+
+                _configurationDbContext.SaveChanges();
+        }
     }
 }
+        

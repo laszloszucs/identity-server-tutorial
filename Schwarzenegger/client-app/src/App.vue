@@ -135,18 +135,18 @@ export default class App extends Vue {
   }
 
   mounted() {
-    EventBus.$on("LOGIN", () => {
-      this.init();
-      this.logoutText = this.getLogoutText();
-    });
-    if (this.isSessionExpired()) {
-      this.navigate("/login");
-    } else {
-      this.$store.dispatch(RefreshLogin).then(() => {
-        this.init();
-      });
-      this.logoutText = this.getLogoutText();
-    }
+    // EventBus.$on("LOGIN", () => {
+    //   this.init();
+    //   this.logoutText = this.getLogoutText();
+    // });
+    // if (this.isSessionExpired()) {
+    //   this.navigate("/login");
+    // } else {
+    //   this.$store.dispatch(RefreshLogin).then(() => {
+    //   });
+    // }
+
+    this.init();
 
     document.addEventListener("mousedown", this.resetIdleTimer);
     document.addEventListener("keydown", this.resetIdleTimer);
@@ -160,6 +160,8 @@ export default class App extends Vue {
       this.resetIdleTimer();
       this.idleTimer();
     }
+
+    this.logoutText = this.getLogoutText();
   }
 
   reportWindowSize() {

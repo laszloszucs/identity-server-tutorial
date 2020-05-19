@@ -83,6 +83,7 @@ export default class Login extends Vue {
 
         this.$router.push("/").then(() => {
           EventBus.$emit("LOGIN");
+          EventBus.$emit("START_MAIN_WEBSOCKET_HUB");
         });
       })
       .catch(error => {

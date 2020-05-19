@@ -4,14 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.Helpers;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
+using Schwarzenegger.Enums;
+using Schwarzenegger.Hubs;
 using Schwarzenegger.ViewModels;
 
 namespace Schwarzenegger.Controllers
@@ -24,16 +26,19 @@ namespace Schwarzenegger.Controllers
     {
         private readonly IAccountManager _accountManager;
         private readonly IMapper _mapper;
+        private readonly IHubContext<MainHub> _hubContext;
 
-        public AccountController(IMapper mapper, IAccountManager accountManager)
+        public AccountController(IMapper mapper, IAccountManager accountManager, IHubContext<MainHub> hubContext)
         {
             _mapper = mapper;
             _accountManager = accountManager;
+            _hubContext = hubContext;
         }
 
 
         [HttpGet("users/me")]
         [ProducesResponseType(200, Type = typeof(UserViewModel))]
+        [Obsolete("Használaton kívül")]
         public async Task<IActionResult> GetCurrentUser()
         {
             return await GetUserById(Utilities.GetUserId(User));
@@ -45,6 +50,7 @@ namespace Schwarzenegger.Controllers
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         [Authorize(ApplicationPermissions.ViewUsersPolicy)]
+        [Obsolete("Használaton kívül")]
         public async Task<IActionResult> GetUserById(string id)
         {
             var userVm = await GetUserViewModelHelper(id);
@@ -83,18 +89,7 @@ namespace Schwarzenegger.Controllers
 
             return Ok(usersVm);
         }
-
-
-        //[HttpPut("users/me")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(403)]
-        //[Authorize(ApplicationPermissions.UpdateUsersPolicy)]
-        //public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
-        //{
-        //    return await UpdateUser(Utilities.GetUserId(User), user);
-        //}
-
+        
         [HttpPut("users")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -123,11 +118,9 @@ namespace Schwarzenegger.Controllers
             var (succeeded, errors) = await _accountManager.UpdateUserAsync(appUser, roles ?? currentRoles);
             if (succeeded)
             {
-                (succeeded, errors) = await _accountManager.RemoveTokenAsync(appUser);
-                if (succeeded)
-                {
-                    return Ok();
-                }
+                await _hubContext.Clients.User(appUser.Id)
+                    .SendAsync(WebsocketMethodType.ForceRefreshToken.ToString("D"));
+                return Ok();
             }
 
             AddError(errors);
@@ -150,142 +143,7 @@ namespace Schwarzenegger.Controllers
             AddError(errors);
             return BadRequest(ModelState);
         }
-
-        //[HttpPut("users/{id}")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(403)]
-        //[ProducesResponseType(404)]
-        //[Authorize(ApplicationPermissions.UpdateUsersPolicy)]
-        //public async Task<IActionResult> UpdateUser(string id, [FromBody] UserEditViewModel user)
-        //{
-        //    var appUser = await _accountManager.GetUserByIdAsync(id);
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    if (user == null)
-        //        return BadRequest($"{nameof(user)} cannot be null");
-
-        //    if (!string.IsNullOrWhiteSpace(user.Id) && id != user.Id)
-        //        return BadRequest("Conflicting user id in parameter and model data");
-
-        //    if (appUser == null)
-        //        return NotFound(id);
-
-        //    var isPasswordChanged = !string.IsNullOrWhiteSpace(user.NewPassword);
-        //    var isUserNameChanged = !appUser.UserName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase);
-
-        //    if (Utilities.GetUserId(User) == id)
-        //    {
-        //        if (string.IsNullOrWhiteSpace(user.CurrentPassword))
-        //        {
-        //            if (isPasswordChanged)
-        //                AddError("Current password is required when changing your own password", "Password");
-
-        //            if (isUserNameChanged)
-        //                AddError("Current password is required when changing your own username", "Username");
-        //        }
-        //        else if (isPasswordChanged || isUserNameChanged)
-        //        {
-        //            if (!await _accountManager.CheckPasswordAsync(appUser, user.CurrentPassword))
-        //                AddError("The username/password couple is invalid.");
-        //        }
-        //    }
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    _mapper.Map(user, appUser);
-
-        //    //var result = await _accountManager.UpdateUserAsync(appUser, user.Roles);
-        //    var (succeeded, errors) = await _accountManager.UpdateUserAsync(appUser);
-        //    if (succeeded)
-        //    {
-        //        (succeeded, errors) = await _accountManager.RemoveTokenAsync(appUser);
-        //        if (succeeded)
-        //        {
-        //            if (isPasswordChanged)
-        //            {
-        //                if (!string.IsNullOrWhiteSpace(user.CurrentPassword))
-        //                    (succeeded, errors) = await _accountManager.UpdatePasswordAsync(appUser, user.CurrentPassword,
-        //                        user.NewPassword);
-        //                else
-        //                    (succeeded, errors) = await _accountManager.ResetPasswordAsync(appUser, user.NewPassword);
-        //            }
-
-        //            if (succeeded)
-        //                return Ok();
-        //        }
-        //    }
-            
-        //    AddError(errors);
-
-        //    return BadRequest(ModelState);
-        //}
-
-
-        //[HttpPatch("users/me")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[Authorize(ApplicationPermissions.UpdateUsersPolicy)]
-        //public async Task<IActionResult> UpdateCurrentUser([FromBody] JsonPatchDocument<UserPatchViewModel> patch)
-        //{
-        //    return await UpdateUser(Utilities.GetUserId(User), patch);
-        //}
-
-
-        //[HttpPatch("users/{id}")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(403)]
-        //[ProducesResponseType(404)]
-        //[Authorize(ApplicationPermissions.UpdateUsersPolicy)]
-        //public async Task<IActionResult> UpdateUser(string id, [FromBody] JsonPatchDocument<UserPatchViewModel> patch)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        if (patch == null)
-        //            return BadRequest($"{nameof(patch)} cannot be null");
-
-
-        //        var appUser = await _accountManager.GetUserByIdAsync(id);
-
-        //        if (appUser == null)
-        //            return NotFound(id);
-
-
-        //        var userPvm = _mapper.Map<UserPatchViewModel>(appUser);
-        //        patch.ApplyTo(userPvm, e => AddError(e.ErrorMessage));
-
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return BadRequest(ModelState);
-        //        }
-
-        //        _mapper.Map(userPvm, appUser);
-
-        //        var (succeeded, errors) = await _accountManager.UpdateUserAsync(appUser);
-        //        if (succeeded)
-        //        {
-        //            (succeeded, errors) = await _accountManager.RemoveTokenAsync(appUser);
-        //            if (succeeded)
-        //            {
-        //                return Ok();
-        //            }
-        //        }
-                
-        //        AddError(errors);
-        //    }
-
-        //    return BadRequest(ModelState);
-        //}
-
-
+        
         [HttpPost("users")]
         [ProducesResponseType(201, Type = typeof(UserViewModel))]
         [ProducesResponseType(400)]
@@ -350,6 +208,7 @@ namespace Schwarzenegger.Controllers
 
         [HttpGet("users/me/preferences")]
         [ProducesResponseType(200, Type = typeof(string))]
+        [Obsolete("Használaton kívül")]
         public async Task<IActionResult> UserPreferences()
         {
             var userId = Utilities.GetUserId(User);
@@ -361,6 +220,7 @@ namespace Schwarzenegger.Controllers
 
         [HttpPut("users/me/preferences")]
         [ProducesResponseType(204)]
+        [Obsolete("Használaton kívül")]
         public async Task<IActionResult> UserPreferences([FromBody] string data)
         {
             var userId = Utilities.GetUserId(User);

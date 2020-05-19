@@ -5,7 +5,7 @@ namespace Schwarzenegger.Helpers
     public class AppSettings
     {
         public SmtpConfig SmtpConfig { get; set; }
-        public string AllowedCorsOrigins { get; set; }
+        public string[] AllowedCorsOrigins { get; set; }
     }
 
     public class SmtpConfig

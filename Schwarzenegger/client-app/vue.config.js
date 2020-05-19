@@ -1,6 +1,11 @@
-﻿module.exports = {
+﻿const fs = require("fs");
+
+module.exports = {
   devServer: {
-    https: true,
+    https: {
+      key: fs.readFileSync("./certs/localhost-key.pem"),
+      cert: fs.readFileSync("./certs/localhost.pem")
+    },
     host: "localhost",
     port: 44301,
     public: "https://localhost:44301"

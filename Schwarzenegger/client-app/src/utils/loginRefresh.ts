@@ -1,3 +1,5 @@
+// TODO main.ts-be átszervezni?
+
 import { LoginStatus } from "@/enums/login-status.enum";
 import { RefreshLogin } from "@/store/actions/auth-actions";
 
@@ -13,20 +15,20 @@ function dispatchRefreshToken() {
     });
   }
 
-  if (store.state.auth.loginStatus === LoginStatus.Logout) {
-    this.navigate("/login");
-  }
+  // if (store.state.auth.loginStatus === LoginStatus.Logout) {
+  //   this.navigate("/login");
+  // }
 }
 
-function refreshTokenTimer(difference: number) {
+function refreshTokenTimer(difference: number): NodeJS.Timeout {
   const refreshTime = difference - 10000; // Lejárat előtt 10 másodperc
-  setTimeout(() => dispatchRefreshToken(), Math.max(refreshTime, 0));
+  return setTimeout(() => dispatchRefreshToken(), Math.max(refreshTime, 0));
 }
 
-export default function startRefreshTokenTimer(storeInput: any) {
+export default function startRefreshTokenTimer(storeInput: any): NodeJS.Timeout {
   store = storeInput;
   const accessTokenExpiryDate = store.getters.accessTokenExpiryDate();
   const now = new Date().valueOf();
   const difference = accessTokenExpiryDate - now;
-  refreshTokenTimer(difference);
+  return refreshTokenTimer(difference);
 }

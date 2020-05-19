@@ -6,7 +6,7 @@ namespace Schwarzenegger.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class IdentityController : ControllerBase
     {
         [HttpGet]
@@ -19,5 +19,7 @@ namespace Schwarzenegger.Controllers
                     claim.Value
                 }));
         }
+
+
     }
 }

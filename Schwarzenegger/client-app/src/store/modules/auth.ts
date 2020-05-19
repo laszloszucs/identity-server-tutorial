@@ -186,6 +186,7 @@ const actions = {
           resolve();
         })
         .catch((err: Error) => {
+          debugger;
           context.commit(LoginError, err);
           logout();
           reject(err);

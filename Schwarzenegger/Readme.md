@@ -1,16 +1,25 @@
 ﻿# Schwarzenegger project
 
-- Claim alapú hitelesítés (Role vagy egyedi Claim
+- Claim alapú hitelesítés (Role és ahhoz tartozó permission-ök)
 - IsAdmin: Mindenhez joga van (User property)
 - csak Api szinten operálni a Userekkel.
-- Userhez csak role-t lehet most adni, egyedi UserClaim-et.
+- Userhez csak role-t lehet most adni, egyedi UserClaim-et nem.
 - Timeout funkció
 - Remember me funkció
 
 # TODO
 
-- Felületen User-eket létrehozni, módosítani, törölni
-- Felületen Role-okat létrehozni, módosítani, törölni
-- Role-hoz lehessen Claim-eket felvenni
+- Konfiguráció
+- Lapozott lekérdezések Devextrem Datagrid-ekhez
 - User-hez lehessen UserClaim-et (Claim) felvenni
-- User-hez lehessen Role-okat felvenni 
+- Kód duplikációkat felszámolni
+  - Backend
+  - Frontend
+- Felesleges kódot törölni
+- Stringeket Enumokba szervezni
+- Testek írása
+
+# Első indítás
+Package Manager Consol-ba:
+- Add-Migration InitialPersistedGrantDbContext -Context PersistedGrantDbContext -Output Migrations
+- Add-Migration InitialConfigurationDbContext -Context ConfigurationDbContext -Output Migrations

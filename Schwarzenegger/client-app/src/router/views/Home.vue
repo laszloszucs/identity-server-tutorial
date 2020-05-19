@@ -1,6 +1,8 @@
 <template>
   <div class="home">
-    <DxButton @click="callApi" type="success" height="35" width="95">Call API</DxButton>
+    <DxButton @click="callApi" type="success" height="35" width="95"
+      >Call API</DxButton
+    >
     <DxDataGrid
       :allow-column-reordering="true"
       :data-source="values"
@@ -24,7 +26,7 @@ import {
   DxSearchPanel,
   DxPaging
 } from "devextreme-vue/data-grid";
-import DxButton from "devextreme-vue/button"
+import DxButton from "devextreme-vue/button";
 
 @Component({
   components: {
@@ -36,8 +38,12 @@ import DxButton from "devextreme-vue/button"
     DxButton
   }
 })
-export default class Hello extends Vue {
-  private values: string[] = [];
+export default class Home extends Vue {
+  values: string[] = [];
+  hub: any;
+  user: string = null;
+  typedMessage: string = null;
+  messages: string[] = [];
 
   async callApi() {
     try {

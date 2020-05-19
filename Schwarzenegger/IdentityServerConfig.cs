@@ -36,6 +36,7 @@ namespace Schwarzenegger
                     UserClaims =
                     {
                         JwtClaimTypes.Name,
+                        //JwtClaimTypes.NameIdentifier,
                         JwtClaimTypes.Email,
                         JwtClaimTypes.PhoneNumber,
                         JwtClaimTypes.Role,
@@ -49,7 +50,7 @@ namespace Schwarzenegger
         ///     Ez mondja meg milyen alkalmazások csatlakozhatnak és azok melyik API-kat érhetik el
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<Client> GetClients(string allowedCorsOrigins)
+        public static IEnumerable<Client> GetClients(string[] allowedCorsOrigins)
         {
             return new[]
             {
@@ -74,15 +75,17 @@ namespace Schwarzenegger
                     
                     RefreshTokenExpiration = TokenExpiration.Absolute,
                     RefreshTokenUsage = TokenUsage.OneTimeOnly,
-                    AccessTokenLifetime = 60, // Lifetime of access token in seconds.
+                    AccessTokenLifetime = 3600, // Lifetime of access token in seconds.
                     UpdateAccessTokenClaimsOnRefresh = true,
+                    AlwaysSendClientClaims = true, // TODO Check
+                    AlwaysIncludeUserClaimsInIdToken = true, // TODO Check
                     //AbsoluteRefreshTokenLifetime = 7200,
                     //SlidingRefreshTokenLifetime = 900,+s
                     //ClientSecrets =
                     //{
                     //    new Secret("secret".Sha256())
                     //},
-                    AllowedCorsOrigins = { allowedCorsOrigins }
+                    AllowedCorsOrigins = allowedCorsOrigins,
                 },
 
                 new Client

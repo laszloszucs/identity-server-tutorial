@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -22,7 +21,6 @@ namespace Schwarzenegger.Controllers
     [Authorize]
     public class RolesController : ControllerBase
     {
-        private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IAccountManager _accountManager;
@@ -40,9 +38,6 @@ namespace Schwarzenegger.Controllers
         {
             var roles = await _context.Roles.Include(r => r.Users).Include(r => r.Claims).ToListAsync();
             return Ok(_mapper.Map<List<RoleViewModel>>(roles));
-            //return roles;
-            //var dtos = _mapper.Map<IEnumerable<IdentityRole>>(roles);
-            //return dtos;
         }
         
         [HttpPost]
@@ -81,8 +76,6 @@ namespace Schwarzenegger.Controllers
         {
             var (newValues, permissions) = DeattachPermissions(values);
             var appRole = await _accountManager.GetRoleByIdAsync(key);
-
-            //var currentPermissions = appRole != null ? (await _accountManager.GetPermissions(appRole)).ToArray() : null;
 
             if (appRole == null)
             {
@@ -130,14 +123,6 @@ namespace Schwarzenegger.Controllers
 
 
             return Ok(roleVm);
-        }
-
-        [HttpGet("claims")]
-        [Authorize(ApplicationPermissions.ViewRolesPolicy)]
-        public IActionResult Claims()
-        {
-            var claims = ApplicationPermissions.AllPermissions;
-            return Ok(claims);
         }
 
         private void AddError(IEnumerable<string> errors, string key = "")

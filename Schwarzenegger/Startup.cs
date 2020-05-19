@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.EntityFramework.Stores;
+using IdentityServer4.Stores;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,9 +24,11 @@ using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.DAL.Interfaces;
 using Schwarzenegger.Core.ExtensionMethods;
+using Schwarzenegger.Core.Helpers;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
 using Schwarzenegger.Helpers;
+using Schwarzenegger.Hubs;
 
 namespace Schwarzenegger
 {
@@ -42,6 +51,11 @@ namespace Schwarzenegger
                 .AddApiExplorer()
                 .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
+            services.AddSignalR().AddHubOptions<MainHub>(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration["ConnectionStrings:SchwarzeneggerConnection"],
@@ -70,14 +84,17 @@ namespace Schwarzenegger
                 //    //options.Lockout.MaxFailedAccessAttempts = 10;
             });
 
+            var allowedCorsOrigins = Configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
+
             var builder = services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddInMemoryPersistedGrants()
-                .AddInMemoryIdentityResources(IdentityServerConfig
-                    .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
-                .AddInMemoryApiResources(IdentityServerConfig
-                    .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
-                .AddInMemoryClients(IdentityServerConfig.GetClients(Configuration["AllowedCorsOrigins"])) // és a Client-ek, melyek a megbízható alkalmazások
+                    //.AddPersistedGrantStore<PersistedGrantStore>()
+                .AddConfigurationStore(option =>
+                    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("IdentityServerConnection"), options =>
+                        options.MigrationsAssembly("Schwarzenegger")))
+                .AddOperationalStore(option =>
+                    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("IdentityServerConnection"), options =>
+                        options.MigrationsAssembly("Schwarzenegger")))
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<ProfileService>();
 
@@ -101,6 +118,22 @@ namespace Schwarzenegger
                     options.SupportedTokens = SupportedTokens.Jwt;
                     options.RequireHttpsMetadata = false; // Note: Set to true in production
                     options.ApiName = IdentityConfigConstants.ApiName;
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            // If the request is for our hub...
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                // Read the token out of the query string
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddAuthorization(options =>
@@ -126,7 +159,8 @@ namespace Schwarzenegger
                 {
                     policy.WithOrigins("https://localhost:44301")
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
             });
 
@@ -163,6 +197,10 @@ namespace Schwarzenegger
 
             // DB Creation and Seeding
             services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
+
+            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+
+            //services.AddTransient<IPersistedGrantStore, PersistedGrantStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -181,6 +219,9 @@ namespace Schwarzenegger
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            // add middleware to translate the query string token 
+            // passed by SignalR into an Authorization Bearer header
+            app.UseJwtSignalRAuthentication();
             app.UseCors("default");
 
             app.UseIdentityServer();
@@ -197,7 +238,14 @@ namespace Schwarzenegger
                 c.OAuthClientSecret("no_password"); //Leaving it blank doesn't work
             });
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<MainHub>("/mainHub", options =>
+                {
+                    options.Transports = HttpTransportType.WebSockets;
+                });
+            });
         }
     }
 }

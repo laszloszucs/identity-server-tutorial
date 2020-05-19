@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,19 +20,23 @@ namespace Schwarzenegger.Core
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly PersistedGrantDbContext _persistedGrantDbContext;
+        private readonly ConfigurationDbContext _configurationDbContext;
 
 
         public AccountManager(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
-            IHttpContextAccessor httpAccessor, SignInManager<ApplicationUser> signInManager)
+            IHttpContextAccessor httpAccessor, SignInManager<ApplicationUser> signInManager, PersistedGrantDbContext persistedGrantDbContext, ConfigurationDbContext configurationDbContext)
         {
             _context = context;
             _context.CurrentUserId = httpAccessor.HttpContext?.User.FindFirst(ClaimConstants.Subject)?.Value?.Trim();
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
+            _persistedGrantDbContext = persistedGrantDbContext;
+            _configurationDbContext = configurationDbContext;
         }
 
 
@@ -175,16 +180,6 @@ namespace Schwarzenegger.Core
                         return (false, result.Errors.Select(e => e.Description).ToArray());
                 }
             }
-
-            return (true, new string[] { });
-        }
-
-        public async Task<(bool Succeeded, string[] Errors)> RemoveTokenAsync(ApplicationUser appUser)
-        {
-            await _signInManager.SignOutAsync();
-            //var info = await _signInManager.GetExternalLoginInfoAsync();
-            _context.UserTokens.RemoveRange(_context.UserTokens.Where(ut => ut.UserId == appUser.Id/* && ut.LoginProvider == info.LoginProvider*/));
-            await _context.SaveChangesAsync();
 
             return (true, new string[] { });
         }

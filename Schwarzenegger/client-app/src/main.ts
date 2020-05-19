@@ -13,6 +13,11 @@ import i18n from "./i18n";
 import EventBus from "./helpers/event-bus";
 import { RefreshLogin } from "./store/actions/auth-actions";
 import startRefreshTokenTimer from "./utils/loginRefresh";
+import {
+  MainWebsocketHub,
+  MainWebsocketCallbackOptions
+} from "./utils/mainWebsocketHub";
+import { WebsocketMethodType } from "./enums/websocket-method-type.enum";
 
 axios.interceptors.request.use(
   config => {
@@ -36,23 +41,48 @@ export default new Vue({
   store,
   i18n,
   render: h => h(App),
+  data: {
+    refreshTimer: null,
+  },
   created() {
+    EventBus.$on("START_MAIN_WEBSOCKET_HUB", () => {
+      if(!this.mainWebsocketHubStarted) {
+        this.mainWebsocketHubStarted = true;
+        this.hub = new MainWebsocketHub(
+          "https://localhost:44300/mainHub",
+          new MainWebsocketCallbackOptions(this.forceRefreshToken, this.receiveMessage)
+        );
+
+        this.hub.startConnection();
+      }
+    });
     if (!this.$store.getters.rememberMe()) {
       if (this.$route.path !== "/login") {
         this.$router.push("/login");
       }
     } else {
-      if (this.$store.getters.isSessionExpired()) {
-        EventBus.$emit("LOADING");
-        this.$store.dispatch(RefreshLogin).then(() => {
-          startRefreshTokenTimer(this.$store);
-          this.$router.push("/").then(() => {
-            EventBus.$emit("LOGIN");
-          });
+      EventBus.$emit("LOADING");
+      this.$store.dispatch(RefreshLogin).then(() => {
+        this.refreshTimer = startRefreshTokenTimer(this.$store);
+        this.$router.push("/").then(() => {
+          EventBus.$emit("LOGIN");
+          EventBus.$emit("START_MAIN_WEBSOCKET_HUB");
         });
-      } else {
-        startRefreshTokenTimer(this.$store);
-      }
+      });
+    }
+  },
+  methods: {
+    forceRefreshToken() {
+      clearTimeout(this.refreshTimer);
+      this.$store.dispatch(RefreshLogin).then(() => {
+        this.refreshTimer = startRefreshTokenTimer(this.$store);
+        console.log(this);
+        // this.$forceUpdate();
+        location.reload();
+      });
+    },
+    receiveMessage(user: string, message: string) {
+      EventBus.$emit(WebsocketMethodType.Message.toString(), user, message);
     }
   }
 }).$mount("#app");
