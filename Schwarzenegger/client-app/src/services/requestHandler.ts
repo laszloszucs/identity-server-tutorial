@@ -72,7 +72,7 @@ class RequestHandler {
     console.log(error.response);
     let errorMessage = null;
     if (error.isAxiosError) {
-      if(typeof error.response.data === "string") {
+      if (typeof error.response.data === "string") {
         errorMessage = error.response.data;
       } else {
         errorMessage = error.message;

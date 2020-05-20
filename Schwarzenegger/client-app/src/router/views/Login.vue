@@ -66,7 +66,7 @@ export default class Login extends Vue {
 
   private buttonOptions = {
     text: "Login",
-    type: "success",
+    type: "default",
     useSubmitBehavior: true
   };
 
@@ -125,6 +125,7 @@ export default class Login extends Vue {
   -webkit-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
   box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
+  background: white;
 }
 
 .image-container {
@@ -140,5 +141,9 @@ export default class Login extends Vue {
   @media (min-width: 768px) {
     width: 100%;
   }
+}
+
+::v-deep .dx-button.dx-button-default {
+  background-color: #0375af;
 }
 </style>

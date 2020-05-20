@@ -61,9 +61,10 @@ function processLoginResponse(
   const accessTokenExpiry = tokenExpiryDate;
   const jwtHelper = new JwtHelper();
   const decodedAccessToken = jwtHelper.decodeToken(accessToken) as AccessToken;
-  const permissions: PermissionValues[] = 
-    Array.isArray(decodedAccessToken.permission) 
-    ? decodedAccessToken.permission 
+  const permissions: PermissionValues[] = Array.isArray(
+    decodedAccessToken.permission
+  )
+    ? decodedAccessToken.permission
     : [decodedAccessToken.permission];
   const user = new User(
     decodedAccessToken.sub,
