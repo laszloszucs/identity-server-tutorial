@@ -4,5 +4,6 @@
     {
         Message,
         ForceRefreshToken,
+        ForceLogout
     }
 }

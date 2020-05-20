@@ -11,7 +11,7 @@ import store from "./store";
 import axios from "axios";
 import i18n from "./i18n";
 import EventBus from "./helpers/event-bus";
-import { RefreshLogin } from "./store/actions/auth-actions";
+import { RefreshLogin, Logout } from "./store/actions/auth-actions";
 import startRefreshTokenTimer from "./utils/loginRefresh";
 import {
   MainWebsocketHub,
@@ -42,15 +42,21 @@ export default new Vue({
   i18n,
   render: h => h(App),
   data: {
-    refreshTimer: null,
+    refreshTimer: null
   },
   created() {
     EventBus.$on("START_MAIN_WEBSOCKET_HUB", () => {
-      if(!this.mainWebsocketHubStarted) {
+      if (!this.mainWebsocketHubStarted) {
         this.mainWebsocketHubStarted = true;
         this.hub = new MainWebsocketHub(
           "https://localhost:44300/mainHub",
-          new MainWebsocketCallbackOptions(this.forceRefreshToken, this.receiveMessage)
+          new MainWebsocketCallbackOptions(
+            this.forceRefreshToken,
+            this.forceLogout,
+            this.receiveMessage,
+            this.disconnected,
+            this.reconnecting
+          )
         );
 
         this.hub.startConnection();
@@ -76,13 +82,25 @@ export default new Vue({
       clearTimeout(this.refreshTimer);
       this.$store.dispatch(RefreshLogin).then(() => {
         this.refreshTimer = startRefreshTokenTimer(this.$store);
-        console.log(this);
-        // this.$forceUpdate();
         location.reload();
       });
     },
+    forceLogout() {
+      clearTimeout(this.refreshTimer);
+      this.$store.dispatch(Logout);
+      this.hub.stopConnection();
+    },
     receiveMessage(user: string, message: string) {
       EventBus.$emit(WebsocketMethodType.Message.toString(), user, message);
+    },
+    disconnected() {
+      clearTimeout(this.refreshTimer);
+    },
+    reconnecting() {
+      this.$store.dispatch(RefreshLogin).then(() => {
+        this.refreshTimer = startRefreshTokenTimer(this.$store);
+        this.hub.setNewAccessToken();
+      });
     }
   }
 }).$mount("#app");

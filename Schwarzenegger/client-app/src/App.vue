@@ -61,12 +61,11 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
-import { Logout, RefreshLogin } from "../src/store/actions/auth-actions";
+import { Logout } from "../src/store/actions/auth-actions";
 import { mapState } from "vuex";
 import accountService from "./services/account.service";
 import { PermissionValues } from "./models/permission.model";
 import Loader from "./components/Loader.vue";
-import EventBus from "./helpers/event-bus";
 import { LoginStatus } from "@/enums/login-status.enum";
 
 @Component({
@@ -135,33 +134,18 @@ export default class App extends Vue {
   }
 
   mounted() {
-    // EventBus.$on("LOGIN", () => {
-    //   this.init();
-    //   this.logoutText = this.getLogoutText();
-    // });
-    // if (this.isSessionExpired()) {
-    //   this.navigate("/login");
-    // } else {
-    //   this.$store.dispatch(RefreshLogin).then(() => {
-    //   });
-    // }
-
-    this.init();
-
-    document.addEventListener("mousedown", this.resetIdleTimer);
-    document.addEventListener("keydown", this.resetIdleTimer);
-    document.addEventListener("touchstart", this.resetIdleTimer);
-
-    window.addEventListener("resize", this.reportWindowSize);
-  }
-
-  init() {
     if (!this.$store.getters.rememberMe()) {
       this.resetIdleTimer();
       this.idleTimer();
+
+      document.addEventListener("mousedown", this.resetIdleTimer);
+      document.addEventListener("keydown", this.resetIdleTimer);
+      document.addEventListener("touchstart", this.resetIdleTimer);
     }
 
     this.logoutText = this.getLogoutText();
+
+    window.addEventListener("resize", this.reportWindowSize);
   }
 
   reportWindowSize() {
@@ -199,9 +183,11 @@ export default class App extends Vue {
   }
 
   hasPermission(permissionValue: string) {
-    return accountService.userHasPermission(
+    const hasPermission =
+    accountService.userHasPermission(
       permissionValue as PermissionValues
     );
+    return hasPermission;
   }
 
   idleTimer() {
@@ -228,7 +214,7 @@ export default class App extends Vue {
 <style lang="scss" scoped>
 #app {
   height: 100%;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Roboto", sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;

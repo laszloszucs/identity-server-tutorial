@@ -67,9 +67,16 @@ class RequestHandler {
   }
 
   async error(error: any) {
+    const foobar = JSON.parse(JSON.stringify(error));
+    console.log(foobar);
+    console.log(error.response);
     let errorMessage = null;
     if (error.isAxiosError) {
-      errorMessage = error.message;
+      if(typeof error.response.data === "string") {
+        errorMessage = error.response.data;
+      } else {
+        errorMessage = error.message;
+      }
     } else {
       errorMessage = error.response.data.error_description;
     }
@@ -84,7 +91,7 @@ class RequestHandler {
         }
       },
       "error",
-      3000
+      5000
     );
   }
 }

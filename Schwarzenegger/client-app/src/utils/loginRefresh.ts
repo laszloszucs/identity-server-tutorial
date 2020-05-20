@@ -25,7 +25,9 @@ function refreshTokenTimer(difference: number): NodeJS.Timeout {
   return setTimeout(() => dispatchRefreshToken(), Math.max(refreshTime, 0));
 }
 
-export default function startRefreshTokenTimer(storeInput: any): NodeJS.Timeout {
+export default function startRefreshTokenTimer(
+  storeInput: any
+): NodeJS.Timeout {
   store = storeInput;
   const accessTokenExpiryDate = store.getters.accessTokenExpiryDate();
   const now = new Date().valueOf();

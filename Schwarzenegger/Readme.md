@@ -10,6 +10,8 @@
 # TODO
 
 - Konfiguráció
+- Hibaüzenetek normálisan szövegben jelenjenek meg
+  - minden hibaüzenet a backendtől le legyen kezelve
 - Lapozott lekérdezések Devextrem Datagrid-ekhez
 - User-hez lehessen UserClaim-et (Claim) felvenni
 - Kód duplikációkat felszámolni
@@ -18,6 +20,7 @@
 - Felesleges kódot törölni
 - Stringeket Enumokba szervezni
 - Testek írása
+- Disconnect jelző
 
 # Első indítás
 Package Manager Consol-ba:

@@ -25,6 +25,7 @@ namespace Schwarzenegger.Core.Interfaces
         Task<ApplicationUser> GetUserByIdAsync(string userId);
         Task<ApplicationUser> GetUserByUserNameAsync(string userName);
         Task<IList<string>> GetUserRolesAsync(ApplicationUser user);
+        Task<List<(ApplicationUser User, string[] Roles, string[] Claims)>> GetUsersAndRolesAsync();
         Task<List<(ApplicationUser User, string[] Roles, string[] Claims)>> GetUsersAndRolesAsync(int page, int pageSize);
         Task<(bool Succeeded, string[] Errors)> ResetPasswordAsync(ApplicationUser user, string newPassword);
         Task<bool> TestCanDeleteRoleAsync(string roleId);

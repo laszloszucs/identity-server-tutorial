@@ -60,7 +60,6 @@ namespace Schwarzenegger.Core
             return await _userManager.GetRolesAsync(user);
         }
 
-
         public async Task<(ApplicationUser User, string[] Roles)?> GetUserAndRolesAsync(string userId)
         {
             var user = await _context.Users
@@ -81,6 +80,10 @@ namespace Schwarzenegger.Core
             return (user, roles);
         }
 
+        public Task<List<(ApplicationUser User, string[] Roles, string[] Claims)>> GetUsersAndRolesAsync()
+        {
+            return GetUsersAndRolesAsync(-1, -1);
+        }
 
         public async Task<List<(ApplicationUser User, string[] Roles, string[] Claims)>> GetUsersAndRolesAsync(int page, int pageSize)
         {

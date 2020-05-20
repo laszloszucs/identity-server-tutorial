@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,6 +13,8 @@ using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
+using Schwarzenegger.Enums;
+using Schwarzenegger.Hubs;
 using Schwarzenegger.ViewModels;
 
 namespace Schwarzenegger.Controllers
@@ -24,12 +27,14 @@ namespace Schwarzenegger.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IAccountManager _accountManager;
+        private readonly IHubContext<MainHub> _hubContext;
 
-        public RolesController(ApplicationDbContext context, IMapper mapper, IAccountManager accountManager)
+        public RolesController(ApplicationDbContext context, IMapper mapper, IAccountManager accountManager, IHubContext<MainHub> hubContext)
         {
             _context = context;
             _mapper = mapper;
             _accountManager = accountManager;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -91,7 +96,18 @@ namespace Schwarzenegger.Controllers
 
             var (succeeded, errors) = await _accountManager.UpdateRoleAsync(appRole, permissions ?? appRole.Claims.Select(c => c.ClaimValue));
             if (succeeded)
+            {
+                var usersAndRoles = await _accountManager.GetUsersAndRolesAsync();
+                var relevantUsers = usersAndRoles.Where(u => !u.User.IsAdmin && u.Roles.Contains(appRole.Name));
+
+                foreach (var relevantUser in relevantUsers)
+                {
+                    await _hubContext.Clients.User(relevantUser.User.Id)
+                        .SendAsync(WebsocketMethodType.ForceRefreshToken.ToString("D"));
+                }
+
                 return Ok();
+            }
 
             AddError(errors);
 
@@ -116,11 +132,20 @@ namespace Schwarzenegger.Controllers
 
             var roleVm = await GetRoleViewModelHelper(appRole.Name);
 
-            var result = await _accountManager.DeleteRoleAsync(appRole);
-            if (!result.Succeeded)
-                throw new Exception("The following errors occurred whilst deleting role: " +
-                                    string.Join(", ", result.Errors));
+            var usersAndRoles = await _accountManager.GetUsersAndRolesAsync();
+            var relevantUsers = usersAndRoles.Where(u => !u.User.IsAdmin && u.Roles.Contains(appRole.Name));
 
+            var (succeeded, errors) = await _accountManager.DeleteRoleAsync(appRole);
+            if (!succeeded)
+            {
+                return BadRequest(errors);
+            }
+
+            foreach (var relevantUser in relevantUsers)
+            {
+                await _hubContext.Clients.User(relevantUser.User.Id)
+                    .SendAsync(WebsocketMethodType.ForceRefreshToken.ToString("D"));
+            }
 
             return Ok(roleVm);
         }

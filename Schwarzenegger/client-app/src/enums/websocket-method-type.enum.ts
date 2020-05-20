@@ -1,4 +1,5 @@
 export enum WebsocketMethodType {
   Message,
-  ForceRefreshToken
+  ForceRefreshToken,
+  ForceLogout
 }

@@ -200,8 +200,12 @@ namespace Schwarzenegger.Controllers
 
             var (succeeded, errors) = await _accountManager.DeleteUserAsync(appUser);
             if (!succeeded)
-                throw new Exception("The following errors occurred whilst deleting user: " +
-                                    string.Join(", ", errors));
+            {
+                return BadRequest(errors);
+            }
+
+            await _hubContext.Clients.User(id)
+                .SendAsync(WebsocketMethodType.ForceLogout.ToString("D"));
 
             return Ok(userVm);
         }
