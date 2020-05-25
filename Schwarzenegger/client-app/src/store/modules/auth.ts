@@ -106,8 +106,6 @@ const actions = {
     });
   },
   [LoginWithRefreshToken]: (context: any) => {
-    // Ez akkor kell ha változtatunk a user(ek)en.
-    // TODO Ekkor lehetne egy websocek küldés, hogy mindenkinek, frissítse a jogosultságait.
     return new Promise((resolve, reject) => {
       context.commit(LoginWithRefreshToken);
       OAuthService.refreshLogin(context.state.refreshToken)
@@ -152,10 +150,7 @@ const actions = {
     console.error("TODO");
   },
   [RenewAccessTokenWithRefreshToken]: (context: any) => {
-    // Ez akkor kell ha változtatunk a user(ek)en.
-    // TODO Ekkor lehetne egy websocek küldés, hogy mindenkinek, frissítse a jogosultságait.
     return new Promise((resolve, reject) => {
-      // context.commit(RenewAccessTokenWithRefreshToken);
       OAuthService.refreshLogin(context.state.refreshToken)
         .then((response: LoginResponse) => {
           context.commit(SetStoreDatas, response);
@@ -303,9 +298,6 @@ const mutations = {
     state.refreshToken = response.refresh_token;
     state.accessTokenExpiry = tokenExpiryDate;
   },
-  // [RenewAccessTokenWithRefreshToken]: (state: any) => {
-  //   state.loginStatus = LoginStatus.Loading;
-  // },
   [LoginSuccess]: (state: any) => {
     state.loginStatus = LoginStatus.Success;
   },
