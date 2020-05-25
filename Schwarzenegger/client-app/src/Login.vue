@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="card-back">
       <div class="image-container">
-        <img class="responsive" src="..\..\..\src\assets\schwarzenegger.png" />
+        <img class="responsive" src=".\assets\schwarzenegger.png" />
       </div>
       <form @submit.prevent="login">
         <DxForm id="form" :form-data="loginUser" label-location="top">
@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { LoginWithPassword } from "../../store/actions/auth-actions";
+import { LoginWithPassword } from "./store/actions/auth-actions";
 import DxForm, {
   DxButtonItem,
   DxSimpleItem,
@@ -41,8 +41,7 @@ import DxForm, {
 } from "devextreme-vue/form";
 import { LoginUser } from "@/models/login-user.model";
 import notify from "devextreme/ui/notify";
-import EventBus from "../../helpers/event-bus";
-import startRefreshTokenTimer from "../../utils/loginRefresh";
+import EventBus from "./helpers/event-bus";
 
 @Component({
   components: {
@@ -75,15 +74,12 @@ export default class Login extends Vue {
   };
 
   async login() {
-    EventBus.$emit("LOADING");
+    EventBus.$emit("LOADING"); // TODO ??
     this.$store
       .dispatch(LoginWithPassword, this.loginUser)
       .then(() => {
-        startRefreshTokenTimer(this.$store);
-
         this.$router.push("/").then(() => {
           EventBus.$emit("LOGIN");
-          EventBus.$emit("START_MAIN_WEBSOCKET_HUB");
         });
       })
       .catch(error => {

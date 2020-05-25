@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div v-if="profile()">
+    <div v-if="user">
       <!-- <img src="./src/assets/logo.png" /> -->
-      <h1>Username: {{ profile().userName }}</h1>
+      <h1>Username: {{ user.userName }}</h1>
     </div>
-    <p><strong>Full Name:</strong> {{ profile().fullName }}</p>
-    <p><strong>Email:</strong> {{ profile().email }}</p>
-    <p><strong>Phone:</strong> {{ profile().phoneNumber }}</p>
-    <p><strong>Roles:</strong> {{ profile().roles }}</p>
-    <p><strong>UserPermissions:</strong> {{ userPermissions() }}</p>
+    <p><strong>Full Name:</strong> {{ user.fullName }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Phone:</strong> {{ user.phoneNumber }}</p>
+    <p><strong>Roles:</strong> {{ user.roles }}</p>
+    <p><strong>Permissions:</strong> {{ permissions }}</p>
   </div>
 </template>
 
@@ -18,15 +18,22 @@ import { mapState } from "vuex";
 
 @Component({
   computed: mapState({
-    profile: (state: any, getters: any) => () => {
-      return getters.currentUser();
-    },
-    userPermissions: (state: any, getters: any) => () => {
-      return getters.userPermissions();
-    }
+    // user: (state: any) => () => {
+    //   return state.auth.user;
+    // },
+    // permissions: (state: any) => () => {
+    //   return state.auth.permissions;
+    // }
   })
 })
-export default class Account extends Vue {}
+export default class Account extends Vue {
+  get user() {
+      return this.$store.state.auth.user;
+  }
+  get permissions() {
+      return this.$store.state.auth.permissions;
+  }
+}
 </script>
 
 <style lang="scss" scoped></style>

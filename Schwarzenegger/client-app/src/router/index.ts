@@ -2,7 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 import Home from "./views/Home.vue";
 import Account from "./views/Account.vue";
-import Login from "./views/Login.vue";
+// import Login from "./views/Login.vue";
 import Users from "./views/Users.vue";
 import Roles from "./views/Roles.vue";
 import store from "../store";
@@ -52,11 +52,11 @@ const router = new Router({
         permissions: ["roles.view"]
       }
     },
-    {
-      path: "/login",
-      name: "Login",
-      component: Login
-    },
+    // {
+    //   path: "/login",
+    //   name: "Login",
+    //   component: Login
+    // },
     { path: "*", redirect: { name: "Home" } }
   ]
 });
@@ -76,22 +76,22 @@ router.beforeEach(async (to, from, next) => {
   to.matched.forEach(record => {
     if (record.meta.permissions) {
       if (
-        store.getters.isSessionExpired() ||
+        store.getters.isSessionExpired ||
         !accountService.userHasPermissions(record.meta.permissions)
       ) {
-        next("/login");
+        next("/");
         return;
       }
     }
   });
 
-  if (
-    to.matched.some(record => record.name === "Login") &&
-    !store.getters.isSessionExpired()
-  ) {
-    next("/");
-    return;
-  }
+  // if (
+  //   to.matched.some(record => record.name === "Login") &&
+  //   !store.getters.isSessionExpired()
+  // ) {
+  //   next("/");
+  //   return;
+  // }
 
   next();
 });

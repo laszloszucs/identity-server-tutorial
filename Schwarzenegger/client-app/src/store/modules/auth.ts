@@ -3,192 +3,147 @@ import {
   LoginError,
   LoginSuccess,
   Logout,
-  RefreshLogin,
-  RefreshLoginSuccess
+  LoginWithRefreshToken,
+  RenewAccessTokenWithRefreshToken,
+  RefreshLoginSuccess,
+  RedirectForLogin,
+  InitStoreToDefault,
+  SetStoreDatas,
+  CreateWebSocket,
+  StartRefreshTokenTimer,
+  StartTimeoutTimer,
+  ForceRefreshToken,
+  StopRefreshTokenTimer,
+  ReceiveMessage,
+  Reconnecting,
+  RefreshTokenTimer,
+  Renewer
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
 import { User } from "@/models/user.model";
-import DBkeys from "@/models/db-keys.model";
-import localStore from "@/helpers/local-store-manager";
 import { LoginResponse, AccessToken } from "@/models/login-response.model";
 import { PermissionValues } from "@/models/permission.model";
 import JwtHelper from "@/helpers/jwt-helper";
 import { LoginStatus } from "@/enums/login-status.enum";
-import router from "../../router";
+import {
+  MainWebsocketHub,
+  MainWebsocketCallbackOptions
+} from "@/utils/mainWebsocketHub";
 
-function saveUserDetails(
-  user: User,
-  permissions: PermissionValues[],
-  accessToken: string,
-  refreshToken: string,
-  expiresIn: Date,
-  rememberMe: boolean
-) {
-  if (rememberMe) {
-    localStore.savePermanentData(accessToken, DBkeys.ACCESS_TOKEN);
-    localStore.savePermanentData(refreshToken, DBkeys.REFRESH_TOKEN);
-    localStore.savePermanentData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
-    localStore.savePermanentData(permissions, DBkeys.USER_PERMISSIONS);
-    localStore.savePermanentData(user, DBkeys.CURRENT_USER);
-  } else {
-    localStore.saveSyncedSessionData(accessToken, DBkeys.ACCESS_TOKEN);
-    localStore.saveSyncedSessionData(refreshToken, DBkeys.REFRESH_TOKEN);
-    localStore.saveSyncedSessionData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
-    localStore.saveSyncedSessionData(permissions, DBkeys.USER_PERMISSIONS);
-    localStore.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
-  }
-
-  localStore.savePermanentData(rememberMe, DBkeys.REMEMBER_ME);
-}
-
-function processLoginResponse(
-  context: any,
-  response: LoginResponse,
-  rememberMe?: boolean
-) {
-  const accessToken = response.access_token;
-
-  if (accessToken == null) {
-    throw new Error("accessToken cannot be null");
-  }
-
-  rememberMe = rememberMe || context.getters.rememberMe();
-
-  const refreshToken = response.refresh_token || context.getters.refreshToken();
-  const expiresIn = response.expires_in;
-  const tokenExpiryDate = new Date();
-  tokenExpiryDate.setSeconds(tokenExpiryDate.getSeconds() + expiresIn);
-  const accessTokenExpiry = tokenExpiryDate;
-  const jwtHelper = new JwtHelper();
-  const decodedAccessToken = jwtHelper.decodeToken(accessToken) as AccessToken;
-  const permissions: PermissionValues[] = Array.isArray(
-    decodedAccessToken.permission
-  )
-    ? decodedAccessToken.permission
-    : [decodedAccessToken.permission];
-  const user = new User(
-    decodedAccessToken.sub,
-    decodedAccessToken.name,
-    decodedAccessToken.fullname,
-    decodedAccessToken.email,
-    decodedAccessToken.phone_number,
-    true,
-    false,
-    Array.isArray(decodedAccessToken.role)
-      ? decodedAccessToken.role
-      : [decodedAccessToken.role],
-    decodedAccessToken.is_admin
-  );
-  user.isEnabled = true;
-
-  saveUserDetails(
-    user,
-    permissions,
-    accessToken,
-    refreshToken,
-    accessTokenExpiry,
-    rememberMe
-  );
-
-  return user;
-}
-
-function logout(): void {
-  localStore.deleteData(DBkeys.ACCESS_TOKEN);
-  localStore.deleteData(DBkeys.REFRESH_TOKEN);
-  localStore.deleteData(DBkeys.TOKEN_EXPIRES_IN);
-  localStore.deleteData(DBkeys.USER_PERMISSIONS);
-  localStore.deleteData(DBkeys.CURRENT_USER);
-  localStore.deleteData(DBkeys.REMEMBER_ME);
-
-  if (router.currentRoute.path !== "/login") {
-    router.push("/login");
-  }
-}
+let hub = null;
 
 const state: any = {
   loginStatus: LoginStatus.Init,
   hasLoadedOnce: false,
   loginUrl: "/login", // TODO config
-  homeUrl: "/" // TODO config
+  homeUrl: "/", // TODO config
+  user: null,
+  permissions: [],
+  accessToken: null,
+  refreshToken: null,
+  accessTokenExpiry: null,
+  rememberMe: null
 };
 
 const getters = {
-  authStatus: (state: any) => state.loginStatus,
-  currentUser: () => (): User => {
-    return localStore.getDataObject<User>(DBkeys.CURRENT_USER);
-  },
-  userPermissions: () => (): PermissionValues[] => {
-    return (
-      localStore.getDataObject<PermissionValues[]>(DBkeys.USER_PERMISSIONS) ||
-      []
-    );
-  },
-  accessToken: () => (): string => {
-    return localStore.getData(DBkeys.ACCESS_TOKEN);
-  },
-  accessTokenExpiryDate: () => (): Date => {
-    return localStore.getDataObject<Date>(DBkeys.TOKEN_EXPIRES_IN, true);
-  },
-  refreshToken: () => (): string => {
-    return localStore.getData(DBkeys.REFRESH_TOKEN);
-  },
-  isSessionExpired: (state: any, getters: any) => (): boolean => {
-    if (getters.accessTokenExpiryDate() == null) {
+  isSessionExpired: (state: any) => {
+    if (state.accessTokenExpiry == null) {
       return true;
     }
 
-    if (getters.accessTokenExpiryDate().valueOf() <= new Date().valueOf()) {
+    if (state.accessTokenExpiry.valueOf() <= new Date().valueOf()) {
       return true;
     }
 
     return false;
   },
-  isLoggedIn: (state: any, getters: any) => (): boolean => {
-    return getters.currentUser() != null;
-  },
-  rememberMe: () => (): boolean => {
-    return localStore.getDataObject<boolean>(DBkeys.REMEMBER_ME);
+  isLoggedIn: (state: any) => {
+    return state.user != null;
   }
 };
 
 const actions = {
+  [RedirectForLogin]: (context: any) => {
+    context.commit(InitStoreToDefault);
+  },
   [LoginWithPassword]: (context: any, loginUser: any) => {
     return new Promise((resolve, reject) => {
-      localStore.savePermanentData(loginUser.rememberMe, DBkeys.REMEMBER_ME);
-      context.commit(LoginWithPassword);
+      context.commit(LoginWithPassword, loginUser.rememberMe);
       OAuthService.loginWithPassword(loginUser)
         .then((response: LoginResponse) => {
-          const user = processLoginResponse(
-            context,
-            response,
-            loginUser.rememberMe
-          );
-          context.commit(LoginSuccess, user);
-          resolve(user);
+          context.commit(SetStoreDatas, response);
+          context.dispatch(CreateWebSocket);
+          context.dispatch(StartRefreshTokenTimer);
+
+          if (!context.state.rememberMe) {
+            context.dispatch(StartTimeoutTimer);
+          }
+
+          context.commit(LoginSuccess);
+          resolve();
         })
         .catch((err: Error) => {
           context.commit(LoginError, err);
-          logout();
+          context.dispatch(Logout);
           reject(err);
         });
     });
   },
-  [RefreshLogin]: (context: any, rememberMe?: boolean) => {
+  [LoginWithRefreshToken]: (context: any) => {
     // Ez akkor kell ha változtatunk a user(ek)en.
     // TODO Ekkor lehetne egy websocek küldés, hogy mindenkinek, frissítse a jogosultságait.
     return new Promise((resolve, reject) => {
-      context.commit(RefreshLogin);
-      OAuthService.refreshLogin(localStore.getData(DBkeys.REFRESH_TOKEN))
+      context.commit(LoginWithRefreshToken);
+      OAuthService.refreshLogin(context.state.refreshToken)
         .then((response: LoginResponse) => {
-          processLoginResponse(context, response, rememberMe);
+          context.commit(SetStoreDatas, response);
+
+          context.dispatch(CreateWebSocket);
+          context.dispatch(StartRefreshTokenTimer);
+
           context.commit(RefreshLoginSuccess);
           resolve();
         })
         .catch((err: Error) => {
           debugger;
           context.commit(LoginError, err);
-          logout();
+          context.dispatch(Logout);
+          reject(err);
+        });
+    });
+  },
+  [CreateWebSocket]: (context: any) => {
+    hub = new MainWebsocketHub(
+      "https://localhost:44300/mainHub",
+      new MainWebsocketCallbackOptions(context)
+    );
+
+    hub.startConnection();
+  },
+  [ForceRefreshToken]: (context: any) => {
+    context.dispatch(RenewAccessTokenWithRefreshToken);
+  },
+  [Reconnecting]: () => {
+    hub.setNewAccessToken();
+  },
+  [ReceiveMessage]: () => {
+    console.error("TODO");
+  },
+  [RenewAccessTokenWithRefreshToken]: (context: any) => {
+    // Ez akkor kell ha változtatunk a user(ek)en.
+    // TODO Ekkor lehetne egy websocek küldés, hogy mindenkinek, frissítse a jogosultságait.
+    return new Promise((resolve, reject) => {
+      context.commit(RenewAccessTokenWithRefreshToken);
+      OAuthService.refreshLogin(context.state.refreshToken)
+        .then((response: LoginResponse) => {
+          context.commit(SetStoreDatas, response);
+          context.commit(RefreshLoginSuccess);
+          resolve();
+        })
+        .catch((err: Error) => {
+          debugger;
+          context.commit(LoginError, err);
+          context.dispatch(Logout);
           reject(err);
         });
     });
@@ -196,9 +151,40 @@ const actions = {
   [Logout]: (context: any) => {
     return new Promise(resolve => {
       context.commit(Logout);
-      logout();
+      context.dispatch(StopRefreshTokenTimer);
+      if (hub) {
+        hub.stopConnection();
+      }
+      context.commit(InitStoreToDefault);
       resolve();
     });
+  },
+  [StartRefreshTokenTimer]: (context: any) => {
+    const accessTokenExpiry = context.state.accessTokenExpiry;
+    const now = new Date().valueOf();
+    const difference = accessTokenExpiry - now;
+    context.dispatch(RefreshTokenTimer, difference);
+  },
+  [RefreshTokenTimer]: (context: any, difference: any) => {
+    const refreshTime = difference - 10000; // Lejárat előtt 10 másodperc
+    const refreshTokenTimerId = setTimeout(
+      () => context.dispatch(Renewer),
+      Math.max(refreshTime, 0)
+    );
+    context.commit(RefreshTokenTimer, refreshTokenTimerId);
+  },
+  [Renewer]: (context: any) => {
+    if (
+      context.state.loginStatus === LoginStatus.Success ||
+      context.state.loginStatus === LoginStatus.RefreshSuccess
+    ) {
+      context.dispatch(RenewAccessTokenWithRefreshToken).then(() => {
+        context.dispatch(StartRefreshTokenTimer);
+      });
+    }
+  },
+  [StopRefreshTokenTimer]: (context: any) => {
+    clearTimeout(context.state.refreshTokenTimerId);
   },
   [RefreshLoginSuccess]: (context: any) => {
     return new Promise(resolve => {
@@ -209,11 +195,62 @@ const actions = {
 };
 
 const mutations = {
-  [LoginWithPassword]: (state: any) => {
-    state.loginStatus = LoginStatus.Loading;
-    state.hasLoadedOnce = true;
+  [InitStoreToDefault]: (state: any) => {
+    (state.loginStatus = LoginStatus.Init),
+      (state.hasLoadedOnce = false), // TODO Ezt még át kell nézni
+      (state.loginUrl = "/login"), // TODO config
+      (state.homeUrl = "/"), // TODO config
+      (state.user = null),
+      (state.permissions = []),
+      (state.accessToken = null),
+      (state.refreshToken = null),
+      (state.accessTokenExpiry = null),
+      (state.rememberMe = null);
   },
-  [RefreshLogin]: (state: any) => {
+  [LoginWithPassword]: (state: any, rememberMe: boolean) => {
+    state.loginStatus = LoginStatus.Loading;
+    state.rememberMe = rememberMe;
+    state.hasLoadedOnce = true; // TODO Ezt még át kell nézni
+  },
+  [LoginWithRefreshToken]: (state: any) => {
+    state.loginStatus = LoginStatus.Loading;
+  },
+  [SetStoreDatas]: (state: any, response: any) => {
+    const jwtHelper = new JwtHelper();
+    const decodedAccessToken = jwtHelper.decodeToken(
+      response.access_token
+    ) as AccessToken;
+    const permissions: PermissionValues[] = Array.isArray(
+      decodedAccessToken.permission
+    )
+      ? decodedAccessToken.permission
+      : [decodedAccessToken.permission];
+    const user = new User(
+      decodedAccessToken.sub,
+      decodedAccessToken.name,
+      decodedAccessToken.fullname,
+      decodedAccessToken.email,
+      decodedAccessToken.phone_number,
+      true, // TODO Paraméterezhető?
+      false, // TODO Paraméterezhető?
+      Array.isArray(decodedAccessToken.role)
+        ? decodedAccessToken.role
+        : [decodedAccessToken.role],
+      decodedAccessToken.is_admin
+    );
+
+    const tokenExpiryDate = new Date();
+    tokenExpiryDate.setSeconds(
+      tokenExpiryDate.getSeconds() + response.expires_in
+    );
+
+    state.user = user;
+    state.permissions = permissions;
+    state.accessToken = response.access_token;
+    state.refreshToken = response.refresh_token;
+    state.accessTokenExpiry = tokenExpiryDate;
+  },
+  [RenewAccessTokenWithRefreshToken]: (state: any) => {
     state.loginStatus = LoginStatus.Loading;
   },
   [LoginSuccess]: (state: any) => {
@@ -228,8 +265,11 @@ const mutations = {
     state.loginStatus = LoginStatus.Error;
     state.hasLoadedOnce = true;
   },
-  [Logout]: () => {
+  [Logout]: (state: any) => {
     state.loginStatus = LoginStatus.Logout;
+  },
+  [RefreshTokenTimer]: (state: any, refreshTokenTimerId: number) => {
+    state.refreshTokenTimerId = refreshTokenTimerId;
   }
 };
 

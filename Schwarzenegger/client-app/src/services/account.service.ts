@@ -141,11 +141,11 @@ class AccountService {
   }
 
   get permissions(): PermissionValues[] {
-    return store.getters.userPermissions();
+    return (store.state as any).auth.permissions;
   }
 
   get currentUser() {
-    return store.getters.currentUser();
+    return (store.state as any).auth.user;
   }
 }
 
