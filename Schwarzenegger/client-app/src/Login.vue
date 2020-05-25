@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="card-back">
       <div class="image-container">
-        <img class="responsive" src=".\assets\schwarzenegger.png" />
+        <img class="responsive" src=".\assets\kesz_logo.png" />
       </div>
       <form @submit.prevent="login">
         <DxForm id="form" :form-data="loginUser" label-location="top">

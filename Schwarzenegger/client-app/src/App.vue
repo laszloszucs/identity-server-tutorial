@@ -151,6 +151,10 @@ export default class App extends Vue {
 
 main {
   overflow: auto;
+  background-color: white;
+  margin-left: 2%;
+  margin-right: 2%;
+  margin-bottom: 5%;
   &.logged-in {
     border-radius: 0.3rem;
     padding: 30px;

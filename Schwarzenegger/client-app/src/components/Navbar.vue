@@ -34,6 +34,7 @@
         :disabled="$route.matched.some(({ name }) => name === 'About')"
       />
     </div>
+    <div></div>
     <div :class="{ 'other-buttons': hasPermission('account.view') }">
       <DxButton
         id="adminButton"
@@ -122,10 +123,11 @@ export default class Navbar extends Vue {
 
 <style lang="scss" scoped>
 .navbar {
-  background: #0375af;
+  // background: rgb(0,0,0);
+  // background: linear-gradient(5deg, rgba(0,0,0,1) 0%, rgba(1,29,44,1) 44%, rgba(3,117,175,1) 100%);
   padding: 10px 45px 10px 45px;
   display: grid;
-  grid-template-columns: 1fr max-content;
+  grid-template-columns: 8fr 1fr 2fr;
   .dx-widget {
     font-family: "Roboto", sans-serif !important;
     font-size: 16px !important;
@@ -141,12 +143,12 @@ export default class Navbar extends Vue {
 .other-buttons {
   display: grid;
   grid-template-areas: "admin-button logout-button";
-  @media (max-width: 767px) {
-    grid-template-columns: 70px 120px; // repeat(2, 100px);
-  }
-  @media (min-width: 768px) {
-    grid-template-columns: 105px 130px; // repeat(2, 150px);
-  }
+  // @media (max-width: 767px) {
+  //   grid-template-columns: 70px 120px; // repeat(2, 100px);
+  // }
+  // @media (min-width: 768px) {
+  //   grid-template-columns: 105px 130px; // repeat(2, 150px);
+  // }
 }
 
 .admin-button {
@@ -203,7 +205,8 @@ export default class Navbar extends Vue {
   // border-left: 1px solid grey !important;
   // border-bottom: 1px solid grey !important;
   &.dx-state-disabled {
-    border-bottom: none !important;
+    border-radius: 0;
+    border-bottom: 5px solid #55a3e1 !important;
   }
 }
 

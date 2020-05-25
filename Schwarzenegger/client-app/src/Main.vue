@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{ 'error': errorMessage }" class="main">
     <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
     <Login v-if="showLoginScreen" />
@@ -64,14 +64,21 @@ export default class Main extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.main {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;
+  &.error {
+    grid-template-rows: 30px 1fr;
+  }
+}
 .errorMessage {
-  height: 50px;
-  background-color: red;
-  color: white;
+  background-color: #ff7958;
+  color: black;
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */
