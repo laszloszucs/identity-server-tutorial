@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.EntityFramework.Stores;
-using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
@@ -58,7 +54,7 @@ namespace Schwarzenegger
             });
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration["ConnectionStrings:SchwarzeneggerConnection"],
+                options.UseNpgsql(Configuration.GetConnectionString("SchwarzeneggerConnection"),
                     b => b.MigrationsAssembly("Schwarzenegger")));
 
             // add identity
@@ -88,12 +84,17 @@ namespace Schwarzenegger
 
             var builder = services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                    //.AddPersistedGrantStore<PersistedGrantStore>()
-                .AddConfigurationStore(option =>
-                    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("IdentityServerConnection"), options =>
-                        options.MigrationsAssembly("Schwarzenegger")))
+                 //.AddPersistedGrantStore<PersistedGrantStore>()
+                 //.AddConfigurationStore(option =>
+                 //    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("SchwarzeneggerConnection"), options =>
+                 //        options.MigrationsAssembly("Schwarzenegger")))
+                .AddInMemoryIdentityResources(IdentityServerConfig
+                    .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
+                .AddInMemoryApiResources(IdentityServerConfig
+                    .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
+                .AddInMemoryClients(IdentityServerConfig.GetClients(allowedCorsOrigins)) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddOperationalStore(option =>
-                    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("IdentityServerConnection"), options =>
+                    option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("SchwarzeneggerConnection"), options =>
                         options.MigrationsAssembly("Schwarzenegger")))
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<ProfileService>();
@@ -118,6 +119,7 @@ namespace Schwarzenegger
                     options.SupportedTokens = SupportedTokens.Jwt;
                     options.RequireHttpsMetadata = false; // Note: Set to true in production
                     options.ApiName = IdentityConfigConstants.ApiName;
+                    //options.JwtValidationClockSkew = new TimeSpan(0, 0, 5); // Alapértelmezetten 5 perc Clock Skew van az Access Token-en, ami azt jelenti, hogy a token lejárat után még 5 percig érvényes
                     options.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>

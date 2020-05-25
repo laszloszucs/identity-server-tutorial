@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,7 +9,6 @@ using Schwarzenegger.Core.DAL.Interfaces;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
 using Schwarzenegger.Helpers;
-using System.Linq;
 
 namespace Schwarzenegger.Core.DAL
 {
@@ -20,26 +18,29 @@ namespace Schwarzenegger.Core.DAL
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
         private readonly PersistedGrantDbContext _persistedGrantDbContext;
-        private readonly ConfigurationDbContext _configurationDbContext;
+        //private readonly ConfigurationDbContext _configurationDbContext;
         private readonly IOptions<AppSettings> _appSettings;
 
         public DatabaseInitializer(ApplicationDbContext context, IAccountManager accountManager,
             ILogger<DatabaseInitializer> logger, PersistedGrantDbContext persistedGrantDbContext,
-            ConfigurationDbContext configurationDbContext, IOptions<AppSettings> appSettings)
+            IOptions<AppSettings> appSettings)
         {
             _accountManager = accountManager;
             _context = context;
             _logger = logger;
             _persistedGrantDbContext = persistedGrantDbContext;
-            _configurationDbContext = configurationDbContext;
+            //_configurationDbContext = configurationDbContext;
             _appSettings = appSettings;
         }
 
         public async Task InitializeAsync()
         {
-            // await _context.Database.EnsureDeletedAsync();
+            //await _context.Database.EnsureDeletedAsync();
+            //await _persistedGrantDbContext.Database.EnsureDeletedAsync();
+            //await _configurationDbContext.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync().ConfigureAwait(false);
-            // InitializeTokenServerConfigurationDatabase();
+            _persistedGrantDbContext.Database.Migrate();
+            //InitializeTokenServerConfigurationDatabase();
             await SeedAsync();
         }
 
@@ -103,43 +104,43 @@ namespace Schwarzenegger.Core.DAL
                     $"Seeding \"{userName}\" user failed. Errors: {string.Join(Environment.NewLine, errors)}");
         }
 
-        private void InitializeTokenServerConfigurationDatabase()
-        {
-                _persistedGrantDbContext.Database.Migrate();
-                _configurationDbContext.Database.Migrate();
+        //private void InitializeTokenServerConfigurationDatabase()
+        //{
+                
+        //        _configurationDbContext.Database.Migrate();
 
-            if (!_configurationDbContext.Clients.Any())
-                {
-                    foreach (var client in IdentityServerConfig.GetClients(_appSettings.Value.AllowedCorsOrigins))
-                    {
-                        _configurationDbContext.Clients.Add(client.ToEntity());
-                    }
+        //    if (!_configurationDbContext.Clients.Any())
+        //        {
+        //            foreach (var client in IdentityServerConfig.GetClients(_appSettings.Value.AllowedCorsOrigins))
+        //            {
+        //                _configurationDbContext.Clients.Add(client.ToEntity());
+        //            }
 
-                    _configurationDbContext.SaveChanges();
-                }
+        //            _configurationDbContext.SaveChanges();
+        //        }
 
-                if (!_configurationDbContext.IdentityResources.Any())
-                {
-                    foreach (var resource in IdentityServerConfig.GetIdentityResources())
-                    {
-                        _configurationDbContext.IdentityResources.Add(resource.ToEntity());
-                    }
+        //        if (!_configurationDbContext.IdentityResources.Any())
+        //        {
+        //            foreach (var resource in IdentityServerConfig.GetIdentityResources())
+        //            {
+        //                _configurationDbContext.IdentityResources.Add(resource.ToEntity());
+        //            }
 
-                    _configurationDbContext.SaveChanges();
-                }
+        //            _configurationDbContext.SaveChanges();
+        //        }
 
-                if (_configurationDbContext.ApiResources.Any())
-                {
-                    return;
-                }
+        //        if (_configurationDbContext.ApiResources.Any())
+        //        {
+        //            return;
+        //        }
 
-                foreach (var resource in IdentityServerConfig.GetApis())
-                {
-                    _configurationDbContext.ApiResources.Add(resource.ToEntity());
-                }
+        //        foreach (var resource in IdentityServerConfig.GetApis())
+        //        {
+        //            _configurationDbContext.ApiResources.Add(resource.ToEntity());
+        //        }
 
-                _configurationDbContext.SaveChanges();
-        }
+        //        _configurationDbContext.SaveChanges();
+        //}
     }
 }
         

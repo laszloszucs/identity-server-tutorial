@@ -3,5 +3,6 @@ export enum LoginStatus {
   Logout,
   Loading,
   Success,
-  Error
+  Error,
+  Reconnecting
 }

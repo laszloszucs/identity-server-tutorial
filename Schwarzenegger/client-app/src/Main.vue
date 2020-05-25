@@ -2,7 +2,7 @@
   <div>
     <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
-    <Login v-if="logoutStatus" />
+    <Login v-if="showLoginScreen" />
     <loader :load="loadingStatus" :isWhite="true"></loader>
   </div>
 </template>
@@ -35,8 +35,11 @@ export default class Main extends Vue {
     return this.$store.state.auth.loginStatus === LoginStatus.Loading;
   }
 
-  get logoutStatus() {
-    return this.$store.state.auth.loginStatus === LoginStatus.Logout;
+  get showLoginScreen() {
+    return (
+      this.$store.state.auth.loginStatus === LoginStatus.Logout ||
+      this.$store.state.auth.loginStatus === LoginStatus.Error
+    );
   }
 
   get isLoginSuccess() {

@@ -91,7 +91,8 @@ export default class Login extends Vue {
         }
         notify(
           {
-            message: this.$t("error." + errorMessage),
+            message: errorMessage,
+            // message: this.$t("error." + errorMessage),
             position: {
               at: "top",
               offset: "0 40"

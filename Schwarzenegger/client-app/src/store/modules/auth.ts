@@ -123,12 +123,17 @@ const actions = {
             context.commit(ServerOffline);
           } else {
             if (error.response.status === 400) {
-              if(hub) {
-                hub.stopConnection();
+              if (hub) {
+                hub.hubConnection.stop().then(() => {
+                  context.commit(TokenError);
+                  context.dispatch(Logout);
+                  reject(error);
+                });
+              } else {
+                context.commit(TokenError);
+                context.dispatch(Logout);
+                reject(error);
               }
-              context.commit(TokenError);
-              context.dispatch(Logout);
-              reject(error);
             }
           }
           resolve();
@@ -141,13 +146,13 @@ const actions = {
       new MainWebsocketCallbackOptions(context)
     );
 
-    hub.startConnection();
+    hub.startConnection(context);
   },
   [ForceRefreshToken]: (context: any) => {
     return context.dispatch(RenewAccessTokenWithRefreshToken);
   },
-  [Reconnecting]: () => {
-    hub.setNewAccessToken();
+  [Reconnecting]: (context: any) => {
+    context.commit(Reconnecting);
   },
   [ReceiveMessage]: () => {
     console.error("TODO");
@@ -163,11 +168,11 @@ const actions = {
         .catch((error: any) => {
           if (!error.response) {
             context.commit(ServerOffline);
+            context.dispatch(StopRefreshTokenTimer);
           } else {
             if (error.response.status === 400) {
-              debugger;
               context.commit(TokenError);
-              context.commit(Logout);
+              context.dispatch(Logout);
             }
           }
 
@@ -180,10 +185,14 @@ const actions = {
       context.commit(Logout);
       context.dispatch(StopRefreshTokenTimer);
       if (hub) {
-        hub.stopConnection();
+        hub.hubConnection.stop().then(() => {
+          context.commit(StoreToDefault);
+          resolve();
+        });
+      } else {
+        context.commit(StoreToDefault);
+        resolve();
       }
-      context.commit(StoreToDefault);
-      resolve();
     });
   },
   [StartRefreshTokenTimer]: (context: any) => {
@@ -201,7 +210,10 @@ const actions = {
     context.commit(RefreshTokenTimer, refreshTokenTimerId);
   },
   [Renewer]: (context: any) => {
-    if (context.state.loginStatus === LoginStatus.Success) {
+    if (
+      context.state.loginStatus === LoginStatus.Success ||
+      context.state.loginStatus !== LoginStatus.Reconnecting
+    ) {
       context.dispatch(RenewAccessTokenWithRefreshToken).then(() => {
         context.dispatch(StartRefreshTokenTimer);
       });
@@ -223,9 +235,10 @@ const actions = {
     return new Promise(resolve => {
       context.commit(Loading);
       offlineCheckerId = setInterval(
-        () => context.dispatch(CheckOfflinePing).then(() => {
-          resolve();
-        }),
+        () =>
+          context.dispatch(CheckOfflinePing).then(() => {
+            resolve();
+          }),
         5000
       );
     });
@@ -342,6 +355,9 @@ const mutations = {
   },
   [ErrorMessage]: (state: any, errorMessage: string) => {
     state.errorMessage = errorMessage; // TODO lehet, hogy már nincs rá szükség?
+  },
+  [Reconnecting]: (state: any) => {
+    state.loginStatus = LoginStatus.Reconnecting; // TODO lehet, hogy már nincs rá szükség?
   }
 };
 
