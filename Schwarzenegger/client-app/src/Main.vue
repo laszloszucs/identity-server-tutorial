@@ -1,15 +1,17 @@
 <template>
   <div>
+    <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
-    <Login v-else />
-    <loader :load="!hasLoadedOnce && isLoading" :isWhite="true"></loader>
+    <Login v-if="logoutStatus" />
+    <loader :load="loadingStatus" :isWhite="true"></loader>
   </div>
 </template>
 
 <script lang="ts">
 import {
   LoginWithRefreshToken,
-  RedirectForLogin
+  RedirectForLogin,
+  CheckingOffline
 } from "./store/actions/auth-actions";
 import { Component, Vue } from "vue-property-decorator";
 import App from "./App.vue";
@@ -23,47 +25,52 @@ import Loader from "./components/Loader.vue";
     Login,
     Loader
   }
-  // computed: mapState({
-  //   profile: (state: any, getters: any) => () => {
-  //     return getters.currentUser();
-  //   },
-  //   hasLoadedOnce: (state: any) => {
-  //     return state.auth.hasLoadedOnce;
-  //   },
-  //   isLoading: (state: any) => {
-  //     return state.auth.loginStatus === LoginStatus.Loading;
-  //   }
-  // })
 })
 export default class Main extends Vue {
   refreshTimer = null;
   hub = null;
   mainWebsocketHubStarted = false;
 
-  get isLoginSuccess() {
-    debugger;
-    return (
-      this.$store.state.auth.loginStatus === LoginStatus.Success ||
-      this.$store.state.auth.loginStatus === LoginStatus.RefreshSuccess
-    );
-  }
-
-  get hasLoadedOnce() {
-    return this.$store.state.auth.hasLoadedOnce;
-  }
-
-  get isLoading() {
+  get loadingStatus() {
     return this.$store.state.auth.loginStatus === LoginStatus.Loading;
   }
 
+  get logoutStatus() {
+    return this.$store.state.auth.loginStatus === LoginStatus.Logout;
+  }
+
+  get isLoginSuccess() {
+    return this.$store.state.auth.loginStatus === LoginStatus.Success;
+  }
+
+  get errorMessage() {
+    return this.$store.state.auth.errorMessage;
+  }
+
   created() {
-    if (this.$store.state.auth.rememberMe) {
-      this.$store.dispatch(LoginWithRefreshToken);
-    } else {
-      this.$store.dispatch(RedirectForLogin);
-    }
+    // this.$store.dispatch(ErrorMessage, null);
+    this.$store.dispatch(CheckingOffline).then(() => {
+      if (this.$store.state.auth.rememberMe) {
+        this.$store.dispatch(LoginWithRefreshToken);
+      } else {
+        this.$store.dispatch(RedirectForLogin);
+      }
+    });
   }
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.errorMessage {
+  height: 50px;
+  background-color: red;
+  color: white;
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 20px;
+  display: flex;
+  justify-content: center; /* align horizontal */
+  align-items: center; /* align vertical */
+}
+</style>

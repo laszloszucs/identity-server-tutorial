@@ -7,7 +7,7 @@ import {
   RenewAccessTokenWithRefreshToken,
   RefreshLoginSuccess,
   RedirectForLogin,
-  InitStoreToDefault,
+  StoreToDefault,
   SetStoreDatas,
   CreateWebSocket,
   StartRefreshTokenTimer,
@@ -17,7 +17,14 @@ import {
   ReceiveMessage,
   Reconnecting,
   RefreshTokenTimer,
-  Renewer
+  Renewer,
+  ServerOffline,
+  TokenError,
+  ErrorMessage,
+  CheckOfflinePing,
+  ServerOnline,
+  CheckingOffline,
+  Loading
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
 import { User } from "@/models/user.model";
@@ -29,12 +36,13 @@ import {
   MainWebsocketHub,
   MainWebsocketCallbackOptions
 } from "@/utils/mainWebsocketHub";
+import axios from "axios";
 
 let hub = null;
+let offlineCheckerId = null;
 
 const state: any = {
-  loginStatus: LoginStatus.Init,
-  hasLoadedOnce: false,
+  loginStatus: LoginStatus.Logout,
   loginUrl: "/login", // TODO config
   homeUrl: "/", // TODO config
   user: null,
@@ -42,7 +50,9 @@ const state: any = {
   accessToken: null,
   refreshToken: null,
   accessTokenExpiry: null,
-  rememberMe: null
+  rememberMe: null,
+  errorMessage: null,
+  serverOffline: null
 };
 
 const getters = {
@@ -64,7 +74,7 @@ const getters = {
 
 const actions = {
   [RedirectForLogin]: (context: any) => {
-    context.commit(InitStoreToDefault);
+    context.commit(StoreToDefault);
   },
   [LoginWithPassword]: (context: any, loginUser: any) => {
     return new Promise((resolve, reject) => {
@@ -82,10 +92,16 @@ const actions = {
           context.commit(LoginSuccess);
           resolve();
         })
-        .catch((err: Error) => {
-          context.commit(LoginError, err);
-          context.dispatch(Logout);
-          reject(err);
+        .catch((error: any) => {
+          if (!error.response) {
+            context.commit(ServerOffline);
+          } else {
+            if (error.response.status === 400) {
+              context.commit(LoginError);
+            }
+          }
+
+          reject(error);
         });
     });
   },
@@ -104,11 +120,17 @@ const actions = {
           context.commit(RefreshLoginSuccess);
           resolve();
         })
-        .catch((err: Error) => {
-          debugger;
-          context.commit(LoginError, err);
-          context.dispatch(Logout);
-          reject(err);
+        .catch((error: any) => {
+          if (!error.response) {
+            context.commit(ServerOffline);
+          } else {
+            if (error.response.status === 400) {
+              context.commit(TokenError);
+              context.dispatch(Logout);
+              reject(error);
+            }
+          }
+          resolve();
         });
     });
   },
@@ -121,7 +143,7 @@ const actions = {
     hub.startConnection();
   },
   [ForceRefreshToken]: (context: any) => {
-    context.dispatch(RenewAccessTokenWithRefreshToken);
+    return context.dispatch(RenewAccessTokenWithRefreshToken);
   },
   [Reconnecting]: () => {
     hub.setNewAccessToken();
@@ -133,18 +155,25 @@ const actions = {
     // Ez akkor kell ha változtatunk a user(ek)en.
     // TODO Ekkor lehetne egy websocek küldés, hogy mindenkinek, frissítse a jogosultságait.
     return new Promise((resolve, reject) => {
-      context.commit(RenewAccessTokenWithRefreshToken);
+      // context.commit(RenewAccessTokenWithRefreshToken);
       OAuthService.refreshLogin(context.state.refreshToken)
         .then((response: LoginResponse) => {
           context.commit(SetStoreDatas, response);
           context.commit(RefreshLoginSuccess);
           resolve();
         })
-        .catch((err: Error) => {
-          debugger;
-          context.commit(LoginError, err);
-          context.dispatch(Logout);
-          reject(err);
+        .catch((error: any) => {
+          if (!error.response) {
+            context.commit(ServerOffline);
+          } else {
+            if (error.response.status === 400) {
+              debugger;
+              context.commit(TokenError);
+              context.commit(Logout);
+            }
+          }
+
+          reject(error);
         });
     });
   },
@@ -155,7 +184,7 @@ const actions = {
       if (hub) {
         hub.stopConnection();
       }
-      context.commit(InitStoreToDefault);
+      context.commit(StoreToDefault);
       resolve();
     });
   },
@@ -174,10 +203,7 @@ const actions = {
     context.commit(RefreshTokenTimer, refreshTokenTimerId);
   },
   [Renewer]: (context: any) => {
-    if (
-      context.state.loginStatus === LoginStatus.Success ||
-      context.state.loginStatus === LoginStatus.RefreshSuccess
-    ) {
+    if (context.state.loginStatus === LoginStatus.Success) {
       context.dispatch(RenewAccessTokenWithRefreshToken).then(() => {
         context.dispatch(StartRefreshTokenTimer);
       });
@@ -191,26 +217,53 @@ const actions = {
       context.commit(RefreshLoginSuccess);
       resolve();
     });
+  },
+  [ErrorMessage]: (context: any, errorMessage: string) => {
+    context.commit(ErrorMessage, errorMessage);
+  },
+  [CheckingOffline]: (context: any) => {
+    return new Promise(resolve => {
+      context.commit(Loading);
+      offlineCheckerId = setInterval(
+        () => context.dispatch(CheckOfflinePing).then(() => {
+          resolve();
+        }),
+        5000
+      );
+    });
+  },
+  [CheckOfflinePing]: (context: any) => {
+    return new Promise(resolve => {
+      axios
+        .get("https://localhost:44300/api/identity")
+        .then(() => {
+          clearInterval(offlineCheckerId);
+          context.commit(ServerOnline);
+          resolve();
+        })
+        .catch(() => {
+          context.commit(CheckingOffline);
+        });
+    });
   }
 };
 
 const mutations = {
-  [InitStoreToDefault]: (state: any) => {
-    (state.loginStatus = LoginStatus.Init),
-      (state.hasLoadedOnce = false), // TODO Ezt még át kell nézni
-      (state.loginUrl = "/login"), // TODO config
-      (state.homeUrl = "/"), // TODO config
-      (state.user = null),
-      (state.permissions = []),
-      (state.accessToken = null),
-      (state.refreshToken = null),
-      (state.accessTokenExpiry = null),
-      (state.rememberMe = null);
+  [StoreToDefault]: (state: any) => {
+    state.loginStatus = LoginStatus.Logout;
+    state.hasLoadedOnce = false; // TODO Ezt még át kell nézni
+    state.loginUrl = "/login"; // TODO config
+    state.homeUrl = "/"; // TODO config
+    state.user = null;
+    state.permissions = [];
+    state.accessToken = null;
+    state.refreshToken = null;
+    state.accessTokenExpiry = null;
+    state.rememberMe = null;
   },
   [LoginWithPassword]: (state: any, rememberMe: boolean) => {
     state.loginStatus = LoginStatus.Loading;
     state.rememberMe = rememberMe;
-    state.hasLoadedOnce = true; // TODO Ezt még át kell nézni
   },
   [LoginWithRefreshToken]: (state: any) => {
     state.loginStatus = LoginStatus.Loading;
@@ -250,26 +303,48 @@ const mutations = {
     state.refreshToken = response.refresh_token;
     state.accessTokenExpiry = tokenExpiryDate;
   },
-  [RenewAccessTokenWithRefreshToken]: (state: any) => {
-    state.loginStatus = LoginStatus.Loading;
-  },
+  // [RenewAccessTokenWithRefreshToken]: (state: any) => {
+  //   state.loginStatus = LoginStatus.Loading;
+  // },
   [LoginSuccess]: (state: any) => {
     state.loginStatus = LoginStatus.Success;
-    state.hasLoadedOnce = true;
   },
   [RefreshLoginSuccess]: (state: any) => {
-    state.loginStatus = LoginStatus.RefreshSuccess;
-    state.hasLoadedOnce = true;
+    state.loginStatus = LoginStatus.Success;
   },
   [LoginError]: (state: any) => {
     state.loginStatus = LoginStatus.Error;
-    state.hasLoadedOnce = true;
+    state.errorMessage = "Hiba a bejelentkezési adatokban.";
+  },
+  [TokenError]: (state: any) => {
+    state.loginStatus = LoginStatus.Error;
+    state.errorMessage = "A munkamenet lejárt. Kérem jelentkezzen be újra.";
   },
   [Logout]: (state: any) => {
     state.loginStatus = LoginStatus.Logout;
   },
   [RefreshTokenTimer]: (state: any, refreshTokenTimerId: number) => {
     state.refreshTokenTimerId = refreshTokenTimerId;
+  },
+  [ServerOnline]: (state: any) => {
+    state.serverOffline = false;
+    state.errorMessage = null;
+  },
+  [CheckingOffline]: (state: any) => {
+    state.serverOffline = true;
+    state.errorMessage = "A szerver nem érhető el.";
+    state.loginStatus = LoginStatus.CheckingOffline;
+  },
+  [ServerOffline]: (state: any) => {
+    state.serverOffline = true;
+    state.errorMessage = "A szerver nem érhető el.";
+  },
+  [Loading]: (state: any) => {
+    state.errorMessage = null;
+    state.loginStatus = LoginStatus.Loading;
+  },
+  [ErrorMessage]: (state: any, errorMessage: string) => {
+    state.errorMessage = errorMessage; // TODO lehet, hogy már nincs rá szükség?
   }
 };
 

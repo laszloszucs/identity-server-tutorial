@@ -28,10 +28,10 @@ import { mapState } from "vuex";
 })
 export default class Account extends Vue {
   get user() {
-      return this.$store.state.auth.user;
+    return this.$store.state.auth.user;
   }
   get permissions() {
-      return this.$store.state.auth.permissions;
+    return this.$store.state.auth.permissions;
   }
 }
 </script>

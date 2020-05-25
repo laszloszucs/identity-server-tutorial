@@ -18,6 +18,7 @@ let _callbackOptions: MainWebsocketCallbackOptions;
 export class MainWebsocketHub {
   private url = null;
   private connection = null;
+  private retryIntervalId = null;
 
   constructor(url: string, callbackOptions: MainWebsocketCallbackOptions) {
     this.url = url;
@@ -33,7 +34,7 @@ export class MainWebsocketHub {
         logger: console,
         accessTokenFactory: () => accessToken
       })
-      .withAutomaticReconnect(new RetryPolicy(this.retry))
+      // .withAutomaticReconnect(new RetryPolicy(this.retry))
       .configureLogging(LogLevel.Trace)
       .build();
 
@@ -57,15 +58,33 @@ export class MainWebsocketHub {
     );
 
     this.connection.start().catch((err: any) => {
+      debugger;
       return console.error(err.toString());
     });
 
-    this.connection.onreconnecting(() => {
-      _callbackOptions.context.dispatch(Reconnecting);
-    });
+    // this.connection.onreconnecting(() => {
+    //   console.log("Fooooo");
+    //   // this.retry();
+    // });
 
-    this.connection.onreconnected(() => {
-      _callbackOptions.context.dispatch(ForceRefreshToken);
+    // this.connection.onreconnected(() => {
+    //   _callbackOptions.context.dispatch(ForceRefreshToken);
+    // });
+
+    this.connection.onclose(() => {
+      this.startRetry();      
+    });
+  }
+
+  startRetry() {
+    this.retry().then(() => {
+      setTimeout(() => this.connection.start().catch((err: any) => {
+        debugger;
+        return console.error(err.toString());
+      }), 10000);
+      
+    }).catch(()=> {
+      setTimeout(() => this.startRetry(), 5000);
     });
   }
 
@@ -74,7 +93,15 @@ export class MainWebsocketHub {
   }
 
   public retry() {
-    _callbackOptions.context.dispatch(ForceRefreshToken);
+    return new Promise((resolve, reject) => {      
+      _callbackOptions.context.dispatch(ForceRefreshToken).then(()=> {
+        _callbackOptions.context.dispatch(Reconnecting).then(()=>{
+          resolve();
+        });        
+      }).catch((error: any)=> {
+        reject(error);
+      });
+    });
   }
 
   public sendMessage(user: string, message: string) {
