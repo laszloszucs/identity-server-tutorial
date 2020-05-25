@@ -123,6 +123,9 @@ const actions = {
             context.commit(ServerOffline);
           } else {
             if (error.response.status === 400) {
+              if(hub) {
+                hub.stopConnection();
+              }
               context.commit(TokenError);
               context.dispatch(Logout);
               reject(error);
@@ -259,6 +262,7 @@ const mutations = {
   [LoginWithPassword]: (state: any, rememberMe: boolean) => {
     state.loginStatus = LoginStatus.Loading;
     state.rememberMe = rememberMe;
+    state.errorMessage = null;
   },
   [LoginWithRefreshToken]: (state: any) => {
     state.loginStatus = LoginStatus.Loading;
@@ -303,6 +307,7 @@ const mutations = {
   },
   [RefreshLoginSuccess]: (state: any) => {
     state.loginStatus = LoginStatus.Success;
+    state.errorMessage = null;
   },
   [LoginError]: (state: any) => {
     state.loginStatus = LoginStatus.Error;
