@@ -1,5 +1,4 @@
 import axios from "axios";
-// import { LoginResponse } from "@/models/login-response.model";
 
 const baseUrl = "https://localhost:44300";
 let openIdConfig: any = null;
@@ -52,8 +51,4 @@ async function refreshLogin(refreshToken: string) {
   return (await getTokenByRefreshToken(refreshToken)).data;
 }
 
-async function identity() {
-  return axios.get("https://localhost:44300/api/identity");
-}
-
-export default { loginWithPassword, refreshLogin, identity };
+export default { loginWithPassword, refreshLogin };

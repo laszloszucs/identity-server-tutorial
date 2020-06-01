@@ -40,14 +40,10 @@ import DxButton from "devextreme-vue/button";
 })
 export default class Home extends Vue {
   values: string[] = [];
-  hub: any;
-  user: string = null;
-  typedMessage: string = null;
-  messages: string[] = [];
 
   async callApi() {
     try {
-      const response = await axios.get("https://localhost:44300/api/identity");
+      const response = await axios.get("https://localhost:44300/api/test");
       this.values = response.data;
     } catch (err) {
       this.values = [err];

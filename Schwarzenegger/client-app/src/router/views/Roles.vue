@@ -294,10 +294,6 @@ export default class Roles extends Vue {
   background-color: rgba(191, 191, 191, 0.2);
 }
 
-// .dx-scrollbar-vertical.dx-scrollbar-hoverable .dx-scrollable-scroll.dx-state-invisible {
-//     background-color: yellow;
-// }
-
 .dx-scrollable-scroll-content {
   background-color: rgba(191, 191, 191, 0.7) !important;
 }

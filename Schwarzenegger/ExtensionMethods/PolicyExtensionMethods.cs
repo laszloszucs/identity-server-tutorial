@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Schwarzenegger.Core.Authorization;
+using Schwarzenegger.Helpers;
 
-namespace Schwarzenegger.Core.ExtensionMethods
+namespace Schwarzenegger.ExtensionMethods
 {
     public static class PolicyExtensionMethods
     {

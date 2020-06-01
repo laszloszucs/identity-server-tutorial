@@ -44,7 +44,7 @@ namespace Schwarzenegger.Core.DAL
             await SeedAsync();
         }
 
-        public async Task SeedAsync()
+        private async Task SeedAsync()
         {
             //await _context.Database.MigrateAsync().ConfigureAwait(false); // TODO Megvizsgálni, hogy fel lehet-e okosan használni
 

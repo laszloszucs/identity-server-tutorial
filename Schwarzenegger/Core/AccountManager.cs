@@ -10,6 +10,7 @@ using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
+using Schwarzenegger.Helpers;
 
 namespace Schwarzenegger.Core
 {

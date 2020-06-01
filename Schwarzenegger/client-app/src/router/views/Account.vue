@@ -1,7 +1,6 @@
 <template>
   <div>
     <div v-if="user">
-      <!-- <img src="./src/assets/logo.png" /> -->
       <h1>Username: {{ user.userName }}</h1>
     </div>
     <p><strong>Full Name:</strong> {{ user.fullName }}</p>
@@ -13,19 +12,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { mapState } from "vuex";
+import { Vue } from "vue-property-decorator";
 
-@Component({
-  computed: mapState({
-    // user: (state: any) => () => {
-    //   return state.auth.user;
-    // },
-    // permissions: (state: any) => () => {
-    //   return state.auth.permissions;
-    // }
-  })
-})
 export default class Account extends Vue {
   get user() {
     return this.$store.state.auth.user;
@@ -36,4 +24,6 @@ export default class Account extends Vue {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+
+</style>

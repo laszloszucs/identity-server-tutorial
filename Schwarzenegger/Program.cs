@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Schwarzenegger.Core.DAL.Interfaces;
-using Schwarzenegger.Core.Helpers;
+using Schwarzenegger.Helpers;
 
 namespace Schwarzenegger
 {

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Schwarzenegger.Controllers
@@ -7,7 +6,7 @@ namespace Schwarzenegger.Controllers
     [ApiController]
     [Route("api/[controller]")]
     //[Authorize]
-    public class IdentityController : ControllerBase
+    public class TestController : ControllerBase
     {
         [HttpGet]
         public IActionResult Get()

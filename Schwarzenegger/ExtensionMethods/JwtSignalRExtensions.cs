@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 
-namespace Schwarzenegger.Core.Helpers
+namespace Schwarzenegger.ExtensionMethods
 {
     /// <summary>
     /// Middleware to intercept a query string bearer token value (since SignalR isn't

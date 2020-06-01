@@ -19,10 +19,9 @@ using Schwarzenegger.Core;
 using Schwarzenegger.Core.Authorization;
 using Schwarzenegger.Core.DAL;
 using Schwarzenegger.Core.DAL.Interfaces;
-using Schwarzenegger.Core.ExtensionMethods;
-using Schwarzenegger.Core.Helpers;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
+using Schwarzenegger.ExtensionMethods;
 using Schwarzenegger.Helpers;
 using Schwarzenegger.Hubs;
 

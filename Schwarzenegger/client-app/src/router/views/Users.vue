@@ -361,11 +361,6 @@ export default class Users extends Vue {
     }
   }
 
-  onInitializedTagBox() {
-    // logger.log(e, "blue");
-    // console.log(e);
-  }
-
   onInitNewRow() {
     this.isNewRow = true;
   }

@@ -1,4 +1,4 @@
-﻿namespace Schwarzenegger.Core
+﻿namespace Schwarzenegger.Helpers
 {
     public static class IdentityConfigConstants
     {

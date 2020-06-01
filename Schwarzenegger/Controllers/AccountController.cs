@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Schwarzenegger.Core.Authorization;
-using Schwarzenegger.Core.Helpers;
 using Schwarzenegger.Core.Interfaces;
 using Schwarzenegger.Core.Models;
 using Schwarzenegger.Enums;
+using Schwarzenegger.Helpers;
 using Schwarzenegger.Hubs;
 using Schwarzenegger.ViewModels;
 

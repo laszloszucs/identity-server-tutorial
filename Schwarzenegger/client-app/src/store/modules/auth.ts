@@ -246,7 +246,7 @@ const actions = {
   [CheckOfflinePing]: (context: any) => {
     return new Promise(resolve => {
       axios
-        .get("https://localhost:44300/api/identity")
+        .get("https://localhost:44300/api/test")
         .then(() => {
           clearInterval(offlineCheckerId);
           context.commit(ServerOnline);

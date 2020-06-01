@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Schwarzenegger.Core.Helpers
+namespace Schwarzenegger.Helpers
 {
     public static class LoggingEvents
     {
