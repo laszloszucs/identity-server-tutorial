@@ -22,7 +22,18 @@
 - Testek írása
 - Disconnect jelző
 
+# Követelmények
+
+- Node.js
+- PostgreSQL
+ - ef_demo Password01
+
 # Első indítás
+
+client-app mappán (npm i) parancs
+
+tanúsítványokat rendberakni: http://www.codepro.co.nz/blog/2019/10/setup-vue-js-with-https-certificate/
+
 Package Manager Consol-ba:
 - Add-Migration InitialPersistedGrantDbContext -Context PersistedGrantDbContext -Output Migrations
 - Add-Migration InitialConfigurationDbContext -Context ConfigurationDbContext -Output Migrations
