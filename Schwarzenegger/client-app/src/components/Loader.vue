@@ -1,6 +1,6 @@
 <template>
   <div class="vld-parent">
-    <loading :active="isLoading || load" :opacity="load ? 1 : 0.5"></loading>
+    <loading :active="isLoading || load" :opacity="isFull ? 1 : 0.5" background-color="linear-gradient(17deg, rgba(0,0,0,1) 0%, rgba(1,29,44,1) 44%, rgba(3,117,175,1) 100%)" color="#55a3e1"></loading>
   </div>
 </template>
 
@@ -27,7 +27,7 @@ export default class Loader extends Vue {
   load: boolean;
 
   @Prop({ default: false })
-  isWhite: boolean;
+  isFull: boolean;
 
   get isLoading() {
     return this.loaders > 0;

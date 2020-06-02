@@ -42,7 +42,7 @@ let hub = null;
 let offlineCheckerId = null;
 
 const state: any = {
-  loginStatus: LoginStatus.Logout,
+  loginStatus: LoginStatus.InitLoading,
   loginUrl: "/login", // TODO config
   homeUrl: "/", // TODO config
   user: null,
@@ -142,7 +142,7 @@ const actions = {
   },
   [CreateWebSocket]: (context: any) => {
     hub = new MainWebsocketHub(
-      "https://localhost:44300/mainHub",
+      `https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/mainHub`,
       new MainWebsocketCallbackOptions(context)
     );
 
@@ -233,7 +233,7 @@ const actions = {
   },
   [CheckingOffline]: (context: any) => {
     return new Promise(resolve => {
-      context.commit(Loading);
+      // context.commit(Loading);
       offlineCheckerId = setInterval(
         () =>
           context.dispatch(CheckOfflinePing).then(() => {
@@ -246,7 +246,7 @@ const actions = {
   [CheckOfflinePing]: (context: any) => {
     return new Promise(resolve => {
       axios
-        .get("https://localhost:44300/api/test")
+        .get(`https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/api/test`)
         .then(() => {
           clearInterval(offlineCheckerId);
           context.commit(ServerOnline);
@@ -273,12 +273,12 @@ const mutations = {
     state.rememberMe = null;
   },
   [LoginWithPassword]: (state: any, rememberMe: boolean) => {
-    state.loginStatus = LoginStatus.Loading;
+    state.loginStatus = LoginStatus.LoginLoading;
     state.rememberMe = rememberMe;
     state.errorMessage = null;
   },
   [LoginWithRefreshToken]: (state: any) => {
-    state.loginStatus = LoginStatus.Loading;
+    state.loginStatus = LoginStatus.LoginLoading;
   },
   [SetStoreDatas]: (state: any, response: any) => {
     const jwtHelper = new JwtHelper();
@@ -349,10 +349,10 @@ const mutations = {
     state.serverOffline = true;
     state.errorMessage = "A szerver nem érhető el.";
   },
-  [Loading]: (state: any) => {
-    state.errorMessage = null;
-    state.loginStatus = LoginStatus.Loading;
-  },
+  // [Loading]: (state: any) => {
+  //   state.errorMessage = null;
+  //   state.loginStatus = LoginStatus.Loading;
+  // },
   [ErrorMessage]: (state: any, errorMessage: string) => {
     state.errorMessage = errorMessage; // TODO lehet, hogy már nincs rá szükség?
   },

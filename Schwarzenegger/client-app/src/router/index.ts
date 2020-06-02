@@ -12,7 +12,7 @@ Vue.use(Router);
 
 const router = new Router({
   mode: "history",
-  base: process.env.BASE_URL,
+  base: `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}`,
   routes: [
     {
       path: "/",

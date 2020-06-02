@@ -3,7 +3,7 @@
 import { register } from "register-service-worker";
 
 if (process.env.NODE_ENV === "production") {
-  register(`${process.env.BASE_URL}service-worker.js`, {
+  register(`https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}service-worker.js`, { // TODO biztos jó ez az link?
     ready() {
       console.log(
         "App is being served from cache by a service worker.\n" +

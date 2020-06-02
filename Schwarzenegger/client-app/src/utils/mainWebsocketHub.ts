@@ -74,7 +74,7 @@ export class MainWebsocketHub {
       _callbackOptions.context.dispatch(StartRefreshTokenTimer);
     });
   }
-  
+
   public retry() {
     _callbackOptions.context.dispatch(ForceRefreshToken);
   }

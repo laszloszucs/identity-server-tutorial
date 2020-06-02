@@ -40,7 +40,7 @@
         id="adminButton"
         class="admin-button"
         @click="navigate('/account')"
-        :text="isSmall(profile().userName)"
+        :text="isSmall(user.userName)"
         icon="user"
         stylingMode="outlined"
         :disabled="$route.matched.some(({ name }) => name === 'Account')"
@@ -65,8 +65,6 @@ import { Logout } from "../../src/store/actions/auth-actions";
 import accountService from ".././services/account.service";
 import { DxTabs, DxItem } from "devextreme-vue/tabs";
 import { DxButton } from "devextreme-vue/button";
-import { mapState } from "vuex";
-import { LoginStatus } from "@/enums/login-status.enum";
 
 @Component({
   components: {
@@ -78,21 +76,14 @@ import { LoginStatus } from "@/enums/login-status.enum";
   props: {
     logoutText: null
   },
-  computed: mapState({
-    profile: (state: any) => () => {
-      return state.auth.user;
-    },
-    hasLoadedOnce: (state: any) => {
-      return state.auth.hasLoadedOnce;
-    },
-    isLoading: (state: any) => {
-      return state.auth.loginStatus === LoginStatus.Loading;
-    }
-  })
 })
 export default class Navbar extends Vue {
   private breakPoint = 768;
   private isBig = window.innerWidth >= this.breakPoint;
+
+  get user() {
+    return this.$store.state.auth.user;
+  }
 
   isNotSmall(text) {
     return this.isBig ? null : text;

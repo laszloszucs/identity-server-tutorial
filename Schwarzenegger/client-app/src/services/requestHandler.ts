@@ -5,7 +5,7 @@ import qs from "qs";
 
 class RequestHandler {
   private static instance: RequestHandler;
-  private apiUrl = "https://localhost:44300/api/";
+  private apiUrl = `https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/api/`;
 
   constructor() {
     if (RequestHandler.instance) {

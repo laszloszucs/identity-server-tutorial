@@ -1,11 +1,10 @@
 import axios from "axios";
 
-const baseUrl = "https://localhost:44300";
-let openIdConfig: any = null;
+let openIdConfig: any;
 
 async function getOpenIdConfiguration() {
   return await axios({
-    url: baseUrl + "/.well-known/openid-configuration",
+    url: `https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/.well-known/openid-configuration`,
     data: null,
     method: "GET"
   });

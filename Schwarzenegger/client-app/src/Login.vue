@@ -82,26 +82,26 @@ export default class Login extends Vue {
           EventBus.$emit("LOGIN");
         });
       })
-      .catch(error => {
-        let errorMessage = null;
-        if (error.isAxiosError) {
-          errorMessage = error.message;
-        } else {
-          errorMessage = error.response.data.error_description;
-        }
-        notify(
-          {
-            message: errorMessage,
-            // message: this.$t("error." + errorMessage),
-            position: {
-              at: "top",
-              offset: "0 40"
-            }
-          },
-          "error",
-          3000
-        );
-      })
+      // .catch(error => {
+      //   let errorMessage = null;
+      //   if (error.isAxiosError) {
+      //     errorMessage = error.message;
+      //   } else {
+      //     errorMessage = error.response.data.error_description;
+      //   }
+      //   notify(
+      //     {
+      //       message: errorMessage,
+      //       // message: this.$t("error." + errorMessage),
+      //       position: {
+      //         at: "top",
+      //         offset: "0 40"
+      //       }
+      //     },
+      //     "error",
+      //     3000
+      //   );
+      // })
       .finally(() => EventBus.$emit("DONE-LOADING"));
   }
 }

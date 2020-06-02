@@ -43,7 +43,9 @@ export default class Home extends Vue {
 
   async callApi() {
     try {
-      const response = await axios.get("https://localhost:44300/api/test");
+      const response = await axios.get(
+        `https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/api/test`
+      );
       this.values = response.data;
     } catch (err) {
       this.values = [err];

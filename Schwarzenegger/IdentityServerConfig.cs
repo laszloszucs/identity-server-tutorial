@@ -50,7 +50,7 @@ namespace Schwarzenegger
         ///     Ez mondja meg milyen alkalmazások csatlakozhatnak és azok melyik API-kat érhetik el
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<Client> GetClients(string[] allowedCorsOrigins)
+        public static IEnumerable<Client> GetClients(int accessTokenLifetime, string[] allowedCorsOrigins)
         {
             return new[]
             {
@@ -75,7 +75,7 @@ namespace Schwarzenegger
                     
                     RefreshTokenExpiration = TokenExpiration.Sliding,
                     RefreshTokenUsage = TokenUsage.ReUse,
-                    AccessTokenLifetime = 40, // Lifetime of access token in seconds.
+                    AccessTokenLifetime = accessTokenLifetime, // Lifetime of access token in seconds.
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AlwaysSendClientClaims = true, // TODO Check
                     AlwaysIncludeUserClaimsInIdToken = true, // TODO Check

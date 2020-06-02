@@ -6,9 +6,9 @@ module.exports = {
       key: fs.readFileSync("./certs/localhost-key.pem"),
       cert: fs.readFileSync("./certs/localhost.pem")
     },
-    host: "localhost",
-    port: 44301,
-    public: "https://localhost:44301"
+    host: process.env.VUE_APP_HOST,
+    port: process.env.VUE_APP_PORT,
+    public: `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}`
   },
   outputDir: "../wwwroot/", // /client-app/", // ASP.NET Core public folder
   filenameHashing: false // , // I'll let ASP.NET Core handle cache breaking

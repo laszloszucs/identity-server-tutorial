@@ -1,7 +1,8 @@
 export enum LoginStatus {
+  InitLoading,
   CheckingOffline,
   Logout,
-  Loading,
+  LoginLoading,
   Success,
   Error,
   Reconnecting

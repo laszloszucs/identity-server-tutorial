@@ -1,9 +1,9 @@
 <template>
-  <div :class="{ 'error': errorMessage }" class="main">
+  <div :class="{ error: errorMessage }" class="main">
     <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
     <Login v-if="showLoginScreen" />
-    <loader :load="loadingStatus" :isWhite="true"></loader>
+    <loader :load="loadingStatus" :isFull="isFirst"></loader>
   </div>
 </template>
 
@@ -32,11 +32,16 @@ export default class Main extends Vue {
   mainWebsocketHubStarted = false;
 
   get loadingStatus() {
-    return this.$store.state.auth.loginStatus === LoginStatus.Loading;
+    return this.$store.state.auth.loginStatus === LoginStatus.InitLoading;
+  }
+
+  get isFirst() {
+    return false;
   }
 
   get showLoginScreen() {
     return (
+      this.$store.state.auth.loginStatus === LoginStatus.LoginLoading ||
       this.$store.state.auth.loginStatus === LoginStatus.Logout ||
       this.$store.state.auth.loginStatus === LoginStatus.Error
     );

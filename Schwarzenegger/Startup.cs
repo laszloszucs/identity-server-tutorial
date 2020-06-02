@@ -79,8 +79,6 @@ namespace Schwarzenegger
                 //    //options.Lockout.MaxFailedAccessAttempts = 10;
             });
 
-            var allowedCorsOrigins = Configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
-
             var builder = services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
                  //.AddPersistedGrantStore<PersistedGrantStore>()
@@ -91,7 +89,10 @@ namespace Schwarzenegger
                     .GetIdentityResources()) // TODO https://localhost:44300/.well-known/openid-configuration
                 .AddInMemoryApiResources(IdentityServerConfig
                     .GetApis()) // Itt töltődnek be az Resource-ok (API-k, amiket védeni kell)
-                .AddInMemoryClients(IdentityServerConfig.GetClients(allowedCorsOrigins)) // és a Client-ek, melyek a megbízható alkalmazások
+                .AddInMemoryClients(IdentityServerConfig.GetClients(
+                    Configuration.GetSection("AccessTokenLifetimeSeconds").Get<int>(),
+                    Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
+                    )) // és a Client-ek, melyek a megbízható alkalmazások
                 .AddOperationalStore(option =>
                     option.ConfigureDbContext = builder => builder.UseNpgsql(Configuration.GetConnectionString("SchwarzeneggerConnection"), options =>
                         options.MigrationsAssembly("Schwarzenegger")))
@@ -158,7 +159,7 @@ namespace Schwarzenegger
                 // this defines a CORS policy called "default"
                 options.AddPolicy("default", policy =>
                 {
-                    policy.WithOrigins("https://localhost:44301")
+                    policy.WithOrigins(Configuration.GetSection("AllowedCorsOrigins").Get<string[]>())
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
