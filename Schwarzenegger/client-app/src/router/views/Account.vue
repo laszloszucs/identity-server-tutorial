@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div v-if="user">
+  <div v-if="user">
+    <div>
       <h1>Username: {{ user.userName }}</h1>
     </div>
     <p><strong>Full Name:</strong> {{ user.fullName }}</p>

@@ -23,8 +23,8 @@ import {
   ErrorMessage,
   CheckOfflinePing,
   ServerOnline,
-  CheckingOffline,
-  Loading
+  CheckingOffline
+  // Loading
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
 import { User } from "@/models/user.model";
@@ -246,7 +246,9 @@ const actions = {
   [CheckOfflinePing]: (context: any) => {
     return new Promise(resolve => {
       axios
-        .get(`https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/api/test`)
+        .get(
+          `https://${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}/api/test`
+        )
         .then(() => {
           clearInterval(offlineCheckerId);
           context.commit(ServerOnline);

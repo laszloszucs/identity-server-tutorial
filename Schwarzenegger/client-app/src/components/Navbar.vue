@@ -75,7 +75,7 @@ import { DxButton } from "devextreme-vue/button";
   },
   props: {
     logoutText: null
-  },
+  }
 })
 export default class Navbar extends Vue {
   private breakPoint = 768;
@@ -113,10 +113,10 @@ export default class Navbar extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "public/variables";
 .navbar {
-  // background: rgb(0,0,0);
-  // background: linear-gradient(5deg, rgba(0,0,0,1) 0%, rgba(1,29,44,1) 44%, rgba(3,117,175,1) 100%);
-  padding: 10px 45px 10px 45px;
+  background: $dark-color;
+  padding: 5px 45px 5px 45px;
   display: grid;
   grid-template-columns: 8fr 1fr 2fr;
   .dx-widget {
@@ -134,12 +134,6 @@ export default class Navbar extends Vue {
 .other-buttons {
   display: grid;
   grid-template-areas: "admin-button logout-button";
-  // @media (max-width: 767px) {
-  //   grid-template-columns: 70px 120px; // repeat(2, 100px);
-  // }
-  // @media (min-width: 768px) {
-  //   grid-template-columns: 105px 130px; // repeat(2, 150px);
-  // }
 }
 
 .admin-button {
@@ -159,7 +153,8 @@ export default class Navbar extends Vue {
     color: white;
   }
   border: none !important;
-  // background: none;
+  border-top: 5px solid transparent !important;
+  border-bottom: 5px solid transparent !important;
   .dx-icon {
     opacity: 1 !important;
   }
@@ -169,48 +164,26 @@ export default class Navbar extends Vue {
 }
 
 ::v-deep .dx-button-danger .dx-button-text {
-  color: #ff6d6a;
+  color: $attention-color;
   font-size: 18px;
   &.dx-icon {
-    color: #ff6d6a !important;
+    color: $attention-color !important;
   }
 }
 
 .navbar .navs .dx-button {
-  // border-bottom: 1px solid grey !important;
-  // border-right: 1px solid #2c3e50 !important;
-  // &:first-child {
-  //   border-left: 1px solid #2c3e50 !important;
-  // }
-  // &:last-child {
-  //   border-right: none !important;
-  // }
   &.dx-state-disabled {
     border-radius: 0;
-    border-bottom: 5px solid #55a3e1 !important;
+    border-bottom: 5px solid $light-color !important;
   }
 }
 
 #adminButton {
-  // border: none !important;
-  // border-left: 1px solid grey !important;
-  // border-bottom: 1px solid grey !important;
   &.dx-state-disabled {
     border-radius: 0;
-    border-bottom: 5px solid #55a3e1 !important;
+    border-bottom: 5px solid $light-color !important;
   }
 }
-
-// .dx-button.dx-button-danger {
-//   background-color: #fff !important;
-//   color: #d9534f !important;
-//   // border: 1px solid #d9534f !important;
-//   &:hover {
-//     background-color: #d9534f !important;
-//     color: #fff !important;
-//     // border: 1px solid #d9534f !important;
-//   }
-// }
 
 ::v-deep .dx-icon {
   color: white !important;
@@ -222,30 +195,20 @@ export default class Navbar extends Vue {
 }
 
 .dx-state-active {
+  background: none;
   border-radius: 0;
-  border-bottom: 5px solid #55a3e1 !important;
+  border-bottom: 5px solid $light-color !important;
 }
 
 .dx-button.dx-state-hover {
-  // background-color: rgb(0, 165, 187) !important;
-  // -webkit-box-shadow: 0px 0px 40px 5px rgba(0, 165, 187, 0.75);
-  // -moz-box-shadow: 0px 0px 40px 5px rgba(0, 87, 187, 0.75);
-  // box-shadow: 0px 0px 40px 5px rgba(0, 165, 187, 0.75);
-  // color: red;
-  background: #55a3e1 !important;
+  background: none;
+  border-radius: 0;
+  border-bottom: 5px solid $light-color !important;
   &.dx-button-danger {
-    background: rgba(255, 0, 0, 0.45) !important;
+    background: none;
+    border-radius: 0;
+    border-bottom: 5px solid $attention-color !important;
   }
 }
 
-// .dx-button.dx-button-danger {
-//   ::v-deep .dx-icon-runner {
-//     color: red !important;
-//   }
-//   &.dx-state-hover {
-//     ::v-deep .dx-icon.dx-icon-runner {
-//       color: #fff !important;
-//     }
-//   }
-// }
 </style>

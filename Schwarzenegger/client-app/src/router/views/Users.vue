@@ -191,8 +191,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import accountService from "../../services/account.service";
 import roleService from "../../services/role.service";
-import {
-  DxDataGrid,
+import DxDataGrid, {
   DxGrouping,
   DxGroupPanel,
   DxSearchPanel,
@@ -224,7 +223,6 @@ import { PermissionValues } from "@/models/permission.model";
 
 @Component({
   components: {
-    DxDataGrid,
     DxGrouping,
     DxGroupPanel,
     DxSearchPanel,
@@ -246,7 +244,8 @@ import { PermissionValues } from "@/models/permission.model";
     DxDataGridEditPopup,
     DxForm,
     DxPopupToolbarItem,
-    DxColumnFixing
+    DxColumnFixing,
+    DxDataGrid
   }
 })
 export default class Users extends Vue {

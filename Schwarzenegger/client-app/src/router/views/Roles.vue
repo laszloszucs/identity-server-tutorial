@@ -107,8 +107,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import accountService from "../../services/account.service";
 import roleService from "../../services/role.service";
-import {
-  DxDataGrid,
+import DxDataGrid, {
   DxGrouping,
   DxGroupPanel,
   DxSearchPanel,
@@ -142,7 +141,6 @@ import { PermissionValues } from "@/models/permission.model";
 
 @Component({
   components: {
-    DxDataGrid,
     DxGrouping,
     DxGroupPanel,
     DxSearchPanel,
@@ -166,7 +164,8 @@ import { PermissionValues } from "@/models/permission.model";
     DxPopupToolbarItem,
     DxColumnFixing,
     DxSelectBox,
-    DxList
+    DxList,
+    DxDataGrid
   }
 })
 export default class Roles extends Vue {
@@ -261,7 +260,8 @@ export default class Roles extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
 .about {
   text-align: center;
 }

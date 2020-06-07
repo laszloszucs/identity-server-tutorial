@@ -40,7 +40,7 @@ import DxForm, {
   DxLabel
 } from "devextreme-vue/form";
 import { LoginUser } from "@/models/login-user.model";
-import notify from "devextreme/ui/notify";
+// import notify from "devextreme/ui/notify";
 import EventBus from "./helpers/event-bus";
 
 @Component({
@@ -108,6 +108,7 @@ export default class Login extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "public/variables";
 .login-container {
   padding: 40px 5% 5% 5%;
   width: 90%;
@@ -122,7 +123,7 @@ export default class Login extends Vue {
   -webkit-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
   box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
-  background: white;
+  background: $contrast-color;
 }
 
 .image-container {
@@ -141,6 +142,6 @@ export default class Login extends Vue {
 }
 
 ::v-deep .dx-button.dx-button-default {
-  background-color: #0375af;
+  background-color: $primary-color;
 }
 </style>

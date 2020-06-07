@@ -12,7 +12,7 @@ Vue.use(Router);
 
 const router = new Router({
   mode: "history",
-  base: `https://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}`,
+  base: process.env.BASE_URL,
   routes: [
     {
       path: "/",
@@ -48,6 +48,8 @@ const router = new Router({
       path: "/roles",
       name: "Roles",
       component: Roles,
+      // component: () =>
+      //   import(/* webpackChunkName: "roles" */ "./views/Roles.vue"),
       meta: {
         permissions: ["roles.view"]
       }

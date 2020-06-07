@@ -1,6 +1,11 @@
 <template>
   <div class="home">
-    <DxButton @click="callApi" type="success" height="35" width="95"
+    <DxButton
+      class="button"
+      @click="callApi"
+      type="success"
+      height="35"
+      width="95"
       >Call API</DxButton
     >
     <DxDataGrid
@@ -53,3 +58,9 @@ export default class Home extends Vue {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.button {
+  margin-bottom: 15px;
+}
+</style>

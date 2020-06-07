@@ -3,7 +3,7 @@
     <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
     <Login v-if="showLoginScreen" />
-    <loader :load="loadingStatus" :isFull="isFirst"></loader>
+    <loader :load="errorMessage || loadingStatus" :isFull="isFirst"></loader>
   </div>
 </template>
 
@@ -78,7 +78,9 @@ export default class Main extends Vue {
   }
 }
 .errorMessage {
-  background-color: #ff7958;
+  @import "public/variables";
+  z-index: 10000;
+  background-color: $attention-color;
   color: black;
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;

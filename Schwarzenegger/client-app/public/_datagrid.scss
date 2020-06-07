@@ -1,0 +1,57 @@
+.dx-datagrid {
+    color: white !important;
+    background-color: unset !important;
+    
+    .dx-group-panel-message {
+        color: white !important;
+    }
+
+    .dx-row {
+        color: white !important;
+        background-color: $primary-color !important;
+        &.dx-header-row {
+            background-color: $dark-color !important;
+        }
+    }
+
+    .dx-row-alt > td {
+        background-color: rgba($color: white, $alpha: 0.1) !important;
+    }
+    .dx-toolbar {
+        background-color: unset !important;
+    }
+    .dx-tagbox {
+        background: unset !important;
+        cursor: default !important;
+        &.dx-state-hover {
+            border-color: #ddd !important;
+        }
+        .dx-tag-content {
+            cursor: default !important;
+
+        }
+    }
+    .dx-link {
+        color: white !important;
+    }
+    .dx-col-fixed {
+        background-color: #011d2c !important;
+    }
+    .dx-group-row {
+        background-color: unset !important;
+    }
+    .dx-group-row {
+        color: white !important;
+    }
+    .dx-group-panel-item {
+        color: white !important;
+    }
+}
+
+.dx-datagrid-drag-header {
+    background-color: $dark-color !important;
+}
+
+.dx-datagrid-drag-action {
+    background-color: $dark-color !important;
+}

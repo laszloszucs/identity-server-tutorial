@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
+  <div class="app">
     <navbar :logoutText="logoutText"></navbar>
-    <main class="logged-in">
+    <main>
       <router-view />
     </main>
   </div>
@@ -139,7 +139,7 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss" scoped>
-#app {
+.app {
   height: 100%;
   font-family: "Roboto", sans-serif !important;
   -webkit-font-smoothing: antialiased;
@@ -147,20 +147,20 @@ export default class App extends Vue {
   color: #2c3e50;
   display: grid;
   grid-template-rows: auto 1fr max-content;
+  column-gap: 10px;
+  row-gap: 15px;
 }
 
 main {
   overflow: auto;
-  background-color: white;
   margin-left: 2%;
   margin-right: 2%;
   margin-bottom: 5%;
-  &.logged-in {
-    border-radius: 0.3rem;
-    padding: 30px;
-    -webkit-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
-    -moz-box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
-    box-shadow: 10px 10px 44px -12px rgba(0, 0, 0, 0.75);
-  }
 }
+// main {
+//   background-color: white;
+//   margin-left: 2%;
+//   margin-right: 2%;
+//   margin-bottom: 5%;
+// }
 </style>
