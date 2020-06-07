@@ -2,8 +2,8 @@
   <div :class="{ error: errorMessage }" class="main">
     <div v-if="errorMessage" class="errorMessage">{{ errorMessage }}</div>
     <App v-if="isLoginSuccess" />
-    <Login v-if="showLoginScreen" />
-    <loader :load="errorMessage || loadingStatus" :isFull="isFirst"></loader>
+    <Login v-else />
+    <loader :load="isLoading" :isFull="isFullLoad"></loader>
   </div>
 </template>
 
@@ -16,7 +16,7 @@ import {
 import { Component, Vue } from "vue-property-decorator";
 import App from "./App.vue";
 import Login from "./Login.vue";
-import { LoginStatus } from "./enums/login-status.enum";
+import { AppStatus } from "./enums/app-status.enum";
 import Loader from "./components/Loader.vue";
 
 @Component({
@@ -31,24 +31,25 @@ export default class Main extends Vue {
   hub = null;
   mainWebsocketHubStarted = false;
 
-  get loadingStatus() {
-    return this.$store.state.auth.loginStatus === LoginStatus.InitLoading;
-  }
-
-  get isFirst() {
-    return false;
-  }
-
-  get showLoginScreen() {
+  get isLoading() {
     return (
-      this.$store.state.auth.loginStatus === LoginStatus.LoginLoading ||
-      this.$store.state.auth.loginStatus === LoginStatus.Logout ||
-      this.$store.state.auth.loginStatus === LoginStatus.Error
+      this.$store.state.auth.appStatus === AppStatus.Logging ||
+      this.$store.state.auth.appStatus === AppStatus.Init ||
+      this.$store.state.auth.appStatus === AppStatus.AutoLogging ||
+      this.$store.state.auth.appStatus === AppStatus.AutoReLogging
+    );
+  }
+
+  get isFullLoad() {
+    return (
+      this.$store.state.auth.appStatus === AppStatus.Init ||
+      this.$store.state.auth.appStatus === AppStatus.AutoLogging ||
+      this.$store.state.auth.appStatus === AppStatus.AutoReLogging
     );
   }
 
   get isLoginSuccess() {
-    return this.$store.state.auth.loginStatus === LoginStatus.Success;
+    return this.$store.state.auth.appStatus === AppStatus.Success;
   }
 
   get errorMessage() {
@@ -56,14 +57,13 @@ export default class Main extends Vue {
   }
 
   created() {
-    // this.$store.dispatch(ErrorMessage, null);
-    this.$store.dispatch(CheckingOffline).then(() => {
-      if (this.$store.state.auth.rememberMe) {
+    if (this.$store.state.auth.rememberMe) {
+      this.$store.dispatch(CheckingOffline).then(() => {
         this.$store.dispatch(LoginWithRefreshToken);
-      } else {
-        this.$store.dispatch(RedirectForLogin);
-      }
-    });
+      });
+    } else {
+      this.$store.dispatch(RedirectForLogin);
+    }
   }
 }
 </script>

@@ -33,3 +33,5 @@ export const CheckingOffline = "CheckServerOffline";
 export const CheckOfflinePing = "CheckOfflinePing";
 export const ServerOnline = "ServerOnline";
 export const Loading = "Loading";
+
+export const SetInitLoadingState = "SetInitLoadingState";

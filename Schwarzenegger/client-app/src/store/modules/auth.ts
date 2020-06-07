@@ -23,7 +23,8 @@ import {
   ErrorMessage,
   CheckOfflinePing,
   ServerOnline,
-  CheckingOffline
+  CheckingOffline,
+  SetInitLoadingState
   // Loading
 } from "../actions/auth-actions";
 import OAuthService from "../../utils/oauth-service";
@@ -31,7 +32,7 @@ import { User } from "@/models/user.model";
 import { LoginResponse, AccessToken } from "@/models/login-response.model";
 import { PermissionValues } from "@/models/permission.model";
 import JwtHelper from "@/helpers/jwt-helper";
-import { LoginStatus } from "@/enums/login-status.enum";
+import { AppStatus } from "@/enums/app-status.enum";
 import {
   MainWebsocketHub,
   MainWebsocketCallbackOptions
@@ -42,7 +43,7 @@ let hub = null;
 let offlineCheckerId = null;
 
 const state: any = {
-  loginStatus: LoginStatus.InitLoading,
+  appStatus: AppStatus.Init,
   loginUrl: "/login", // TODO config
   homeUrl: "/", // TODO config
   user: null,
@@ -83,8 +84,6 @@ const actions = {
         .then((response: LoginResponse) => {
           context.commit(SetStoreDatas, response);
           context.dispatch(CreateWebSocket);
-          context.dispatch(StartRefreshTokenTimer);
-
           if (!context.state.rememberMe) {
             context.dispatch(StartTimeoutTimer);
           }
@@ -111,10 +110,7 @@ const actions = {
       OAuthService.refreshLogin(context.state.refreshToken)
         .then((response: LoginResponse) => {
           context.commit(SetStoreDatas, response);
-
           context.dispatch(CreateWebSocket);
-          context.dispatch(StartRefreshTokenTimer);
-
           context.commit(RefreshLoginSuccess);
           resolve();
         })
@@ -210,10 +206,7 @@ const actions = {
     context.commit(RefreshTokenTimer, refreshTokenTimerId);
   },
   [Renewer]: (context: any) => {
-    if (
-      context.state.loginStatus === LoginStatus.Success ||
-      context.state.loginStatus !== LoginStatus.Reconnecting
-    ) {
+    if (context.state.appStatus === AppStatus.Success) {
       context.dispatch(RenewAccessTokenWithRefreshToken).then(() => {
         context.dispatch(StartRefreshTokenTimer);
       });
@@ -263,7 +256,7 @@ const actions = {
 
 const mutations = {
   [StoreToDefault]: (state: any) => {
-    state.loginStatus = LoginStatus.Logout;
+    state.appStatus = AppStatus.Logout;
     state.hasLoadedOnce = false; // TODO Ezt még át kell nézni
     state.loginUrl = "/login"; // TODO config
     state.homeUrl = "/"; // TODO config
@@ -275,12 +268,12 @@ const mutations = {
     state.rememberMe = null;
   },
   [LoginWithPassword]: (state: any, rememberMe: boolean) => {
-    state.loginStatus = LoginStatus.LoginLoading;
+    state.appStatus = AppStatus.Logging;
     state.rememberMe = rememberMe;
     state.errorMessage = null;
   },
   [LoginWithRefreshToken]: (state: any) => {
-    state.loginStatus = LoginStatus.LoginLoading;
+    state.appStatus = AppStatus.AutoLogging;
   },
   [SetStoreDatas]: (state: any, response: any) => {
     const jwtHelper = new JwtHelper();
@@ -318,22 +311,22 @@ const mutations = {
     state.accessTokenExpiry = tokenExpiryDate;
   },
   [LoginSuccess]: (state: any) => {
-    state.loginStatus = LoginStatus.Success;
+    state.appStatus = AppStatus.Success;
   },
   [RefreshLoginSuccess]: (state: any) => {
-    state.loginStatus = LoginStatus.Success;
+    state.appStatus = AppStatus.Success;
     state.errorMessage = null;
   },
   [LoginError]: (state: any) => {
-    state.loginStatus = LoginStatus.Error;
+    state.appStatus = AppStatus.Error;
     state.errorMessage = "Hiba a bejelentkezési adatokban.";
   },
   [TokenError]: (state: any) => {
-    state.loginStatus = LoginStatus.Error;
+    state.appStatus = AppStatus.Error;
     state.errorMessage = "A munkamenet lejárt. Kérem jelentkezzen be újra.";
   },
   [Logout]: (state: any) => {
-    state.loginStatus = LoginStatus.Logout;
+    state.appStatus = AppStatus.Logout;
   },
   [RefreshTokenTimer]: (state: any, refreshTokenTimerId: number) => {
     state.refreshTokenTimerId = refreshTokenTimerId;
@@ -345,21 +338,20 @@ const mutations = {
   [CheckingOffline]: (state: any) => {
     state.serverOffline = true;
     state.errorMessage = "A szerver nem érhető el.";
-    state.loginStatus = LoginStatus.CheckingOffline;
+    state.appStatus = AppStatus.AutoReLogging;
   },
   [ServerOffline]: (state: any) => {
     state.serverOffline = true;
     state.errorMessage = "A szerver nem érhető el.";
   },
-  // [Loading]: (state: any) => {
-  //   state.errorMessage = null;
-  //   state.loginStatus = LoginStatus.Loading;
-  // },
   [ErrorMessage]: (state: any, errorMessage: string) => {
     state.errorMessage = errorMessage; // TODO lehet, hogy már nincs rá szükség?
   },
   [Reconnecting]: (state: any) => {
-    state.loginStatus = LoginStatus.Reconnecting; // TODO lehet, hogy már nincs rá szükség?
+    state.appStatus = AppStatus.Reconnecting; // TODO lehet, hogy már nincs rá szükség?
+  },
+  [SetInitLoadingState]: (state: any) => {
+    state.appStatus = AppStatus.Init;
   }
 };
 

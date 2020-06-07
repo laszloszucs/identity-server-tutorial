@@ -139,7 +139,9 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "public/variables";
 .app {
+  background-color: $primary-color;
   height: 100%;
   font-family: "Roboto", sans-serif !important;
   -webkit-font-smoothing: antialiased;

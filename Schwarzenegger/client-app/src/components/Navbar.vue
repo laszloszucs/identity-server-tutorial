@@ -210,5 +210,4 @@ export default class Navbar extends Vue {
     border-bottom: 5px solid $attention-color !important;
   }
 }
-
 </style>

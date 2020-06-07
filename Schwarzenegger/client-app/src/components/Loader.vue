@@ -39,14 +39,14 @@ export default class Loader extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  @import "public/variables";
+@import "public/variables";
 
-  ::v-deep .vld-background {
-    background: $light-color
+::v-deep .vld-background {
+  background: $light-color;
+}
+::v-deep .vld-icon {
+  svg {
+    stroke: $dark-color;
   }
-  ::v-deep .vld-icon {
-    svg {
-      stroke: $dark-color
-    }
-  }
+}
 </style>

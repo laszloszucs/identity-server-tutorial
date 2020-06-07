@@ -261,7 +261,6 @@ export default class Roles extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
 .about {
   text-align: center;
 }
